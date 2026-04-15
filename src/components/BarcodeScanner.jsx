@@ -17,6 +17,9 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const inputRef = useRef(null);
   const lastScannedRef = useRef("");
   const controlsRef = useRef(null);
+  // Always hold latest products — fixes stale closure in ZXing callback
+  const productsRef = useRef(products);
+  useEffect(() => { productsRef.current = products; }, [products]);
 
   const stopCamera = useCallback(() => {
     controlsRef.current?.stop();
@@ -29,7 +32,11 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     lastScannedRef.current = barcode;
     setTimeout(() => { lastScannedRef.current = ""; }, 2000);
 
-    const product = products.find((p) => p.barcode === barcode);
+    // Use ref so we always search the latest products list
+    const product = productsRef.current.find(
+      (p) => p.barcode && p.barcode.trim() === barcode.trim()
+    );
+
     setRecentScans((prev) => [{
       id: Date.now(), barcode,
       product: product || null,
@@ -42,7 +49,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       stopCamera();
       setTimeout(() => { onClose(); setRecentScans([]); }, 800);
     }
-  }, [products, onScan, onClose, stopCamera]);
+  }, [onScan, onClose, stopCamera]);
 
   const startCamera = useCallback(async () => {
     setCameraError("");
@@ -60,8 +67,10 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       const devices = await BrowserMultiFormatReader.listVideoInputDevices();
       if (!devices.length) throw new Error("No camera found on this device.");
 
-      const deviceId = devices.find((d) => /back|rear|environment/i.test(d.label))?.deviceId
-        ?? devices[devices.length - 1].deviceId;
+      // Prefer back/rear camera on mobile
+      const deviceId =
+        devices.find((d) => /back|rear|environment/i.test(d.label))?.deviceId ??
+        devices[devices.length - 1].deviceId;
 
       setIsDetecting(true);
       controlsRef.current = await readerRef.current.decodeFromVideoDevice(
@@ -86,7 +95,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
 
   useEffect(() => {
     if (isOpen && scanMode === "camera") {
-      // Small delay ensures the video element is mounted in the DOM
       const t = setTimeout(startCamera, 300);
       return () => { clearTimeout(t); stopCamera(); };
     } else {
@@ -197,11 +205,11 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
             <ModernButton type="submit" variant="primary" className="w-full" disabled={!manualBarcode.trim()} icon={Scan}>
               Search Product
             </ModernButton>
-            {products.length > 0 && (
+            {productsRef.current.length > 0 && (
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick select:</p>
                 <div className="flex flex-wrap gap-2">
-                  {products.slice(0, 5).map((product) => (
+                  {productsRef.current.filter(p => p.barcode).slice(0, 5).map((product) => (
                     <button
                       key={product._id || product.id}
                       type="button"

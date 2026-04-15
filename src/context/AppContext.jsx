@@ -3,11 +3,17 @@ import { hasPermission } from "../data/users";
 import { generateInvoiceNumber, getTodayDate, getCurrentTime } from "../utils/helpers";
 import { disconnectSocket } from "../hooks/useSocket";
 
+// Synchronously read auth from localStorage so first render is already authenticated
+const _savedUser = (() => {
+  try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
+})();
+const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
+
 // Initial state
 const initialState = {
   // Authentication
-  currentUser: null,
-  isAuthenticated: false,
+  currentUser: _savedUser || null,
+  isAuthenticated: !!_savedUser && !!localStorage.getItem("token"),
 
   // Cart
   cart: [],
@@ -21,14 +27,14 @@ const initialState = {
 
   // Settings — populated from shop on login
   settings: {
-    shopName: "",
-    taxRate: 5,
-    currency: "Rs.",
-    address: "",
-    phone: "",
-    email: "",
-    shopLogo: "",
-    receiptFooter: "Thank you for your purchase!",
+    shopName:       _savedShop?.name           || "",
+    taxRate:        _savedShop?.taxRate         ?? 5,
+    currency:       _savedShop?.currency        || "Rs.",
+    address:        _savedShop?.address         || "",
+    phone:          _savedShop?.phone           || "",
+    email:          _savedShop?.email           || "",
+    shopLogo:       _savedShop?.logo            || "",
+    receiptFooter:  _savedShop?.receiptFooter   || "Thank you for your purchase!",
     lowStockThreshold: 5,
   }
 };
@@ -128,36 +134,10 @@ export function AppProvider({ children }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    // Clear stale cached settings — shop data now comes from user.shop
     localStorage.removeItem("posSettings");
     const savedDarkMode = localStorage.getItem("posDarkMode");
-    const savedUser = localStorage.getItem("user") || localStorage.getItem("posUser");
-    
     if (savedDarkMode) {
       dispatch({ type: ACTIONS.SET_DARK_MODE, payload: savedDarkMode === "true" });
-    }
-    
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        dispatch({ type: ACTIONS.LOGIN, payload: user });
-        // Sync shop from saved user
-        const shop = user.shop;
-        if (shop && typeof shop === 'object') {
-          dispatch({ type: ACTIONS.UPDATE_SETTINGS, payload: {
-            shopName: shop.name || "",
-            taxRate: shop.taxRate ?? 5,
-            currency: shop.currency || "Rs.",
-            address: shop.address || "",
-            phone: shop.phone || "",
-            email: shop.email || "",
-            shopLogo: shop.logo || "",
-            receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-          }});
-        }
-      } catch (e) {
-        console.error("Error loading user:", e);
-      }
     }
 
     // Re-sync when user is updated (same tab via custom event or cross-tab via storage)
