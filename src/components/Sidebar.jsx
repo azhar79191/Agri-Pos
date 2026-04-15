@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Package, Users, ShoppingCart, FileText,
-  BarChart3, Settings, Menu, X, Sprout, ChevronLeft, ChevronRight,
+  BarChart3, Settings, Menu, X, ChevronLeft, ChevronRight,
   LogOut, Shield, Building2, Layers
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -63,10 +63,16 @@ const Sidebar = () => {
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-slate-950/95 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-glow-sm">
-            <Sprout className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 shadow-glow-sm">
+            {state.settings?.shopLogo ? (
+              <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">{(state.settings?.shopName || "A")[0].toUpperCase()}</span>
+              </div>
+            )}
           </div>
-          <span className="font-bold text-white tracking-tight">AgroCare</span>
+          <span className="font-bold text-white tracking-tight">{state.settings?.shopName || "AgroCare"}</span>
         </div>
         <button onClick={() => setIsMobileOpen(v => !v)} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
           {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -89,11 +95,22 @@ const Sidebar = () => {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/5 flex-shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-glow-sm flex-shrink-0">
-              <Sprout className="w-5 h-5 text-white" />
+            {/* Shop logo or fallback thumbnail */}
+            <div className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden shadow-glow-sm">
+              {state.settings?.shopLogo ? (
+                <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">
+                    {(state.settings?.shopName || "A")[0].toUpperCase()}
+                  </span>
+                </div>
+              )}
             </div>
             <div className={["overflow-hidden transition-all duration-300", sidebarCollapsed ? "lg:w-0 lg:opacity-0" : "w-auto opacity-100"].join(" ")}>
-              <p className="font-bold text-white text-sm whitespace-nowrap tracking-tight">AgroCare POS</p>
+              <p className="font-bold text-white text-sm whitespace-nowrap tracking-tight">
+                {state.settings?.shopName || "AgroCare POS"}
+              </p>
               <p className="text-[10px] text-emerald-400/70 whitespace-nowrap">Pesticide Management</p>
             </div>
           </div>
@@ -167,7 +184,7 @@ const Sidebar = () => {
         {/* Footer */}
         {!sidebarCollapsed && (
           <div className="px-4 py-3 border-t border-white/5 flex-shrink-0">
-            <p className="text-[10px] text-slate-600 text-center tracking-widest uppercase">v2.0 · AgroCare</p>
+            <p className="text-[10px] text-slate-600 text-center tracking-widest uppercase">v2.0 · {state.settings?.shopName || "AgroCare"}</p>
           </div>
         )}
       </aside>

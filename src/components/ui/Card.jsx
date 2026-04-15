@@ -6,10 +6,11 @@ const Card = ({ children, className = "", padding = "md", hover = false, onClick
     <div
       onClick={onClick}
       className={[
-        "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium transition-all duration-300",
-        hover && "cursor-pointer hover:-translate-y-1 hover:shadow-premium-lg hover:border-slate-300 dark:hover:border-slate-600/60",
+        "card-base",
+        hover || onClick ? "card-hover" : "",
+        onClick ? "cursor-pointer" : "",
         pads[padding],
-        className
+        className,
       ].filter(Boolean).join(" ")}
     >
       {children}
@@ -38,7 +39,6 @@ export const CardFooter = ({ children, className = "" }) => (
   <div className={`mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 ${className}`}>{children}</div>
 );
 
-// Premium stat card with left accent border
 export const StatCard = ({ title, value, icon: Icon, trend = null, trendLabel = "", color = "emerald", onClick = null, subtitle = "" }) => {
   const iconBg = {
     emerald: "from-emerald-500 to-teal-600 shadow-emerald-500/30",
@@ -49,12 +49,9 @@ export const StatCard = ({ title, value, icon: Icon, trend = null, trendLabel = 
     cyan:    "from-cyan-500 to-blue-500 shadow-cyan-500/30",
   };
   const borderColor = {
-    emerald: "stat-border-emerald",
-    blue:    "stat-border-blue",
-    amber:   "stat-border-amber",
-    purple:  "stat-border-purple",
-    rose:    "stat-border-rose",
-    cyan:    "stat-border-blue",
+    emerald: "stat-border-emerald", blue: "stat-border-blue",
+    amber: "stat-border-amber",     purple: "stat-border-purple",
+    rose: "stat-border-rose",       cyan: "stat-border-blue",
   };
   const trendCls = trend === "up" ? "text-emerald-600 dark:text-emerald-400" : trend === "down" ? "text-red-500 dark:text-red-400" : "text-slate-500";
 
@@ -62,9 +59,9 @@ export const StatCard = ({ title, value, icon: Icon, trend = null, trendLabel = 
     <div
       onClick={onClick}
       className={[
-        "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium p-5 transition-all duration-300",
+        "card-base card-hover p-5",
         borderColor[color] || "stat-border-emerald",
-        onClick && "cursor-pointer hover:-translate-y-1 hover:shadow-premium-lg",
+        onClick ? "cursor-pointer" : "",
       ].filter(Boolean).join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
