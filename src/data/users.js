@@ -70,7 +70,29 @@ export const roles = {
   }
 };
 
+const rolePermissions = {
+  admin: [
+    "dashboard", "products", "customers", "pos", "invoices",
+    "reports", "settings", "stock_management", "user_management", "delete_data", "financial_reports"
+  ],
+  manager: [
+    "dashboard", "products", "customers", "pos", "invoices",
+    "reports", "stock_management", "financial_reports"
+  ],
+  cashier: [
+    "dashboard", "pos", "invoices", "customers"
+  ],
+};
+
 export const hasPermission = (user, permission) => {
   if (!user) return false;
-  return user.permissions.includes(permission);
+  // If user has an explicit permissions array, use it
+  if (Array.isArray(user.permissions) && user.permissions.length > 0) {
+    return user.permissions.some(p => p === permission || p.startsWith(permission + ":"));
+  }
+  // Normalize role: handle object { name: "admin" } or string "Admin"
+  const rawRole = typeof user.role === "object" ? user.role?.name : user.role;
+  const role = (rawRole || "").toLowerCase();
+  const perms = rolePermissions[role] || [];
+  return perms.includes(permission);
 };

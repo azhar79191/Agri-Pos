@@ -1,6 +1,7 @@
 // Format currency
 export const formatCurrency = (amount, currency = "Rs.") => {
-  return `${currency} ${amount?.toFixed(2) || "0.00"}`;
+  const num = Number(amount);
+  return `${currency} ${isNaN(num) ? "0.00" : num.toFixed(2)}`;
 };
 
 // Format date

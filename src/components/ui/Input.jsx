@@ -12,7 +12,7 @@ const Input = forwardRef(({
   type = "text",
   ...props
 }, ref) => {
-  const baseInputStyles = "block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 transition-colors duration-200";
+  const baseInputStyles = "block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500";
   
   const errorStyles = error
     ? "border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500"

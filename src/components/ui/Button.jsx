@@ -1,76 +1,44 @@
 import React from "react";
+import { Loader2 } from "lucide-react";
 
 const Button = ({
-  children,
-  variant = "primary",
-  size = "md",
-  className = "",
-  disabled = false,
-  loading = false,
-  onClick,
-  type = "button",
-  icon: Icon = null,
-  ...props
+  children, variant = "primary", size = "md", className = "",
+  disabled = false, loading = false, onClick, type = "button",
+  icon: Icon = null, ...props
 }) => {
-  const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
-  
+  const base = "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 select-none";
+
   const variants = {
-    primary: "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 disabled:bg-emerald-300",
-    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 disabled:bg-gray-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600",
-    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-300",
-    warning: "bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500 disabled:bg-amber-300",
-    success: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 disabled:bg-green-300",
-    outline: "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 focus:ring-emerald-500 disabled:border-emerald-300 disabled:text-emerald-300 dark:hover:bg-emerald-900/20",
-    ghost: "text-gray-600 hover:bg-gray-100 focus:ring-gray-500 disabled:text-gray-300 dark:text-gray-400 dark:hover:bg-gray-800",
-    link: "text-emerald-600 hover:text-emerald-700 underline-offset-4 hover:underline focus:ring-emerald-500 disabled:text-emerald-300"
-  };
-  
-  const sizes = {
-    xs: "px-2 py-1 text-xs",
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
-    xl: "px-8 py-4 text-lg"
+    primary:   "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 focus:ring-emerald-500 shadow-glow-sm hover:shadow-glow hover:scale-[1.02] active:scale-[0.98]",
+    secondary: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 focus:ring-slate-400 border border-slate-200 dark:border-slate-700",
+    danger:    "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700 focus:ring-red-500 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
+    warning:   "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 focus:ring-amber-500 shadow-sm hover:shadow-md",
+    success:   "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 focus:ring-green-500 shadow-sm hover:shadow-md",
+    outline:   "border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/15 focus:ring-emerald-500",
+    ghost:     "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white focus:ring-slate-400",
+    gold:      "bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-900 font-bold hover:from-amber-500 hover:to-yellow-600 focus:ring-amber-400 shadow-gold hover:shadow-lg hover:scale-[1.02]",
+    link:      "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 underline-offset-4 hover:underline focus:ring-emerald-500 p-0",
   };
 
-  const classes = [
-    baseStyles,
-    variants[variant],
-    sizes[size],
-    (disabled || loading) && "cursor-not-allowed opacity-70",
-    className
-  ].filter(Boolean).join(" ");
+  const sizes = {
+    xs: "px-2.5 py-1.5 text-xs gap-1",
+    sm: "px-3.5 py-2 text-sm gap-1.5",
+    md: "px-4 py-2.5 text-sm gap-2",
+    lg: "px-5 py-3 text-base gap-2",
+    xl: "px-7 py-3.5 text-base gap-2.5",
+  };
 
   return (
     <button
       type={type}
-      className={classes}
+      className={[base, variants[variant], sizes[size], (disabled || loading) && "opacity-60 cursor-not-allowed pointer-events-none", className].filter(Boolean).join(" ")}
       disabled={disabled || loading}
       onClick={onClick}
       {...props}
     >
-      {loading && (
-        <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
-      )}
-      {Icon && !loading && <Icon className="w-4 h-4 mr-2" />}
+      {loading
+        ? <Loader2 className="w-4 h-4 animate-spin" />
+        : Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
       {children}
     </button>
   );

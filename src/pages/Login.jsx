@@ -1,223 +1,227 @@
-import React, { useState } from "react";
-import { Sprout, Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sprout, Eye, EyeOff, Lock, Mail, ArrowRight, User, Phone, Loader2, Sparkles, Shield, BarChart3, Package } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
-import Button from "../components/ui/Button";
+import { getSetupStatus, registerUser } from "../api/authApi";
+
+const features = [
+  { icon: Package,   title: "Smart Inventory",   desc: "Real-time stock tracking & alerts" },
+  { icon: BarChart3, title: "Deep Analytics",     desc: "Insights that drive decisions" },
+  { icon: Shield,    title: "Role-Based Access",  desc: "Secure multi-user management" },
+];
+
+const InputField = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra }) => (
+  <div>
+    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>
+    <div className="relative">
+      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <input
+        type={type} value={value} onChange={onChange} placeholder={placeholder} required={required}
+        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-sm"
+      />
+      {extra}
+    </div>
+  </div>
+);
 
 const Login = () => {
+  const { login, loading } = useAuth();
   const { actions } = useApp();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const navigate = useNavigate();
 
-  const demoAccounts = [
-    { role: "admin", email: "admin@agrocare.pk", password: "admin123", label: "Admin", color: "purple" },
-    { role: "manager", email: "manager@agrocare.pk", password: "manager123", label: "Manager", color: "blue" },
-    { role: "cashier", email: "cashier@agrocare.pk", password: "cashier123", label: "Cashier", color: "emerald" }
-  ];
+  const [mode, setMode] = useState("checking");
+  const [showPwd, setShowPwd] = useState(false);
+  const [error, setError] = useState("");
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [setupForm, setSetupForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+  const [setupLoading, setSetupLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const success = actions.login(email, password);
-    setIsLoading(false);
+  useEffect(() => {
+    if (window.location.pathname === "/register") { navigate("/register"); return; }
+    getSetupStatus()
+      .then(r => setMode(r.data.data.setupRequired ? "setup" : "login"))
+      .catch(() => setMode("login"));
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault(); setError("");
+    try {
+      const user = await login({ email: loginForm.email, password: loginForm.password });
+      actions.login(user.email, null, user);
+      navigate("/dashboard");
+    } catch (err) { setError(err.message || "Invalid credentials. Please try again."); }
   };
 
-  const fillDemoCredentials = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setSelectedRole(account.role);
+  const handleSetup = async (e) => {
+    e.preventDefault(); setError("");
+    if (setupForm.password !== setupForm.confirmPassword) { setError("Passwords do not match"); return; }
+    if (setupForm.password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    setSetupLoading(true);
+    try {
+      await registerUser({ name: setupForm.name, email: setupForm.email, phone: setupForm.phone, password: setupForm.password, role: "admin" });
+      actions.showToast({ message: "Admin account created! Please log in.", type: "success" });
+      setMode("login");
+      setLoginForm({ email: setupForm.email, password: "" });
+    } catch (err) { setError(err.response?.data?.message || "Setup failed"); }
+    finally { setSetupLoading(false); }
   };
+
+  if (mode === "checking") return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-glow animate-pulse">
+          <Sprout className="w-6 h-6 text-white" />
+        </div>
+        <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+        <p className="text-sm text-slate-500">Connecting to server...</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2" />
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
-        </div>
-        
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+
+      {/* ── Left branding panel ── */}
+      <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative overflow-hidden bg-slate-950 flex-col justify-between p-12">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/8 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gold-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
-              <Sprout className="w-10 h-10 text-white" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-11 h-11 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-glow">
+              <Sprout className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-5xl font-bold mb-4">Pesticides POS</h1>
-            <p className="text-xl text-emerald-100 mb-8">
-              Modern Point of Sale System for Pesticide Shops
+            <div>
+              <p className="font-bold text-white text-lg tracking-tight leading-none">AgroCare POS</p>
+              <p className="text-[11px] text-emerald-400/70 mt-0.5 tracking-widest uppercase">Pesticide Management</p>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs font-medium text-emerald-400 tracking-wide">Premium Agricultural POS</span>
+            </div>
+            <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight tracking-tight mb-4">
+              {mode === "setup" ? "Welcome.\nLet's get started." : "Manage your\nagri business."}
+            </h1>
+            <p className="text-slate-400 text-base leading-relaxed max-w-sm">
+              {mode === "setup"
+                ? "Set up your admin account to unlock the full power of AgroCare POS."
+                : "A complete point-of-sale solution built for modern pesticide and agri shops."}
             </p>
           </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📦</span>
+
+          <div className="space-y-3">
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-center gap-4 p-4 rounded-2xl bg-white/3 border border-white/5 backdrop-blur-sm hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{title}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold">Inventory Management</h3>
-                <p className="text-sm text-emerald-200">Track stock levels in real-time</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">💰</span>
-              </div>
-              <div>
-                <h3 className="font-semibold">Sales Processing</h3>
-                <p className="text-sm text-emerald-200">Quick and easy transactions</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-white/10 backdrop-blur rounded-xl p-4">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📊</span>
-              </div>
-              <div>
-                <h3 className="font-semibold">Detailed Reports</h3>
-                <p className="text-sm text-emerald-200">Insights and analytics</p>
-              </div>
-            </div>
+            ))}
           </div>
+        </div>
+
+        <div className="relative z-10">
+          <p className="text-xs text-slate-600">© {new Date().getFullYear()} AgroCare POS · All rights reserved</p>
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-gray-50 dark:bg-gray-950">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mb-4">
-              <Sprout className="w-8 h-8 text-white" />
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white dark:bg-slate-950">
+        <div className="w-full max-w-[420px]">
+
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-glow-sm">
+              <Sprout className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">POS</h1>
+            <p className="font-bold text-slate-900 dark:text-white text-lg">AgroCare POS</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Welcome Back
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400">
-                Sign in to access your dashboard
-              </p>
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {mode === "setup" ? "Create admin account" : "Welcome back"}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1.5">
+              {mode === "setup"
+                ? "No admin found. This account will have full access."
+                : "Sign in to access your dashboard"}
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="mb-5 flex items-start gap-3 p-3.5 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/50 rounded-xl">
+              <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-white text-xs font-bold">!</span>
+              </div>
+              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
+          )}
 
-            {/* Demo Accounts */}
-            <div className="mb-6">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
-                Quick Login (Demo Accounts)
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {demoAccounts.map((account) => (
-                  <button
-                    key={account.role}
-                    onClick={() => fillDemoCredentials(account)}
-                    className={`p-3 rounded-xl border-2 transition-all ${
-                      selectedRole === account.role
-                        ? `border-${account.color}-500 bg-${account.color}-50 dark:bg-${account.color}-900/20`
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
-                    }`}
-                  >
-                    <div className={`w-8 h-8 mx-auto rounded-full bg-${account.color}-100 dark:bg-${account.color}-900/30 flex items-center justify-center mb-2`}>
-                      <span className={`text-${account.color}-600 dark:text-${account.color}-400 text-xs font-bold`}>
-                        {account.label[0]}
-                      </span>
-                    </div>
-                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                      {account.label}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
-                </label>
-                <button type="button" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                  Forgot password?
-                </button>
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-                loading={isLoading}
-              >
-                Sign In
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+          {/* Setup form */}
+          {mode === "setup" && (
+            <form onSubmit={handleSetup} className="space-y-4">
+              <InputField label="Full Name" icon={User} value={setupForm.name} onChange={e => setSetupForm(p => ({ ...p, name: e.target.value }))} placeholder="Admin Name" required />
+              <InputField label="Email Address" type="email" icon={Mail} value={setupForm.email} onChange={e => setSetupForm(p => ({ ...p, email: e.target.value }))} placeholder="admin@yourshop.com" required />
+              <InputField label="Phone (optional)" type="tel" icon={Phone} value={setupForm.phone} onChange={e => setSetupForm(p => ({ ...p, phone: e.target.value }))} placeholder="+92 300 0000000" />
+              <InputField
+                label="Password" type={showPwd ? "text" : "password"} icon={Lock}
+                value={setupForm.password} onChange={e => setSetupForm(p => ({ ...p, password: e.target.value }))}
+                placeholder="Min 6 characters" required
+                extra={<button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">{showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>}
+              />
+              <InputField
+                label="Confirm Password" type="password" icon={Lock}
+                value={setupForm.confirmPassword} onChange={e => setSetupForm(p => ({ ...p, confirmPassword: e.target.value }))}
+                placeholder="Repeat password" required
+              />
+              <button type="submit" disabled={setupLoading} className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-glow-sm hover:shadow-glow transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+                {setupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
+              </button>
             </form>
+          )}
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Don't have an account?{" "}
-                <button type="button" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                  Contact Admin
-                </button>
-              </p>
-            </div>
+          {/* Login form */}
+          {mode === "login" && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <InputField label="Email Address" type="email" icon={Mail} value={loginForm.email} onChange={e => setLoginForm(p => ({ ...p, email: e.target.value }))} placeholder="Enter your email" required />
+              <InputField
+                label="Password" type={showPwd ? "text" : "password"} icon={Lock}
+                value={loginForm.password} onChange={e => setLoginForm(p => ({ ...p, password: e.target.value }))}
+                placeholder="Enter your password" required
+                extra={<button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">{showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>}
+              />
+              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-glow-sm hover:shadow-glow transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
+              </button>
+            </form>
+          )}
+
+          <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              New shop?{" "}
+              <button onClick={() => navigate("/register")} className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline underline-offset-2">
+                Register here
+              </button>
+            </p>
           </div>
-
-          <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            © 2026 AgroCare POS. All rights reserved.
-          </p>
         </div>
       </div>
     </div>

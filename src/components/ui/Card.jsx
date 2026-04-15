@@ -1,134 +1,91 @@
 import React from "react";
 
-const Card = ({
-  children,
-  className = "",
-  padding = "md",
-  shadow = "md",
-  hover = false,
-  onClick = null
-}) => {
-  const paddings = {
-    none: "",
-    sm: "p-3",
-    md: "p-4",
-    lg: "p-6",
-    xl: "p-8"
-  };
-
-  const shadows = {
-    none: "",
-    sm: "shadow-sm",
-    md: "shadow-md",
-    lg: "shadow-lg",
-    xl: "shadow-xl"
-  };
-
-  const classes = [
-    "bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700",
-    paddings[padding],
-    shadows[shadow],
-    hover && "hover:shadow-lg transition-shadow cursor-pointer",
-    className
-  ].filter(Boolean).join(" ");
-
+const Card = ({ children, className = "", padding = "md", hover = false, onClick = null }) => {
+  const pads = { none: "", sm: "p-3", md: "p-4", lg: "p-6", xl: "p-8" };
   return (
-    <div className={classes} onClick={onClick}>
+    <div
+      onClick={onClick}
+      className={[
+        "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium transition-all duration-300",
+        hover && "cursor-pointer hover:-translate-y-1 hover:shadow-premium-lg hover:border-slate-300 dark:hover:border-slate-600/60",
+        pads[padding],
+        className
+      ].filter(Boolean).join(" ")}
+    >
       {children}
     </div>
   );
 };
 
-// Card Header
-export const CardHeader = ({ children, className = "", action = null }) => {
-  return (
-    <div className={`flex items-center justify-between mb-4 ${className}`}>
-      <div className="flex-1">{children}</div>
-      {action && <div className="ml-4">{action}</div>}
-    </div>
-  );
-};
+export const CardHeader = ({ children, className = "", action = null }) => (
+  <div className={`flex items-center justify-between mb-4 ${className}`}>
+    <div className="flex-1">{children}</div>
+    {action && <div className="ml-4">{action}</div>}
+  </div>
+);
 
-// Card Title
-export const CardTitle = ({ children, className = "" }) => {
-  return (
-    <h3 className={`text-lg font-semibold text-gray-900 dark:text-white ${className}`}>
-      {children}
-    </h3>
-  );
-};
+export const CardTitle = ({ children, className = "" }) => (
+  <h3 className={`text-base font-semibold text-slate-900 dark:text-white tracking-tight ${className}`}>{children}</h3>
+);
 
-// Card Description
-export const CardDescription = ({ children, className = "" }) => {
-  return (
-    <p className={`text-sm text-gray-500 dark:text-gray-400 mt-1 ${className}`}>
-      {children}
-    </p>
-  );
-};
+export const CardDescription = ({ children, className = "" }) => (
+  <p className={`text-sm text-slate-500 dark:text-slate-400 mt-0.5 ${className}`}>{children}</p>
+);
 
-// Card Content
-export const CardContent = ({ children, className = "" }) => {
-  return <div className={className}>{children}</div>;
-};
+export const CardContent = ({ children, className = "" }) => <div className={className}>{children}</div>;
 
-// Card Footer
-export const CardFooter = ({ children, className = "" }) => {
-  return (
-    <div className={`mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 ${className}`}>
-      {children}
-    </div>
-  );
-};
+export const CardFooter = ({ children, className = "" }) => (
+  <div className={`mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 ${className}`}>{children}</div>
+);
 
-// Stat Card
-export const StatCard = ({
-  title,
-  value,
-  icon: Icon,
-  trend = null,
-  trendLabel = "",
-  color = "emerald",
-  onClick = null
-}) => {
-  const colors = {
-    emerald: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
-    blue: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-    amber: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
-    red: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
-    purple: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-    cyan: "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
+// Premium stat card with left accent border
+export const StatCard = ({ title, value, icon: Icon, trend = null, trendLabel = "", color = "emerald", onClick = null, subtitle = "" }) => {
+  const iconBg = {
+    emerald: "from-emerald-500 to-teal-600 shadow-emerald-500/30",
+    blue:    "from-blue-500 to-indigo-600 shadow-blue-500/30",
+    amber:   "from-amber-500 to-orange-500 shadow-amber-500/30",
+    purple:  "from-purple-500 to-pink-600 shadow-purple-500/30",
+    rose:    "from-rose-500 to-red-600 shadow-rose-500/30",
+    cyan:    "from-cyan-500 to-blue-500 shadow-cyan-500/30",
   };
-
-  const trendColors = {
-    up: "text-green-600 dark:text-green-400",
-    down: "text-red-600 dark:text-red-400",
-    neutral: "text-gray-600 dark:text-gray-400"
+  const borderColor = {
+    emerald: "stat-border-emerald",
+    blue:    "stat-border-blue",
+    amber:   "stat-border-amber",
+    purple:  "stat-border-purple",
+    rose:    "stat-border-rose",
+    cyan:    "stat-border-blue",
   };
+  const trendCls = trend === "up" ? "text-emerald-600 dark:text-emerald-400" : trend === "down" ? "text-red-500 dark:text-red-400" : "text-slate-500";
 
   return (
-    <Card hover={!!onClick} onClick={onClick} className="h-full">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
-          {trend && (
-            <div className="flex items-center mt-2">
-              <span className={`text-sm font-medium ${trendColors[trend]}`}>
-                {trend === "up" && "↑"}
-                {trend === "down" && "↓"}
-                {trend === "neutral" && "→"} {trendLabel}
-              </span>
-            </div>
+    <div
+      onClick={onClick}
+      className={[
+        "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium p-5 transition-all duration-300",
+        borderColor[color] || "stat-border-emerald",
+        onClick && "cursor-pointer hover:-translate-y-1 hover:shadow-premium-lg",
+      ].filter(Boolean).join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{title}</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{value}</p>
+          {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+          {trend && trendLabel && (
+            <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${trendCls}`}>
+              <span>{trend === "up" ? "↑" : trend === "down" ? "↓" : "→"}</span>
+              <span>{trendLabel}</span>
+            </p>
           )}
         </div>
         {Icon && (
-          <div className={`p-3 rounded-lg ${colors[color]}`}>
-            <Icon className="w-6 h-6" />
+          <div className={`p-3 rounded-xl bg-gradient-to-br ${iconBg[color] || iconBg.emerald} shadow-lg flex-shrink-0`}>
+            <Icon className="w-5 h-5 text-white" />
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 

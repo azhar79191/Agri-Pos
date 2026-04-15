@@ -1,618 +1,364 @@
-import React, { useState, useMemo } from "react";
-import {
-  Plus,
-  Search,
-  Edit2,
-  Trash2,
-  Package,
-  AlertTriangle,
-  QrCode,
-  Barcode,
-  History,
-  MoreVertical,
-  TrendingUp,
-  TrendingDown,
-  Filter,
-  Download
-} from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Plus, Edit2, Trash2, Download, Package } from "lucide-react";
+import { useProducts } from "../context/ProductsContext";
 import { useApp } from "../context/AppContext";
-import { productCategories } from "../data/products";
 import Card from "../components/ui/Card";
 import ModernButton from "../components/ui/ModernButton";
 import Input from "../components/ui/Input";
-import Select from "../components/ui/Select";
 import ModernModal, { ConfirmModal } from "../components/ui/ModernModal";
 import Table from "../components/ui/Table";
 import Badge from "../components/ui/Badge";
 import SearchBar from "../components/ui/SearchBar";
-import BarcodeScanner from "../components/BarcodeScanner";
-import StockManagementModal from "../components/StockManagementModal";
-import {
-  formatCurrency,
-  isLowStock,
-  isOutOfStock,
-  getStockStatus,
-  getStockColor
-} from "../utils/helpers";
+import Select from "../components/ui/Select";
+import { formatCurrency } from "../utils/helpers";
+import Pagination from "../components/ui/Pagination";
+import { TableSkeleton } from "../components/ui/Skeleton";
+import { exportProducts } from "../utils/excelExport";
+
+const LIMIT = 15;
+
+const emptyForm = {
+  name: "", category: "", brand: "", price: "", costPrice: "", stock: "",
+  unit: "", subUnit: "", expiryDate: "", description: "", barcode: "", minStockLevel: "5",
+};
+
+const categoryOptions = [
+  { value: "Herbicides", label: "Herbicides" },
+  { value: "Insecticides", label: "Insecticides" },
+  { value: "Fungicides", label: "Fungicides" },
+  { value: "Fertilizers", label: "Fertilizers" },
+  { value: "Seeds", label: "Seeds" },
+  { value: "Other", label: "Other" },
+];
+
+const unitOptions = [
+  { value: "liter", label: "Liter" },
+  { value: "ml", label: "ML (Milliliter)" },
+  { value: "kg", label: "KG (Kilogram)" },
+  { value: "gram", label: "Gram" },
+  { value: "packet", label: "Packet" },
+  { value: "bottle", label: "Bottle" },
+  { value: "box", label: "Box" },
+  { value: "piece", label: "Piece" },
+];
+
+// Sub-unit options based on selected unit
+const getSubUnitOptions = (unit) => {
+  if (unit === "liter") return [
+    { value: "250ml", label: "250 ML" },
+    { value: "500ml", label: "500 ML" },
+    { value: "1liter", label: "1 Liter" },
+    { value: "2liter", label: "2 Liter" },
+    { value: "5liter", label: "5 Liter" },
+  ];
+  if (unit === "kg") return [
+    { value: "0.5kg", label: "0.5 KG" },
+    { value: "1kg", label: "1 KG" },
+    { value: "2kg", label: "2 KG" },
+    { value: "3kg", label: "3 KG" },
+    { value: "5kg", label: "5 KG" },
+    { value: "10kg", label: "10 KG" },
+    { value:"15kg", label:"15kg"},
+  ];
+  if (unit === "packet") return [
+    { value: "0.5kg", label: "1/2 KG" },
+    { value: "1kg", label: "1 KG" },
+    { value: "2kg", label: "2 KG" },
+    { value: "5kg", label: "5 KG" },
+    { value: "250g", label: "250 Gram" },
+    { value: "500g", label: "500 Gram" },
+  ];
+  return [];
+};
+
+// Auto-generate SKU from name
+const generateSKU = (name, category) => {
+  const prefix = category ? category.substring(0, 3).toUpperCase() : "PRD";
+  const namePart = name.replace(/\s+/g, "").substring(0, 4).toUpperCase();
+  const random = Math.floor(100 + Math.random() * 900);
+  return `${prefix}-${namePart}-${random}`;
+};
 
 const Products = () => {
-  const { state, actions } = useApp();
-  const { products, customers, settings, stockHistory, currentUser } = state;
+  const { products, brands: shopBrands, loading, fetchProducts, addProduct, editProduct, removeProduct } = useProducts();
+  const { actions, state } = useApp();
 
-  // Check permissions
-  const canManageProducts = actions.hasPermission("products");
-  const canDelete = actions.hasPermission("delete_data");
-  const canManageStock = actions.hasPermission("stock_management");
-
-  // Local state
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [stockFilter, setStockFilter] = useState(""); // "all", "low", "out", "in"
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    brand: "",
-    price: "",
-    stock: "",
-    unit: "",
-    expiryDate: "",
-    description: "",
-    barcode: ""
-  });
+  const [formData, setFormData] = useState(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
 
-  // Filter products
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.barcode?.includes(searchTerm) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        !selectedCategory || product.category === selectedCategory;
-      const matchesStock =
-        stockFilter === "" ||
-        (stockFilter === "low" && isLowStock(product.stock) && !isOutOfStock(product.stock)) ||
-        (stockFilter === "out" && isOutOfStock(product.stock)) ||
-        (stockFilter === "in" && product.stock > 5);
-      return matchesSearch && matchesCategory && matchesStock;
+  useEffect(() => {
+    fetchProducts({ page, limit: LIMIT }).then(res => {
+      if (res?.data?.pagination) setPagination(res.data.pagination);
     });
-  }, [products, searchTerm, selectedCategory, stockFilter]);
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset form
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      category: "",
-      brand: "",
-      price: "",
-      stock: "",
-      unit: "",
-      expiryDate: "",
-      description: "",
-      barcode: ""
-    });
-    setEditingProduct(null);
-  };
+  const resetForm = () => { setFormData(emptyForm); setEditingProduct(null); };
 
-  // Open add modal
-  const handleAdd = () => {
-    if (!canManageProducts) {
-      actions.showToast({ message: "You don't have permission to add products", type: "error" });
-      return;
-    }
-    resetForm();
-    setIsModalOpen(true);
-  };
-
-  // Open edit modal
-  const handleEdit = (product) => {
-    if (!canManageProducts) {
-      actions.showToast({ message: "You don't have permission to edit products", type: "error" });
-      return;
-    }
-    setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      category: product.category,
-      brand: product.brand,
-      price: product.price.toString(),
-      stock: product.stock.toString(),
-      unit: product.unit,
-      expiryDate: product.expiryDate,
-      description: product.description,
-      barcode: product.barcode || ""
-    });
-    setIsModalOpen(true);
-  };
-
-  // Handle delete
-  const handleDelete = (product) => {
-    if (!canDelete) {
-      actions.showToast({ message: "Only admins can delete products", type: "error" });
-      return;
-    }
-    actions.showToast({
-      message: `Are you sure you want to delete "${product.name}"? This action cannot be undone.`,
-      type: "error",
-      position: "center",
-      isConfirm: true,
-      onConfirm: () => {
-        actions.deleteProduct(product.id);
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    setSubmitting(true);
+    try {
+      const payload = {
+        ...formData,
+        sku: editingProduct?.sku || generateSKU(formData.name, formData.category),
+        price: parseFloat(formData.price),
+        costPrice: parseFloat(formData.costPrice) || 0,
+        stock: parseInt(formData.stock),
+        minStockLevel: parseInt(formData.minStockLevel) || 5,
+        manufacturer: formData.brand === "__other__" ? (formData.customBrand || "") : formData.brand,
+        description: formData.subUnit
+          ? `${formData.description || ""} | Size: ${formData.subUnit}`.trim()
+          : formData.description,
+      };
+      delete payload.brand;
+      delete payload.subUnit;
+      delete payload.customBrand;
+      if (editingProduct) {
+        await editProduct(editingProduct._id, payload);
+        actions.showToast({ message: "Product updated successfully", type: "success" });
+      } else {
+        await addProduct(payload);
+        actions.showToast({ message: "Product added successfully", type: "success" });
       }
-    });
+      // Refresh to get updated brands list from backend
+      await fetchProducts();
+      setIsModalOpen(false);
+      resetForm();
+    } catch (err) {
+      actions.showToast({ message: err.response?.data?.message || "Something went wrong", type: "error" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const confirmDelete = () => {
-    if (deleteConfirm) {
-      actions.deleteProduct(deleteConfirm.id);
+  const confirmDelete = async () => {
+    try {
+      await removeProduct(deleteConfirm._id);
+      actions.showToast({ message: "Product deleted successfully", type: "success" });
       setDeleteConfirm(null);
+    } catch (err) {
+      actions.showToast({ message: err.response?.data?.message || "Delete failed", type: "error" });
     }
   };
 
-  // Handle stock management
-  const handleStockManage = (product) => {
-    if (!canManageStock) {
-      actions.showToast({ message: "You don't have permission to manage stock", type: "error" });
-      return;
-    }
-    setSelectedProduct(product);
-    setIsStockModalOpen(true);
-  };
+  const filteredProducts = useMemo(() =>
+    products.filter((p) => p.name?.toLowerCase().includes(searchTerm.toLowerCase())),
+    [products, searchTerm]
+  );
 
-  // Handle barcode scan
-  const handleBarcodeScan = (product) => {
-    actions.addToCart(product, 1);
-    setIsScannerOpen(false);
-  };
-
-  // Handle form submit
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    const productData = {
-      ...formData,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock)
-    };
-
-    if (editingProduct) {
-      actions.updateProduct({ ...productData, id: editingProduct.id });
-    } else {
-      actions.addProduct(productData);
-    }
-    
-    setIsModalOpen(false);
-    resetForm();
-  };
-
-  // Handle input change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Generate barcode
-  const generateBarcode = () => {
-    const barcode = `${settings.barcodePrefix}${Date.now().toString().slice(-8)}`;
-    setFormData(prev => ({ ...prev, barcode }));
-  };
-
-  // Export products
-  const handleExport = () => {
-    const data = {
-      exportDate: new Date().toISOString(),
-      totalProducts: products.length,
-      products: filteredProducts
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `products-export-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    actions.showToast({ message: "Products exported successfully", type: "success" });
-  };
-
-  // Table columns
   const columns = [
+    { key: "name", title: "Product", render: (v, row) => (
+      <div>
+        <p className="font-medium text-gray-900 dark:text-white">{v}</p>
+        <p className="text-xs text-gray-400 font-mono">{row.sku}</p>
+      </div>
+    )},
+    { key: "category", title: "Category", render: (v) => <Badge variant="primary" size="sm">{v}</Badge> },
+    { key: "manufacturer", title: "Brand", render: (v) => v ? <span className="text-sm text-gray-700 dark:text-gray-300">{v}</span> : <span className="text-gray-400 text-xs">—</span> },
+    { key: "unit", title: "Unit", render: (v) => <span className="text-sm text-gray-600 dark:text-gray-400">{v}</span> },
     {
-      key: "name",
-      title: "Product",
-      render: (value, row) => (
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            isOutOfStock(row.stock) 
-              ? "bg-red-100 dark:bg-red-900/30" 
-              : isLowStock(row.stock)
-              ? "bg-amber-100 dark:bg-amber-900/30"
-              : "bg-emerald-100 dark:bg-emerald-900/30"
-          }`}>
-            <Package className={`w-5 h-5 ${
-              isOutOfStock(row.stock) 
-                ? "text-red-600" 
-                : isLowStock(row.stock)
-                ? "text-amber-600"
-                : "text-emerald-600"
-            }`} />
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">{value}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{row.barcode}</p>
-          </div>
-        </div>
-      )
+      key: "price", title: "Price",
+      render: (v) => <span className="font-semibold text-emerald-600">{formatCurrency(v, "Rs.")}</span>,
     },
     {
-      key: "category",
-      title: "Category",
-      render: (value) => (
-        <Badge variant="primary" size="sm">
-          {value}
-        </Badge>
-      )
+      key: "stock", title: "Stock",
+      render: (v, row) => (
+        <span className={`font-medium ${
+          v <= 0 ? "text-red-600" : v <= (row.minStockLevel || 5) ? "text-amber-600" : "text-emerald-600"
+        }`}>{v} {row.unit}</span>
+      ),
     },
     {
-      key: "price",
-      title: "Price",
-      render: (value) => (
-        <span className="font-semibold text-emerald-600">
-          {formatCurrency(value, settings.currency)}
-        </span>
-      )
-    },
-    {
-      key: "stock",
-      title: "Stock",
-      render: (value, row) => (
-        <div className="flex items-center gap-2">
-          <span className={`font-medium px-3 py-1.5 rounded-lg ${getStockColor(value)}`}>
-            {value} {row.unit}
-          </span>
-          {isOutOfStock(value) && (
-            <Badge variant="danger" size="sm">Out</Badge>
-          )}
-          {isLowStock(value) && !isOutOfStock(value) && (
-            <Badge variant="warning" size="sm">Low</Badge>
-          )}
-        </div>
-      )
-    },
-    {
-      key: "actions",
-      title: "Actions",
+      key: "actions", title: "Actions",
       render: (_, row) => (
-        <div className="flex items-center gap-1">
-          {canManageStock && (
-            <button
-              onClick={() => handleStockManage(row)}
-              className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="Manage Stock"
-            >
-              <History className="w-4 h-4" />
-            </button>
-          )}
-          {canManageProducts && (
-            <button
-              onClick={() => handleEdit(row)}
-              className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-              title="Edit"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-          )}
-          {canDelete && (
-            <button
-              onClick={() => handleDelete(row)}
-              className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
+        <div className="flex gap-2">
+          <button
+            className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+            onClick={() => { 
+              setEditingProduct(row); 
+              const mfr = row.manufacturer || "";
+              setFormData({ 
+                ...emptyForm, 
+                ...row,
+                brand: shopBrands.includes(mfr) ? mfr : (mfr ? "__other__" : ""),
+                customBrand: shopBrands.includes(mfr) ? "" : mfr,
+              }); 
+              setIsModalOpen(true); 
+            }}
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+            onClick={() => setDeleteConfirm(row)}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
-
-  // Category options
-  const categoryOptions = productCategories.map((cat) => ({
-    value: cat,
-    label: cat
-  }));
-
-  // Unit options
-  const unitOptions = [
-    { value: "kg", label: "Kilogram (kg)" },
-    { value: "liter", label: "Liter" },
-    { value: "packet", label: "Packet" },
-    { value: "bottle", label: "Bottle" },
-    { value: "can", label: "Can" },
-    { value: "piece", label: "Piece" }
-  ];
-
-  // Calculate stats
-  const stats = {
-    total: products.length,
-    lowStock: products.filter((p) => isLowStock(p.stock) && !isOutOfStock(p.stock)).length,
-    outOfStock: products.filter((p) => isOutOfStock(p.stock)).length,
-    inStock: products.filter((p) => p.stock > 5).length
-  };
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Products
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Manage your pesticide products inventory
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Products</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            <span>Manage your product inventory</span>
           </p>
         </div>
         <div className="flex gap-2">
-          <ModernButton variant="secondary" onClick={() => setIsScannerOpen(true)} icon={Barcode}>
-            Scan
-          </ModernButton>
-          {canManageProducts && (
-            <ModernButton variant="primary" onClick={handleAdd} icon={Plus}>
-              Add Product
-            </ModernButton>
-          )}
+          <ModernButton variant="outline" onClick={() => exportProducts(products, state?.settings?.currency)} icon={Download}>Export</ModernButton>
+          <ModernButton onClick={() => { resetForm(); setIsModalOpen(true); }} icon={Plus}>Add Product</ModernButton>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card padding="md" className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-            <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
-          </div>
-        </Card>
-        <Card padding="md" className="flex items-center gap-4">
-          <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-            <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">In Stock</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inStock}</p>
-          </div>
-        </Card>
-        <Card padding="md" className="flex items-center gap-4">
-          <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Low Stock</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.lowStock}</p>
-          </div>
-        </Card>
-        <Card padding="md" className="flex items-center gap-4">
-          <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-            <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Out of Stock</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.outOfStock}</p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filters */}
       <Card padding="md">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <SearchBar
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name, brand, barcode..."
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              placeholder="All Categories"
-              options={[{ value: "", label: "All Categories" }, ...categoryOptions]}
-              className="w-40"
-            />
-            <Select
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value)}
-              placeholder="Stock Status"
-              options={[
-                { value: "", label: "All Stock" },
-                { value: "in", label: "In Stock" },
-                { value: "low", label: "Low Stock" },
-                { value: "out", label: "Out of Stock" }
-              ]}
-              className="w-40"
-            />
-            <ModernButton variant="secondary" onClick={handleExport} icon={Download}>
-              Export
-            </ModernButton>
-          </div>
-        </div>
+        <SearchBar value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search products..." />
       </Card>
 
-      {/* Products Table */}
-      <Card padding="none" className="overflow-hidden">
-        <Table
-          columns={columns}
-          data={filteredProducts}
-          emptyMessage="No products found. Add your first product to get started."
-        />
+      <Card padding="none">
+        {loading ? <TableSkeleton rows={LIMIT} cols={6} /> : (
+          <Table columns={columns} data={filteredProducts} loading={false} emptyMessage="No products found." />
+        )}
+        <Pagination page={page} totalPages={pagination.pages} total={pagination.total} limit={LIMIT} onPageChange={setPage} />
       </Card>
 
-      {/* Add/Edit Modal */}
       <ModernModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingProduct ? "Edit Product" : "Add New Product"}
-        subtitle={editingProduct ? "Update product details" : "Fill in the product information"}
-        size="lg"
-        icon={Package}
+        onClose={() => { setIsModalOpen(false); resetForm(); }}
+        title={editingProduct ? "Edit Product" : "Add Product"}
         footer={
-          <div className="flex justify-end gap-3">
-            <ModernButton variant="secondary" onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </ModernButton>
-            <ModernButton variant="primary" onClick={handleSubmit}>
-              {editingProduct ? "Update Product" : "Add Product"}
-            </ModernButton>
-          </div>
+          <ModernButton onClick={handleSubmit} loading={submitting}>
+            {editingProduct ? "Update" : "Create"}
+          </ModernButton>
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Input
-              label="Product Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Enter product name"
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Product Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="Product Name"
+            required
+          />
+          <div className="grid grid-cols-2 gap-4">
             <Select
               label="Category"
-              name="category"
               value={formData.category}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value, subUnit: "" })}
               options={categoryOptions}
-              required
-              placeholder="Select category"
+              placeholder="Select Category"
             />
+            {shopBrands.length > 0 ? (
+              <Select
+                label="Brand / Manufacturer"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value, customBrand: "" })}
+                options={[
+                  { value: "", label: "Select Brand" },
+                  ...shopBrands.map(b => ({ value: b, label: b })),
+                  { value: "__other__", label: "+ Type new brand" },
+                ]}
+              />
+            ) : (
+              <Input
+                label="Brand / Manufacturer"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                placeholder="Brand (add brands in Settings)"
+              />
+            )}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {formData.brand === "__other__" && (
             <Input
-              label="Brand"
-              name="brand"
-              value={formData.brand}
-              onChange={handleChange}
+              label="New Brand Name"
+              value={formData.customBrand || ""}
+              onChange={(e) => setFormData({ ...formData, customBrand: e.target.value })}
+              placeholder="e.g. Syngenta, Bayer..."
               required
-              placeholder="Enter brand name"
             />
+          )}
+          <div className="grid grid-cols-2 gap-4">
             <Select
               label="Unit"
-              name="unit"
               value={formData.unit}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, unit: e.target.value, subUnit: "" })}
               options={unitOptions}
+              placeholder="Select Unit"
+            />
+            {getSubUnitOptions(formData.unit).length > 0 && (
+              <Select
+                label={formData.unit === "liter" ? "Volume" : formData.unit === "kg" ? "Weight" : "Pack Size"}
+                value={formData.subUnit}
+                onChange={(e) => setFormData({ ...formData, subUnit: e.target.value })}
+                options={[{ value: "", label: "Select Size" }, ...getSubUnitOptions(formData.unit)]}
+              />
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Sale Price (Rs.)"
+              type="number"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              placeholder="Price"
               required
-              placeholder="Select unit"
+            />
+            <Input
+              label="Cost Price (Rs.)"
+              type="number"
+              value={formData.costPrice}
+              onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+              placeholder="Cost Price"
             />
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <Input
-              label="Price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.price}
-              onChange={handleChange}
-              required
-              placeholder="0.00"
-            />
+          <div className="grid grid-cols-2 gap-4">
             <Input
               label="Stock Quantity"
-              name="stock"
               type="number"
-              min="0"
               value={formData.stock}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+              placeholder="Stock"
               required
-              placeholder="0"
             />
             <Input
-              label="Expiry Date"
-              name="expiryDate"
-              type="date"
-              value={formData.expiryDate}
-              onChange={handleChange}
-              required
+              label="Min Stock Level"
+              type="number"
+              value={formData.minStockLevel}
+              onChange={(e) => setFormData({ ...formData, minStockLevel: e.target.value })}
+              placeholder="5"
             />
           </div>
-
-          {/* Barcode */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Barcode
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                name="barcode"
-                value={formData.barcode}
-                onChange={handleChange}
-                placeholder="Enter or generate barcode"
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono"
-              />
-              <ModernButton type="button" variant="secondary" onClick={generateBarcode} icon={QrCode}>
-                Generate
-              </ModernButton>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white transition-colors duration-200"
-              placeholder="Enter product description..."
-            />
-          </div>
+          <Input
+            label="Barcode"
+            value={formData.barcode}
+            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+            placeholder="Barcode (optional)"
+          />
+          <Input
+            label="Expiry Date"
+            type="date"
+            value={formData.expiryDate}
+            onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+          />
         </form>
       </ModernModal>
 
-      {/* Barcode Scanner */}
-      <BarcodeScanner
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScan={handleBarcodeScan}
-        products={products}
-      />
-
-      {/* Stock Management Modal */}
-      <StockManagementModal
-        isOpen={isStockModalOpen}
-        onClose={() => setIsStockModalOpen(false)}
-        product={selectedProduct}
-        stockHistory={stockHistory}
-        onAddStock={actions.addStock}
-        onRemoveStock={actions.removeStock}
-        onAdjustStock={actions.adjustStock}
-      />
-
-      {/* Delete Confirmation */}
       <ConfirmModal
         isOpen={!!deleteConfirm}
         onClose={() => setDeleteConfirm(null)}
         onConfirm={confirmDelete}
         title="Delete Product"
-        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        confirmVariant="danger"
-        icon={Trash2}
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"?`}
       />
     </div>
   );

@@ -12,7 +12,7 @@ const Select = forwardRef(({
   placeholder = "Select an option",
   ...props
 }, ref) => {
-  const baseStyles = "block w-full rounded-xl border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500 dark:bg-gray-800 dark:text-white transition-all duration-200 appearance-none px-4 py-2.5 bg-white text-gray-700 dark:text-gray-300";
+  const baseStyles = "block w-full rounded-xl border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:bg-gray-800 dark:text-white transition-all duration-200 appearance-none px-4 py-2.5 bg-white text-gray-700 dark:text-gray-300 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600";
   
   const errorStyles = error
     ? "border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-500"

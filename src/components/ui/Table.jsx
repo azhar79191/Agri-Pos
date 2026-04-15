@@ -26,82 +26,92 @@ const Table = ({
   };
 
   return (
-    <div className={`overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-800">
-          <tr>
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                scope="col"
-                className={[
-                  "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider",
-                  sortable && column.sortable !== false && "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700",
-                  column.className
-                ].filter(Boolean).join(" ")}
-                onClick={() => column.sortable !== false && handleSort(column.key)}
-                style={{ width: column.width }}
-              >
-                <div className="flex items-center gap-1">
-                  {column.title}
-                  {sortable && column.sortable !== false && (
-                    <span className="text-gray-400 ml-1">{getSortIcon(column.key)}</span>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-          {loading ? (
+    <div className={`overflow-hidden ${className}`}>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/80">
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
-              >
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-                </div>
-              </td>
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={[
+                    "px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider",
+                    sortable && column.sortable !== false && "cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors",
+                    column.className
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => column.sortable !== false && handleSort(column.key)}
+                  style={{ width: column.width }}
+                >
+                  <div className="flex items-center gap-1">
+                    {column.title}
+                    {sortable && column.sortable !== false && (
+                      <span className="text-gray-400 ml-1">{getSortIcon(column.key)}</span>
+                    )}
+                  </div>
+                </th>
+              ))}
             </tr>
-          ) : data.length === 0 ? (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            data.map((row, index) => (
-              <tr
-                key={row.id || index}
-                onClick={() => onRowClick && onRowClick(row)}
-                className={[
-                  "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
-                  onRowClick && "cursor-pointer",
-                  rowClassName
-                ].filter(Boolean).join(" ")}
-              >
-                {columns.map((column) => (
-                  <td
-                    key={`${row.id || index}-${column.key}`}
-                    className={[
-                      "px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100",
-                      column.cellClassName
-                    ].filter(Boolean).join(" ")}
-                  >
-                    {column.render
-                      ? column.render(row[column.key], row)
-                      : row[column.key]}
-                  </td>
-                ))}
+          </thead>
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
+                >
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="animate-spin rounded-full h-10 w-10 border-3 border-emerald-500 border-t-transparent"></div>
+                    <p className="text-sm font-medium">Loading data...</p>
+                  </div>
+                </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : data.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="px-6 py-12 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{emptyMessage}</p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              data.map((row, index) => (
+                <tr
+                  key={row.id || index}
+                  onClick={() => onRowClick && onRowClick(row)}
+                  className={[
+                    "hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/50 dark:hover:from-emerald-900/10 dark:hover:to-teal-900/10 transition-all duration-200",
+                    onRowClick && "cursor-pointer",
+                    rowClassName
+                  ].filter(Boolean).join(" ")}
+                >
+                  {columns.map((column) => (
+                    <td
+                      key={`${row.id || index}-${column.key}`}
+                      className={[
+                        "px-6 py-4 text-sm text-gray-900 dark:text-gray-100",
+                        column.cellClassName
+                      ].filter(Boolean).join(" ")}
+                    >
+                      {column.render
+                        ? column.render(row[column.key], row)
+                        : row[column.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

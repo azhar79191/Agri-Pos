@@ -1,454 +1,221 @@
-import React, { useMemo } from "react";
-import {
-  ShoppingCart,
-  Package,
-  AlertTriangle,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  ArrowRight,
-  DollarSign,
-  QrCode,
-  BarChart3,
-  Clock
-} from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { ShoppingCart, Package, AlertTriangle, Users, DollarSign, BarChart3, TrendingUp, Calendar, ArrowRight } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import { useReports } from "../hooks/useReports";
 import { StatCard } from "../components/ui/Card";
-import Card from "../components/ui/Card";
-import ModernButton from "../components/ui/ModernButton";
+import Button from "../components/ui/Button";
 import Table from "../components/ui/Table";
-import Badge from "../components/ui/Badge";
-import {
-  formatCurrency,
-  formatDate,
-  isLowStock,
-  getTodayDate
-} from "../utils/helpers";
+import { formatCurrency, formatDate, getTodayDate } from "../utils/helpers";
+
+const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#f43f5e"];
+
+const CustomTooltip = ({ active, payload, label, currency }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 shadow-premium-lg">
+      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+      <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(payload[0].value, currency)}</p>
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const { state, actions } = useApp();
-  const { products, customers, transactions, settings, currentUser, stockHistory } = state;
+  const { settings, currentUser } = state;
+  const { fetchDashboard, fetchSalesReport, loading } = useReports();
+  const navigate = useNavigate();
 
-  // Check permissions
-  const canAccessPOS = actions.hasPermission("pos");
-  const canAccessProducts = actions.hasPermission("products");
-  const canAccessReports = actions.hasPermission("reports");
+  const [dashboardData, setDashboardData] = useState(null);
+  const [salesChartData, setSalesChartData] = useState([]);
+  const hasFetched = useRef(false);
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const today = getTodayDate();
-    
-    // Today's sales
-    const todayTransactions = transactions.filter((t) => t.date === today);
-    const todaySales = todayTransactions.reduce((sum, t) => sum + t.grandTotal, 0);
-    
-    // Total products
-    const totalProducts = products.length;
-    
-    // Low stock items
-    const lowStockItems = products.filter((p) => isLowStock(p.stock)).length;
-    
-    // Total customers
-    const totalCustomers = customers.length;
-    
-    // Previous day sales for trend
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split("T")[0];
-    const yesterdaySales = transactions
-      .filter((t) => t.date === yesterdayStr)
-      .reduce((sum, t) => sum + t.grandTotal, 0);
-    
-    const salesTrend = yesterdaySales > 0
-      ? ((todaySales - yesterdaySales) / yesterdaySales) * 100
-      : 0;
-    
-    return {
-      todaySales,
-      totalProducts,
-      lowStockItems,
-      totalCustomers,
-      salesTrend,
-      todayTransactionsCount: todayTransactions.length
-    };
-  }, [transactions, products, customers]);
+  const canPOS      = actions.hasPermission("pos");
+  const canProducts = actions.hasPermission("products");
+  const canReports  = actions.hasPermission("reports");
 
-  // Recent transactions
-  const recentTransactions = useMemo(() => {
-    return transactions.slice(0, 5);
-  }, [transactions]);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetchDashboard().then(setDashboardData).catch(() => {});
+    const end   = new Date().toISOString().split("T")[0];
+    const start = (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split("T")[0]; })();
+    fetchSalesReport({ startDate: start, endDate: end })
+      .then(data => {
+        if (data?.salesData) setSalesChartData(
+          data.salesData.map(d => ({
+            date: new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1)
+              .toLocaleDateString("en-PK", { weekday: "short" }),
+            sales: d.totalSales || 0,
+          }))
+        );
+      }).catch(() => {});
+  }, []); // eslint-disable-line
 
-  // Sales chart data (last 7 days)
-  const salesChartData = useMemo(() => {
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-      const daySales = transactions
-        .filter((t) => t.date === dateStr)
-        .reduce((sum, t) => sum + t.grandTotal, 0);
-      
-      data.push({
-        date: date.toLocaleDateString("en-PK", { weekday: "short" }),
-        fullDate: dateStr,
-        sales: daySales
-      });
-    }
-    return data;
-  }, [transactions]);
+  const todaySales    = dashboardData?.todaySales?.total || 0;
+  const salesTrend    = dashboardData?.todaySales?.percentChange;
+  const totalProducts = dashboardData?.products?.total || 0;
+  const lowStock      = dashboardData?.products?.lowStock || 0;
+  const totalCustomers= dashboardData?.customers?.total || 0;
+  const recentInvoices= dashboardData?.recentInvoices || [];
 
-  // Category distribution
   const categoryData = useMemo(() => {
-    const distribution = {};
-    products.forEach((p) => {
-      distribution[p.category] = (distribution[p.category] || 0) + 1;
-    });
-    return Object.entries(distribution).map(([name, value]) => ({ name, value }));
-  }, [products]);
+    const dist = dashboardData?.categoryDistribution;
+    if (!dist) return [];
+    if (Array.isArray(dist)) return dist.map(i => ({ name: i._id || "Unknown", value: i.count || 0 }));
+    return Object.entries(dist).map(([name, value]) => ({ name, value }));
+  }, [dashboardData]);
 
-  // Stock activity
-  const recentStockActivity = useMemo(() => {
-    return stockHistory.slice(0, 5);
-  }, [stockHistory]);
-
-  // Colors for charts
-  const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
-
-  // Transaction columns
-  const transactionColumns = [
+  const columns = [
+    { key: "invoiceNumber", title: "Invoice #", render: v => <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">{v}</span> },
+    { key: "createdAt",     title: "Date",      render: v => <span className="text-sm text-slate-500">{formatDate(v?.split("T")[0])}</span> },
+    { key: "customerName",  title: "Customer",  render: v => <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{v}</span> },
+    { key: "total",         title: "Amount",    render: v => <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(v, settings.currency)}</span> },
     {
-      key: "id",
-      title: "Invoice #",
-      render: (value) => <span className="font-medium text-emerald-600 font-mono">{value}</span>
+      key: "paymentMethod", title: "Method",
+      render: v => (
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+          v === "Cash"   ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+          v === "Credit" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                           "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+        }`}>{v}</span>
+      ),
     },
-    {
-      key: "date",
-      title: "Date",
-      render: (value) => formatDate(value)
-    },
-    {
-      key: "customerName",
-      title: "Customer"
-    },
-    {
-      key: "grandTotal",
-      title: "Total",
-      render: (value) => (
-        <span className="font-semibold text-emerald-600">{formatCurrency(value, settings.currency)}</span>
-      )
-    },
-    {
-      key: "paymentMethod",
-      title: "Payment",
-      render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          value === "Cash"
-            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-            : value === "Credit"
-            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-            : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-        }`}>
-          {value}
-        </span>
-      )
-    }
   ];
 
+  const greeting = () => {
+    const h = new Date().getHours();
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Welcome back, {currentUser?.name?.split(" ")[0]}!
-          </h1>
-          <p className="text-emerald-100 mt-1">
-            Here's what's happening at {settings.shopName} today.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-emerald-100 bg-white/10 backdrop-blur rounded-xl px-4 py-2">
-          <Calendar className="w-4 h-4" />
-          {formatDate(getTodayDate())}
-        </div>
-      </div>
+    <div className="space-y-6 animate-fade-up">
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        {canAccessPOS && (
-          <ModernButton 
-            variant="primary" 
-            onClick={() => actions.setPage("pos")}
-            icon={ShoppingCart}
-          >
-            New Sale
-          </ModernButton>
-        )}
-        {canAccessProducts && (
-          <ModernButton 
-            variant="secondary" 
-            onClick={() => actions.setPage("products")}
-            icon={Package}
-          >
-            Manage Products
-          </ModernButton>
-        )}
-        {canAccessReports && (
-          <ModernButton 
-            variant="secondary" 
-            onClick={() => actions.setPage("reports")}
-            icon={BarChart3}
-          >
-            View Reports
-          </ModernButton>
-        )}
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card padding="md" className="flex items-center gap-4 hover:shadow-lg transition-shadow">
-          <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
-            <DollarSign className="w-6 h-6 text-white" />
-          </div>
+      {/* Hero banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 lg:p-8 border border-white/5">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-teal-500/10" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/5 rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Today's Sales</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-              {formatCurrency(stats.todaySales, settings.currency)}
-            </p>
-            <p className={`text-xs ${stats.salesTrend >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {stats.salesTrend >= 0 ? "↑" : "↓"} {Math.abs(stats.salesTrend).toFixed(1)}% from yesterday
+            <p className="text-emerald-400 text-sm font-medium mb-1">{greeting()},</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+              {currentUser?.name?.split(" ")[0]} 👋
+            </h1>
+            <p className="text-slate-400 text-sm mt-1.5">
+              Here's what's happening at <span className="text-white font-semibold">{settings.shopName}</span> today.
             </p>
           </div>
-        </Card>
-
-        <Card padding="md" className="flex items-center gap-4 hover:shadow-lg transition-shadow">
-          <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
-            <Package className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-2 text-sm text-slate-400 bg-white/5 border border-white/8 rounded-xl px-4 py-2.5 self-start sm:self-auto">
+            <Calendar className="w-4 h-4 text-emerald-400" />
+            <span className="font-medium text-slate-300">{formatDate(getTodayDate())}</span>
           </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Products</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalProducts}</p>
-          </div>
-        </Card>
-
-        <Card padding="md" className="flex items-center gap-4 hover:shadow-lg transition-shadow">
-          <div className={`p-4 rounded-xl ${stats.lowStockItems > 0 ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-green-500 to-emerald-600"}`}>
-            <AlertTriangle className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Low Stock Items</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.lowStockItems}</p>
-            {stats.lowStockItems > 0 && (
-              <p className="text-xs text-amber-600">Needs attention</p>
-            )}
-          </div>
-        </Card>
-
-        <Card padding="md" className="flex items-center gap-4 hover:shadow-lg transition-shadow">
-          <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-            <Users className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Customers</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalCustomers}</p>
-          </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sales Chart */}
-        <Card className="lg:col-span-2 p-6">
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2.5">
+        {canPOS      && <Button variant="primary"   onClick={() => navigate("/pos")}      icon={ShoppingCart}>New Sale</Button>}
+        {canProducts && <Button variant="secondary" onClick={() => navigate("/products")} icon={Package}>Products</Button>}
+        {canReports  && <Button variant="secondary" onClick={() => navigate("/reports")}  icon={BarChart3}>Reports</Button>}
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard
+          title="Today's Sales" color="emerald" icon={DollarSign}
+          value={formatCurrency(todaySales, settings.currency)}
+          trend={salesTrend !== undefined ? (salesTrend >= 0 ? "up" : "down") : null}
+          trendLabel={salesTrend !== undefined ? `${Math.abs(salesTrend).toFixed(1)}% vs yesterday` : ""}
+        />
+        <StatCard title="Total Products" color="blue"   icon={Package}       value={totalProducts}  subtitle="In inventory" />
+        <StatCard
+          title="Low Stock Items" color={lowStock > 0 ? "amber" : "emerald"} icon={AlertTriangle}
+          value={lowStock}
+          subtitle={lowStock > 0 ? "Needs attention" : "All good!"}
+        />
+        <StatCard title="Total Customers" color="purple" icon={Users} value={totalCustomers} subtitle="Registered" />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Sales chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Sales Overview
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Last 7 days sales performance
-              </p>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">Sales Overview</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Last 7 days performance</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Total: {formatCurrency(salesChartData.reduce((sum, d) => sum + d.sales, 0), settings.currency)}
-              </span>
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-full">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Live</span>
             </div>
           </div>
-          <div className="h-72">
+          <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesChartData}>
+              <AreaChart data={salesChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                 <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#10b981" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
-                <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(value) => `Rs.${value}`} />
-                <Tooltip
-                  formatter={(value) => formatCurrency(value, settings.currency)}
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "12px"
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="sales"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorSales)"
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
+                <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `Rs.${v}`} width={60} />
+                <Tooltip content={<CustomTooltip currency={settings.currency} />} />
+                <Area type="monotone" dataKey="sales" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" dot={false} activeDot={{ r: 5, fill: "#10b981", strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </div>
 
-        {/* Category Distribution */}
-        <Card className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-            Products by Category
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Distribution across categories
-          </p>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 space-y-2">
-            {categoryData.map((cat, index) => (
-              <div key={cat.name} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{cat.name}</span>
-                </div>
-                <span className="text-sm font-medium">{cat.value}</span>
+        {/* Category pie */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium p-6">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mb-1">Categories</h3>
+          <p className="text-xs text-slate-400 mb-5">Product distribution</p>
+          {categoryData.length > 0 ? (
+            <>
+              <div className="h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={42} outerRadius={68} paddingAngle={4} dataKey="value" strokeWidth={0}>
+                      {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip formatter={v => [v, "Products"]} contentStyle={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", fontSize: "12px" }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
-          </div>
-        </Card>
+              <div className="mt-4 space-y-2">
+                {categoryData.slice(0, 5).map((cat, i) => (
+                  <div key={cat.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[120px]">{cat.name}</span>
+                    </div>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{cat.value}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-44 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+          )}
+        </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Transactions */}
-        <Card className="overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Recent Transactions
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Latest sales activity
-              </p>
-            </div>
-            <ModernButton
-              variant="outline"
-              size="sm"
-              onClick={() => actions.setPage("reports")}
-            >
-              View All
-            </ModernButton>
+      {/* Recent transactions */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/40 shadow-premium overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">Recent Transactions</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Latest sales activity</p>
           </div>
-          <Table
-            columns={transactionColumns}
-            data={recentTransactions}
-            emptyMessage="No transactions yet"
-          />
-        </Card>
-
-        {/* Stock Activity */}
-        <Card className="overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              Recent Stock Activity
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Latest inventory changes
-            </p>
-          </div>
-          <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
-            {recentStockActivity.length === 0 ? (
-              <div className="text-center py-8">
-                <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">No stock activity yet</p>
-              </div>
-            ) : (
-              recentStockActivity.map((activity) => (
-                <div 
-                  key={activity.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      activity.type === "IN" || activity.type === "ADJUST_IN"
-                        ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                        : "bg-red-100 dark:bg-red-900/30 text-red-600"
-                    }`}>
-                      {activity.type === "IN" || activity.type === "ADJUST_IN" ? "+" : "-"}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
-                        {activity.productName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {activity.reason} • {activity.user}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${
-                      activity.type === "IN" || activity.type === "ADJUST_IN"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}>
-                      {activity.type === "IN" || activity.type === "ADJUST_IN" ? "+" : "-"}{activity.quantity}
-                    </p>
-                    <p className="text-xs text-gray-500">{formatDate(activity.date)}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
+          <Button variant="outline" size="sm" icon={ArrowRight} onClick={() => navigate("/invoices")}>View All</Button>
+        </div>
+        <Table columns={columns} data={recentInvoices} loading={loading} emptyMessage="No transactions yet" />
       </div>
     </div>
   );
