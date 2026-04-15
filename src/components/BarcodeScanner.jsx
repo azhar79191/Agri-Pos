@@ -1,23 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { NotFoundException, DecodeHintType, BarcodeFormat } from "@zxing/library";
-import { Scan, Camera, Keyboard, AlertCircle } from "lucide-react";
+import { Scan, Camera, Keyboard, AlertCircle, Package, XCircle, CheckCircle, RefreshCw } from "lucide-react";
 import ModernButton from "./ui/ModernButton";
 import ModernModal from "./ui/ModernModal";
+import { formatCurrency } from "../utils/helpers";
 
 const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const [scanMode, setScanMode] = useState("camera");
   const [manualBarcode, setManualBarcode] = useState("");
-  const [recentScans, setRecentScans] = useState([]);
   const [cameraError, setCameraError] = useState("");
   const [isDetecting, setIsDetecting] = useState(false);
+  // null = scanning, { barcode, product } = result shown
+  const [scanResult, setScanResult] = useState(null);
 
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const inputRef = useRef(null);
   const lastScannedRef = useRef("");
   const controlsRef = useRef(null);
-  // Always hold latest products — fixes stale closure in ZXing callback
   const productsRef = useRef(products);
   useEffect(() => { productsRef.current = products; }, [products]);
 
@@ -28,31 +29,23 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   }, []);
 
   const processBarcode = useCallback((barcode) => {
-    if (barcode === lastScannedRef.current) return;
-    lastScannedRef.current = barcode;
-    setTimeout(() => { lastScannedRef.current = ""; }, 2000);
+    const trimmed = barcode.trim();
+    if (trimmed === lastScannedRef.current) return;
+    lastScannedRef.current = trimmed;
+    setTimeout(() => { lastScannedRef.current = ""; }, 3000);
 
-    // Use ref so we always search the latest products list
     const product = productsRef.current.find(
-      (p) => p.barcode && p.barcode.trim() === barcode.trim()
+      (p) => p.barcode && p.barcode.trim() === trimmed
     );
 
-    setRecentScans((prev) => [{
-      id: Date.now(), barcode,
-      product: product || null,
-      timestamp: new Date().toLocaleTimeString(),
-      success: !!product,
-    }, ...prev].slice(0, 5));
-
-    if (product) {
-      onScan(product);
-      stopCamera();
-      setTimeout(() => { onClose(); setRecentScans([]); }, 800);
-    }
-  }, [onScan, onClose, stopCamera]);
+    // Pause camera and show result
+    stopCamera();
+    setScanResult({ barcode: trimmed, product: product || null });
+  }, [stopCamera]);
 
   const startCamera = useCallback(async () => {
     setCameraError("");
+    setScanResult(null);
     if (!videoRef.current) return;
     try {
       const hints = new Map();
@@ -67,7 +60,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       const devices = await BrowserMultiFormatReader.listVideoInputDevices();
       if (!devices.length) throw new Error("No camera found on this device.");
 
-      // Prefer back/rear camera on mobile
       const deviceId =
         devices.find((d) => /back|rear|environment/i.test(d.label))?.deviceId ??
         devices[devices.length - 1].deviceId;
@@ -94,19 +86,31 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   }, [processBarcode]);
 
   useEffect(() => {
-    if (isOpen && scanMode === "camera") {
+    if (isOpen && scanMode === "camera" && !scanResult) {
       const t = setTimeout(startCamera, 300);
       return () => { clearTimeout(t); stopCamera(); };
-    } else {
+    } else if (!isOpen) {
       stopCamera();
     }
-  }, [isOpen, scanMode]);
+  }, [isOpen, scanMode, scanResult]);
 
   useEffect(() => {
     if (isOpen && scanMode === "manual") {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen, scanMode]);
+
+  const handleAddToCart = () => {
+    if (scanResult?.product) {
+      onScan(scanResult.product);
+      handleClose();
+    }
+  };
+
+  const handleScanAgain = () => {
+    setScanResult(null);
+    lastScannedRef.current = "";
+  };
 
   const handleManualSubmit = (e) => {
     e.preventDefault();
@@ -118,8 +122,9 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
 
   const handleClose = () => {
     stopCamera();
-    setRecentScans([]);
+    setScanResult(null);
     setCameraError("");
+    setManualBarcode("");
     onClose();
   };
 
@@ -133,13 +138,13 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       icon={Scan}
       iconColor="emerald"
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Mode Toggle */}
         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
           {[{ id: "camera", icon: Camera, label: "Camera" }, { id: "manual", icon: Keyboard, label: "Manual" }].map(({ id, icon: Icon, label }) => (
             <button
               key={id}
-              onClick={() => setScanMode(id)}
+              onClick={() => { setScanMode(id); setScanResult(null); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 scanMode === id
                   ? "bg-white dark:bg-gray-600 text-emerald-600 dark:text-emerald-400 shadow-sm"
@@ -151,9 +156,74 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
           ))}
         </div>
 
-        {/* Camera Mode */}
-        {scanMode === "camera" && (
-          <div className="space-y-4">
+        {/* ── SCAN RESULT ── */}
+        {scanResult && (
+          <div className={`rounded-xl border-2 p-4 ${
+            scanResult.product
+              ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20"
+              : "border-red-400 bg-red-50 dark:bg-red-900/20"
+          }`}>
+            <div className="flex items-start gap-3">
+              {scanResult.product ? (
+                <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0 mt-0.5" />
+              ) : (
+                <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1">{scanResult.barcode}</p>
+                {scanResult.product ? (
+                  <>
+                    <p className="font-semibold text-gray-900 dark:text-white text-base">{scanResult.product.name}</p>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      <span className="text-emerald-600 font-bold text-sm">
+                        {formatCurrency(scanResult.product.price, "Rs.")}
+                      </span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        scanResult.product.stock <= 0
+                          ? "bg-red-100 text-red-600"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                      }`}>
+                        Stock: {scanResult.product.stock} {scanResult.product.unit}
+                      </span>
+                      {scanResult.product.category && (
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                          {scanResult.product.category}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold text-red-700 dark:text-red-400">Item Not Available</p>
+                    <p className="text-xs text-red-500 mt-0.5">
+                      No product found with this barcode. Check if the barcode is assigned in Products.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-4">
+              {scanResult.product && scanResult.product.stock > 0 && (
+                <ModernButton variant="primary" className="flex-1" icon={Package} onClick={handleAddToCart}>
+                  Add to Cart
+                </ModernButton>
+              )}
+              <ModernButton
+                variant={scanResult.product ? "outline" : "primary"}
+                className="flex-1"
+                icon={RefreshCw}
+                onClick={handleScanAgain}
+              >
+                Scan Again
+              </ModernButton>
+            </div>
+          </div>
+        )}
+
+        {/* ── CAMERA VIEW ── */}
+        {scanMode === "camera" && !scanResult && (
+          <div className="space-y-3">
             {cameraError ? (
               <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
@@ -177,7 +247,9 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
                 </div>
                 {isDetecting && (
                   <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-                    <span className="px-3 py-1 bg-black/60 text-emerald-400 text-xs rounded-full">Scanning...</span>
+                    <span className="px-3 py-1 bg-black/60 text-emerald-400 text-xs rounded-full">
+                      Point camera at barcode...
+                    </span>
                   </div>
                 )}
               </div>
@@ -185,8 +257,8 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
           </div>
         )}
 
-        {/* Manual Mode */}
-        {scanMode === "manual" && (
+        {/* ── MANUAL MODE ── */}
+        {scanMode === "manual" && !scanResult && (
           <form onSubmit={handleManualSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -205,11 +277,11 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
             <ModernButton type="submit" variant="primary" className="w-full" disabled={!manualBarcode.trim()} icon={Scan}>
               Search Product
             </ModernButton>
-            {productsRef.current.length > 0 && (
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            {products.filter(p => p.barcode).length > 0 && (
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick select:</p>
                 <div className="flex flex-wrap gap-2">
-                  {productsRef.current.filter(p => p.barcode).slice(0, 5).map((product) => (
+                  {products.filter(p => p.barcode).slice(0, 6).map((product) => (
                     <button
                       key={product._id || product.id}
                       type="button"
@@ -223,40 +295,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
               </div>
             )}
           </form>
-        )}
-
-        {/* Recent Scans */}
-        {recentScans.length > 0 && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Recent Scans</h4>
-            <div className="space-y-2">
-              {recentScans.map((scan) => (
-                <div
-                  key={scan.id}
-                  className={`flex items-center justify-between p-3 rounded-xl border ${
-                    scan.success
-                      ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800"
-                      : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                      scan.success ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
-                    }`}>
-                      {scan.success ? "✓" : "✗"}
-                    </div>
-                    <div>
-                      <p className="font-mono text-sm">{scan.barcode}</p>
-                      <p className={`text-xs ${scan.success ? "text-emerald-600" : "text-red-500"}`}>
-                        {scan.success ? scan.product.name : "Product not found"}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-500">{scan.timestamp}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
       </div>
     </ModernModal>
