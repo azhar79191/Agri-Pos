@@ -44,50 +44,43 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={closeOnOverlayClick ? onClose : undefined}
       />
-      
-      {/* Modal Container */}
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div
-          className={`relative transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all w-full ${sizes[size]}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          {(title || showCloseButton) && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              {title && (
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {title}
-                </h3>
-              )}
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-          )}
-          
-          {/* Body */}
-          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
-            {children}
+      {/* Modal */}
+      <div
+        className={`relative z-10 w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        {(title || showCloseButton) && (
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            {title && (
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+            )}
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
-          
-          {/* Footer */}
-          {footer && (
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-              {footer}
-            </div>
-          )}
+        )}
+        {/* Body */}
+        <div className="px-6 py-4 overflow-y-auto flex-1">
+          {children}
         </div>
+        {/* Footer */}
+        {footer && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

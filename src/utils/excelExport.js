@@ -1,88 +1,144 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
-const download = (wb, filename) => {
-  XLSX.writeFile(wb, filename);
+const saveFile = async (wb, filename) => {
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
-export const exportProducts = (products, currency = "Rs.") => {
-  const rows = products.map((p, i) => ({
-    "#": i + 1,
-    SKU: p.sku || "",
-    Name: p.name || "",
-    Category: p.category || "",
-    Brand: p.manufacturer || "",
-    "Sale Price": p.price || 0,
-    "Cost Price": p.costPrice || 0,
-    Stock: p.stock || 0,
-    Unit: p.unit || "",
-    "Min Stock": p.minStockLevel || 0,
-    Status: p.stock === 0 ? "Out of Stock" : p.stock <= p.minStockLevel ? "Low Stock" : "In Stock",
-    Barcode: p.barcode || "",
-    "Expiry Date": p.expiryDate ? new Date(p.expiryDate).toLocaleDateString() : "",
-  }));
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [
-    { wch: 4 }, { wch: 14 }, { wch: 24 }, { wch: 14 }, { wch: 16 },
-    { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 10 },
-    { wch: 14 }, { wch: 14 }, { wch: 14 },
-  ];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Products");
-  download(wb, `Products_${new Date().toISOString().split("T")[0]}.xlsx`);
+const applyHeader = (ws, columns) => {
+  ws.columns = columns;
+  const headerRow = ws.getRow(1);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF059669" } };
+  headerRow.alignment = { vertical: "middle", horizontal: "center" };
+  headerRow.height = 20;
 };
 
-export const exportCustomers = (customers, currency = "Rs.") => {
-  const rows = customers.map((c, i) => ({
-    "#": i + 1,
-    Name: c.name || "",
-    Phone: c.phone || "",
-    Email: c.email || "",
-    Address: c.address || "",
-    City: c.city || "",
-    "Credit Balance": c.creditBalance || 0,
-    "Wallet Balance": c.walletBalance || 0,
-    "Total Purchases": c.totalPurchases || 0,
-    "Last Purchase": c.lastPurchaseDate ? new Date(c.lastPurchaseDate).toLocaleDateString() : "",
-    Status: c.isActive ? "Active" : "Inactive",
-  }));
+export const exportProducts = async (products) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Products");
 
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [
-    { wch: 4 }, { wch: 20 }, { wch: 14 }, { wch: 24 }, { wch: 30 },
-    { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 10 },
-  ];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Customers");
-  download(wb, `Customers_${new Date().toISOString().split("T")[0]}.xlsx`);
+  applyHeader(ws, [
+    { header: "#", key: "no", width: 5 },
+    { header: "SKU", key: "sku", width: 14 },
+    { header: "Name", key: "name", width: 26 },
+    { header: "Category", key: "category", width: 16 },
+    { header: "Brand", key: "brand", width: 16 },
+    { header: "Sale Price", key: "price", width: 12 },
+    { header: "Cost Price", key: "costPrice", width: 12 },
+    { header: "Stock", key: "stock", width: 8 },
+    { header: "Unit", key: "unit", width: 8 },
+    { header: "Min Stock", key: "minStock", width: 10 },
+    { header: "Status", key: "status", width: 14 },
+    { header: "Barcode", key: "barcode", width: 16 },
+    { header: "Expiry Date", key: "expiry", width: 14 },
+  ]);
+
+  products.forEach((p, i) => {
+    ws.addRow({
+      no: i + 1,
+      sku: p.sku || "",
+      name: p.name || "",
+      category: p.category || "",
+      brand: p.manufacturer || "",
+      price: p.price || 0,
+      costPrice: p.costPrice || 0,
+      stock: p.stock || 0,
+      unit: p.unit || "",
+      minStock: p.minStockLevel || 0,
+      status: p.stock === 0 ? "Out of Stock" : p.stock <= p.minStockLevel ? "Low Stock" : "In Stock",
+      barcode: p.barcode || "",
+      expiry: p.expiryDate ? new Date(p.expiryDate).toLocaleDateString() : "",
+    });
+  });
+
+  await saveFile(wb, `Products_${new Date().toISOString().split("T")[0]}.xlsx`);
 };
 
-export const exportInvoices = (invoices, currency = "Rs.") => {
-  const rows = invoices.map((inv, i) => ({
-    "#": i + 1,
-    "Invoice #": inv.invoiceNumber || "",
-    Date: inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "",
-    Customer: inv.customerName || "Walk-in",
-    Phone: inv.customerPhone || "",
-    "Payment Method": inv.paymentMethod || "",
-    "Payment Status": inv.paymentStatus || "",
-    Status: inv.status || "",
-    Subtotal: inv.subtotal || 0,
-    "Tax Amount": inv.taxAmount || 0,
-    Discount: inv.discount || 0,
-    Total: inv.total || 0,
-    "Amount Paid": inv.amountPaid || 0,
-    "Items Count": inv.items?.length || 0,
-    Cashier: inv.processedByName || "",
-  }));
+export const exportCustomers = async (customers) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Customers");
 
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [
-    { wch: 4 }, { wch: 18 }, { wch: 12 }, { wch: 20 }, { wch: 14 },
-    { wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 10 },
-    { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 16 },
-  ];
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Invoices");
-  download(wb, `Invoices_${new Date().toISOString().split("T")[0]}.xlsx`);
+  applyHeader(ws, [
+    { header: "#", key: "no", width: 5 },
+    { header: "Name", key: "name", width: 22 },
+    { header: "Phone", key: "phone", width: 14 },
+    { header: "Email", key: "email", width: 26 },
+    { header: "Address", key: "address", width: 30 },
+    { header: "City", key: "city", width: 14 },
+    { header: "Credit Balance", key: "credit", width: 16 },
+    { header: "Wallet Balance", key: "wallet", width: 16 },
+    { header: "Total Purchases", key: "purchases", width: 16 },
+    { header: "Last Purchase", key: "lastPurchase", width: 14 },
+    { header: "Status", key: "status", width: 10 },
+  ]);
+
+  customers.forEach((c, i) => {
+    ws.addRow({
+      no: i + 1,
+      name: c.name || "",
+      phone: c.phone || "",
+      email: c.email || "",
+      address: c.address || "",
+      city: c.city || "",
+      credit: c.creditBalance || 0,
+      wallet: c.walletBalance || 0,
+      purchases: c.totalPurchases || 0,
+      lastPurchase: c.lastPurchaseDate ? new Date(c.lastPurchaseDate).toLocaleDateString() : "",
+      status: c.isActive ? "Active" : "Inactive",
+    });
+  });
+
+  await saveFile(wb, `Customers_${new Date().toISOString().split("T")[0]}.xlsx`);
+};
+
+export const exportInvoices = async (invoices) => {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Invoices");
+
+  applyHeader(ws, [
+    { header: "#", key: "no", width: 5 },
+    { header: "Invoice #", key: "invoice", width: 18 },
+    { header: "Date", key: "date", width: 12 },
+    { header: "Customer", key: "customer", width: 22 },
+    { header: "Phone", key: "phone", width: 14 },
+    { header: "Payment Method", key: "paymentMethod", width: 16 },
+    { header: "Payment Status", key: "paymentStatus", width: 14 },
+    { header: "Status", key: "status", width: 12 },
+    { header: "Subtotal", key: "subtotal", width: 12 },
+    { header: "Tax", key: "tax", width: 10 },
+    { header: "Discount", key: "discount", width: 10 },
+    { header: "Total", key: "total", width: 12 },
+    { header: "Amount Paid", key: "paid", width: 12 },
+    { header: "Items", key: "items", width: 8 },
+    { header: "Cashier", key: "cashier", width: 16 },
+  ]);
+
+  invoices.forEach((inv, i) => {
+    ws.addRow({
+      no: i + 1,
+      invoice: inv.invoiceNumber || "",
+      date: inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "",
+      customer: inv.customerName || "Walk-in",
+      phone: inv.customerPhone || "",
+      paymentMethod: inv.paymentMethod || "",
+      paymentStatus: inv.paymentStatus || "",
+      status: inv.status || "",
+      subtotal: inv.subtotal || 0,
+      tax: inv.taxAmount || 0,
+      discount: inv.discount || 0,
+      total: inv.total || 0,
+      paid: inv.amountPaid || 0,
+      items: inv.items?.length || 0,
+      cashier: inv.processedByName || "",
+    });
+  });
+
+  await saveFile(wb, `Invoices_${new Date().toISOString().split("T")[0]}.xlsx`);
 };

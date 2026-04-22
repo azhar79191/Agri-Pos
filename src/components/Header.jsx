@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bell, Sun, Moon, LogOut, ChevronDown, Shield, User, Store } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -26,6 +26,17 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showMenu]);
 
   const page = location.pathname.replace("/", "") || "dashboard";
   const title = PAGE_TITLES[page] || "Dashboard";
@@ -37,7 +48,7 @@ const Header = () => {
 
   const Avatar = ({ size = "w-9 h-9" }) =>
     currentUser?.avatar ? (
-      <img src={currentUser.avatar} alt={currentUser.name} className={`${size} rounded-xl object-cover`} />
+      <img src={currentUser.avatar} alt={currentUser.name} className={`${size} rounded-xl object-contain`} loading="eager" decoding="sync" style={{ imageRendering: "crisp-edges" }} />
     ) : (
       <div className={`${size} rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm`}>
         {initial}
@@ -103,13 +114,13 @@ const Header = () => {
         <div className="w-px h-6 bg-slate-200 dark:bg-white/8 mx-1" />
 
         {/* User */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(v => !v)}
             className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all duration-200 group"
           >
             <div className="relative">
-              <Avatar size="w-8 h-8" />
+              <Avatar size="w-8 h-8"  />
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
             </div>
             <div className="hidden lg:block text-left">
@@ -120,9 +131,7 @@ const Header = () => {
           </button>
 
           {showMenu && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-premium-lg border border-slate-200/80 dark:border-white/8 z-50 overflow-hidden animate-scale-in">
+            <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-premium-lg border border-slate-200/80 dark:border-white/8 z-50 overflow-hidden animate-scale-in">
                 {/* Profile header */}
                 <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-900/50 border-b border-slate-200/60 dark:border-white/5">
                   <div className="flex items-center gap-3">
@@ -163,7 +172,6 @@ const Header = () => {
                   </button>
                 </div>
               </div>
-            </>
           )}
         </div>
       </div>

@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Download, TrendingUp, Package, AlertTriangle, DollarSign, ShoppingCart } from "lucide-react";
+import { Download, TrendingUp, Package, AlertTriangle, DollarSign, ShoppingCart, BarChart3, PieChart as PieIcon, ChevronDown } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from "recharts";
 import { useApp } from "../context/AppContext";
 import { useReports } from "../hooks/useReports";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import Select from "../components/ui/Select";
-import Table from "../components/ui/Table";
 import Badge from "../components/ui/Badge";
-import { formatCurrency, getTodayDate, getStockStatus, getStockColor } from "../utils/helpers";
+import ModernButton from "../components/ui/ModernButton";
+import { formatCurrency, getStockStatus, getStockColor } from "../utils/helpers";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+const CustomTooltip = ({ active, payload, label, currency }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-premium-lg px-3.5 py-2.5">
+      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+      <p className="text-sm font-bold text-emerald-600">{formatCurrency(payload[0].value, currency)}</p>
+    </div>
+  );
+};
 
 const Reports = () => {
   const { state, actions } = useApp();
@@ -22,7 +29,6 @@ const Reports = () => {
 
   const [reportType, setReportType] = useState("daily");
   const [dateRange, setDateRange] = useState("7");
-
   const [summary, setSummary] = useState({ totalSales: 0, totalTransactions: 0, avgOrderValue: 0, totalItems: 0 });
   const [dailySalesData, setDailySalesData] = useState([]);
   const [paymentMethodData, setPaymentMethodData] = useState([]);
@@ -39,211 +45,250 @@ const Reports = () => {
   useEffect(() => {
     const params = getDateParams();
     if (reportType === "daily") {
-      fetchSalesReport(params).then((data) => {
+      fetchSalesReport(params).then(data => {
         if (!data) return;
-        // Backend returns { summary: {...}, salesData: [...] }
         const s = data.summary || {};
-        setSummary({
-          totalSales: s.totalSales || 0,
-          totalTransactions: s.invoiceCount || 0,
-          avgOrderValue: s.avgOrderValue || 0,
-          totalItems: s.itemCount || 0,
-        });
-        setDailySalesData((data.salesData || []).map((d) => ({
-          date: new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1)
-            .toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+        setSummary({ totalSales: s.totalSales || 0, totalTransactions: s.invoiceCount || 0, avgOrderValue: s.avgOrderValue || 0, totalItems: s.itemCount || 0 });
+        setDailySalesData((data.salesData || []).map(d => ({
+          date: new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
           sales: d.totalSales || 0,
         })));
       }).catch(() => {});
-
-      fetchPaymentDistribution(params).then((data) => {
+      fetchPaymentDistribution(params).then(data => {
         if (!data) return;
-        // Backend returns { distribution: [{_id, count, total}] }
-        const dist = data.distribution || [];
-        setPaymentMethodData(dist.map((d) => ({ name: d._id, value: d.total })));
+        setPaymentMethodData((data.distribution || []).map(d => ({ name: d._id, value: d.total })));
       }).catch(() => {});
     }
-
     if (reportType === "products") {
-      fetchTopProducts(params).then((data) => {
-        // Backend returns { topProducts: [...] }
-        if (data) setTopProducts(data.topProducts || data);
-      }).catch(() => {});
+      fetchTopProducts(params).then(data => { if (data) setTopProducts(data.topProducts || data); }).catch(() => {});
     }
-
     if (reportType === "inventory") {
-      fetchInventory().then((data) => {
+      fetchInventory().then(data => {
         if (!data) return;
-        // Backend returns { summary, categorySummary, products }
-        setInventoryData({
-          products: data.products || [],
-          lowStock: (data.products || []).filter(p => p.status === "Low Stock"),
-          outOfStock: data.summary?.outOfStockCount || 0,
-        });
+        setInventoryData({ products: data.products || [], lowStock: (data.products || []).filter(p => p.status === "Low Stock"), outOfStock: data.summary?.outOfStockCount || 0 });
       }).catch(() => {});
     }
-  }, [reportType, dateRange]);
+  }, [reportType, dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExport = async () => {
     try {
-      const params = { ...getDateParams(), type: reportType };
-      await fetchExport(params);
+      await fetchExport({ ...getDateParams(), type: reportType });
       actions.showToast({ message: "Report exported successfully", type: "success" });
-    } catch {
-      actions.showToast({ message: "Export failed", type: "error" });
-    }
+    } catch { actions.showToast({ message: "Export failed", type: "error" }); }
   };
 
-  const topProductsColumns = [
-    { key: "productName", title: "Product Name" },
-    { key: "totalQuantity", title: "Quantity Sold", render: (v) => <span className="font-medium">{v}</span> },
-    { key: "totalRevenue", title: "Revenue", render: (v) => <span className="font-semibold text-emerald-600">{formatCurrency(v, settings.currency)}</span> },
+  const reportTabs = [
+    { id: "daily", label: "Sales Report", icon: BarChart3 },
+    { id: "products", label: "Top Products", icon: TrendingUp },
+    { id: "inventory", label: "Inventory", icon: Package },
   ];
 
-  const lowStockColumns = [
-    { key: "name", title: "Product Name" },
-    { key: "category", title: "Category", render: (v) => <Badge variant="primary" size="sm">{v}</Badge> },
-    { key: "stock", title: "Stock Level", render: (v) => <span className={`font-medium px-2 py-1 rounded ${getStockColor(v)}`}>{v} {getStockStatus(v)}</span> },
-    { key: "price", title: "Price", render: (v) => formatCurrency(v, settings.currency) },
-  ];
+  const selectCls = "appearance-none pl-3.5 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all cursor-pointer";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reports</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">View sales analytics and inventory reports</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-glow-sm flex-shrink-0">
+            <BarChart3 className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Reports</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Sales analytics and inventory insights</p>
+          </div>
         </div>
-        <Button variant="outline" onClick={handleExport} icon={Download} loading={loading}>Export Report</Button>
+        <ModernButton variant="outline" onClick={handleExport} icon={Download} loading={loading}>Export Report</ModernButton>
       </div>
 
-      <Card padding="md">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="w-full sm:w-48">
-            <Select
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              label="Report Type"
-              options={[
-                { value: "daily", label: "Daily Sales" },
-                { value: "products", label: "Top Products" },
-                { value: "inventory", label: "Inventory Status" },
-              ]}
-            />
-          </div>
-          <div className="w-full sm:w-48">
-            <Select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              label="Date Range"
-              options={[
-                { value: "7", label: "Last 7 Days" },
-                { value: "30", label: "Last 30 Days" },
-                { value: "90", label: "Last 90 Days" },
-              ]}
-            />
-          </div>
+      {/* Report type tabs + date range */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          {reportTabs.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setReportType(id)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                reportType === id
+                  ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}>
+              <Icon className="w-4 h-4" />{label}
+            </button>
+          ))}
         </div>
-      </Card>
+        <div className="relative ml-auto">
+          <select value={dateRange} onChange={e => setDateRange(e.target.value)} className={selectCls}>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+        </div>
+      </div>
 
+      {/* Summary stats */}
       {reportType !== "inventory" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Total Sales", value: formatCurrency(summary.totalSales, settings.currency), icon: DollarSign, color: "emerald" },
-            { label: "Transactions", value: summary.totalTransactions, icon: ShoppingCart, color: "blue" },
-            { label: "Avg Order Value", value: formatCurrency(summary.avgOrderValue, settings.currency), icon: TrendingUp, color: "purple" },
-            { label: "Items Sold", value: summary.totalItems, icon: Package, color: "amber" },
-          ].map((stat) => (
-            <Card key={stat.label} padding="md" className="flex items-center gap-4">
-              <div className={`p-3 bg-${stat.color}-100 dark:bg-${stat.color}-900/30 rounded-lg`}>
-                <stat.icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+            { label: "Total Sales", value: formatCurrency(summary.totalSales, settings.currency), icon: DollarSign, color: "emerald", cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+            { label: "Transactions", value: summary.totalTransactions, icon: ShoppingCart, color: "blue", cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
+            { label: "Avg Order Value", value: formatCurrency(summary.avgOrderValue, settings.currency), icon: TrendingUp, color: "purple", cls: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
+            { label: "Items Sold", value: summary.totalItems, icon: Package, color: "amber", cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+          ].map(({ label, value, icon: Icon, cls, bg }, i) => (
+            <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+                  <Icon className={`w-5 h-5 ${cls}`} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
+                  <p className={`text-lg font-bold mt-0.5 ${cls}`}>{value}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-              </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
 
+      {/* Daily Sales Charts */}
       {reportType === "daily" && (
-        <div className="space-y-6">
-          <Card padding="md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Sales Trend</h3>
-            <div className="h-80">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Sales Trend</h3>
+            </div>
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailySalesData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
-                  <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(v) => `Rs.${v}`} />
-                  <Tooltip formatter={(v) => formatCurrency(v, settings.currency)} contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }} />
-                  <Bar dataKey="sales" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <BarChart data={dailySalesData} barSize={28}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
+                  <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${settings.currency}${v}`} />
+                  <Tooltip content={<CustomTooltip currency={settings.currency} />} cursor={{ fill: "rgba(16,185,129,0.06)" }} />
+                  <Bar dataKey="sales" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
 
-          <Card padding="md">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Payment Method Distribution</h3>
-            <div className="h-64">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <PieIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Payment Methods</h3>
+            </div>
+            <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={paymentMethodData}
-                    cx="50%" cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
+                  <Pie data={paymentMethodData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                     {paymentMethodData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip formatter={(v) => formatCurrency(v, settings.currency)} />
+                  <Tooltip formatter={v => formatCurrency(v, settings.currency)} contentStyle={{ borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                  <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs text-slate-600 dark:text-slate-400">{v}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
+      {/* Top Products */}
       {reportType === "products" && (
-        <Card padding="none">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top Selling Products</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Products with highest revenue in selected period</p>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Top Selling Products</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest revenue in selected period</p>
           </div>
-          <Table columns={topProductsColumns} data={topProducts} loading={loading} emptyMessage="No sales data available for the selected period" />
-        </Card>
+          <div className="overflow-x-auto">
+            <table className="w-full table-premium">
+              <thead>
+                <tr>
+                  {["#", "Product Name", "Qty Sold", "Revenue"].map(h => (
+                    <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {topProducts.map((p, i) => (
+                  <tr key={i} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-slate-100 text-slate-600" : i === 2 ? "bg-orange-100 text-orange-700" : "bg-slate-50 text-slate-400"}`}>{i + 1}</span>
+                    </td>
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{p.productName}</td>
+                    <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300">{p.totalQuantity}</td>
+                    <td className="px-4 py-3.5 font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.totalRevenue, settings.currency)}</td>
+                  </tr>
+                ))}
+                {topProducts.length === 0 && (
+                  <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">No sales data for selected period</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
+      {/* Inventory */}
       {reportType === "inventory" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: "Total Products", value: inventoryData.products?.length || 0, icon: Package, color: "blue" },
-              { label: "Low Stock", value: inventoryData.lowStock?.length || 0, icon: AlertTriangle, color: "amber" },
-              { label: "Out of Stock", value: inventoryData.outOfStock || 0, icon: Package, color: "red" },
-            ].map((stat) => (
-              <Card key={stat.label} padding="md" className="flex items-center gap-4">
-                <div className={`p-3 bg-${stat.color}-100 dark:bg-${stat.color}-900/30 rounded-lg`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+              { label: "Total Products", value: inventoryData.products?.length || 0, icon: Package, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
+              { label: "Low Stock", value: inventoryData.lowStock?.length || 0, icon: AlertTriangle, cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+              { label: "Out of Stock", value: inventoryData.outOfStock || 0, icon: Package, cls: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" },
+            ].map(({ label, value, icon: Icon, cls, bg }, i) => (
+              <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className={`w-5 h-5 ${cls}`} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
+                    <p className={`text-xl font-bold mt-0.5 ${cls}`}>{value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                </div>
-              </Card>
+              </div>
             ))}
           </div>
 
-          <Card padding="none">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Low Stock Products</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Products that need restocking</p>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Low Stock Products</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Products that need restocking</p>
             </div>
-            <Table columns={lowStockColumns} data={inventoryData.lowStock || []} loading={loading} emptyMessage="No low stock products. All inventory levels are good!" />
-          </Card>
+            <div className="overflow-x-auto">
+              <table className="w-full table-premium">
+                <thead>
+                  <tr>
+                    {["Product Name", "Category", "Stock Level", "Price"].map(h => (
+                      <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {(inventoryData.lowStock || []).map((p, i) => (
+                    <tr key={i} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{p.name}</td>
+                      <td className="px-4 py-3.5"><Badge variant="primary" size="sm">{p.category}</Badge></td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${getStockColor(p.stock)}`}>
+                          {p.stock} {getStockStatus(p.stock)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.price, settings.currency)}</td>
+                    </tr>
+                  ))}
+                  {(inventoryData.lowStock || []).length === 0 && (
+                    <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">All inventory levels are good!</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

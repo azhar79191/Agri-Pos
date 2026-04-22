@@ -46,7 +46,7 @@ const Sidebar = () => {
 
   const Avatar = ({ size = "w-10 h-10" }) =>
     currentUser?.avatar ? (
-      <img src={currentUser.avatar} alt={currentUser.name} className={`${size} rounded-xl object-cover ring-2 ring-emerald-500/30`} />
+      <img src={currentUser.avatar} alt={currentUser.name} className={`${size} rounded-xl object-cover ring-2 ring-emerald-500/30`} loading="eager" decoding="sync" />
     ) : (
       <div className={`${size} rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-emerald-500/20`}>
         {initial}
@@ -63,9 +63,9 @@ const Sidebar = () => {
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-slate-950/95 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 shadow-glow-sm">
+          <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 shadow-glow-sm bg-white">
             {state.settings?.shopLogo ? (
-              <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-cover" />
+              <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">{(state.settings?.shopName || "A")[0].toUpperCase()}</span>
@@ -96,9 +96,9 @@ const Sidebar = () => {
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/5 flex-shrink-0">
           <div className="flex items-center gap-3 overflow-hidden">
             {/* Shop logo or fallback thumbnail */}
-            <div className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden shadow-glow-sm">
+          <div className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden shadow-glow-sm bg-white">
               {state.settings?.shopLogo ? (
-                <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-cover" />
+                <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                   <span className="text-white font-bold text-sm">

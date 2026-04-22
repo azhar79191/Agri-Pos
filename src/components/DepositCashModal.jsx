@@ -1,186 +1,204 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { DollarSign, CreditCard, X } from "lucide-react";
+import { DollarSign, Wallet, CreditCard, X, ArrowRight } from "lucide-react";
 import ModernButton from "./ui/ModernButton";
 import { useCustomers } from "../context/CustomersContext";
 import { useApp } from "../context/AppContext";
 import { formatCurrency } from "../utils/helpers";
-import { depositCredit } from "../api/customersApi";
+import { depositCredit, walletDeposit } from "../api/customersApi";
+
+const TAB_DEPOSIT = "deposit"; // clears creditBalance first, excess → walletBalance
+const TAB_WALLET  = "wallet";  // adds directly to walletBalance
 
 const DepositCashModal = ({ isOpen, onClose }) => {
-  const { customers, fetchCustomers } = useCustomers();
+  const { customers, refreshCustomer } = useCustomers();
   const { state, actions } = useApp();
   const { settings } = state;
 
+  const [tab, setTab] = useState(TAB_DEPOSIT);
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const creditCustomers = customers.filter((c) => (c.creditBalance || 0) > 0);
-  const customer = customers.find((c) => c._id === selectedCustomer);
+  const customer = customers.find(c => c._id === selectedCustomer);
+  const dep = parseFloat(amount) || 0;
+  const creditBalance = customer?.creditBalance || 0;
+  const walletBalance = customer?.walletBalance || 0;
 
-  const handleDeposit = async () => {
-    if (!selectedCustomer) {
-      actions.showToast({ message: "Please select a customer", type: "error" });
-      return;
-    }
-    const depositAmount = parseFloat(amount);
-    if (!depositAmount || depositAmount <= 0) {
-      actions.showToast({ message: "Please enter a valid amount", type: "error" });
-      return;
-    }
+  // Preview — only for display, backend is the source of truth
+  const previewDeposit = dep > 0 && customer ? {
+    newCredit: Math.max(0, creditBalance - dep),
+    newWallet: walletBalance + Math.max(0, dep - creditBalance),
+  } : null;
+
+  const previewWallet = dep > 0 && customer ? {
+    newWallet: walletBalance + dep,
+  } : null;
+
+  const handleSubmit = async () => {
+    if (!selectedCustomer) { actions.showToast({ message: "Please select a customer", type: "error" }); return; }
+    if (!dep || dep <= 0)   { actions.showToast({ message: "Please enter a valid amount", type: "error" }); return; }
+
     setSubmitting(true);
     try {
-      const res = await depositCredit(selectedCustomer, { amount: depositAmount });
-      const excess = Math.max(0, depositAmount - (customer?.creditBalance || 0));
-      const msg = excess > 0
-        ? `${formatCurrency(depositAmount, settings.currency)} deposited. ${formatCurrency(excess, settings.currency)} added to wallet.`
-        : `${formatCurrency(depositAmount, settings.currency)} deposited for ${customer?.name}`;
-      actions.showToast({ message: msg, type: "success" });
-      await fetchCustomers();
+      if (tab === TAB_DEPOSIT) {
+        await depositCredit(selectedCustomer, { amount: dep, note });
+        actions.showToast({ message: `${formatCurrency(dep, settings.currency)} deposited for ${customer?.name}`, type: "success" });
+      } else {
+        try {
+          await walletDeposit(selectedCustomer, { amount: dep, note });
+        } catch (e) {
+          // fallback if wallet endpoint not yet on backend
+          if (e.response?.status === 404) await depositCredit(selectedCustomer, { amount: dep, note });
+          else throw e;
+        }
+        actions.showToast({ message: `${formatCurrency(dep, settings.currency)} added to ${customer?.name}'s wallet`, type: "success" });
+      }
+      // Always re-fetch from backend — no local math
+      await refreshCustomer(selectedCustomer);
       handleClose();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Deposit failed", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || "Transaction failed", type: "error" });
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setSelectedCustomer("");
-    setAmount("");
-    setNote("");
+    setSelectedCustomer(""); setAmount(""); setNote("");
     onClose();
   };
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      onClick={handleClose}
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+  const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
 
-      {/* Modal */}
-      <div
-        className="relative z-[10000] w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={handleClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="relative z-[10000] w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-700/50" onClick={e => e.stopPropagation()}>
+
         {/* Header */}
-        <div className="flex items-center gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-            <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Deposit Cash</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Clear customer credit balance</p>
+            <h3 className="font-bold text-slate-900 dark:text-white">Customer Payment</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Deposit cash or top up wallet</p>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all"
-          >
-            <X className="w-5 h-5" />
+          <button onClick={handleClose} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 mx-5 mt-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          {[
+            { id: TAB_DEPOSIT, label: "Clear Credit", icon: CreditCard },
+            { id: TAB_WALLET,  label: "Wallet Top-up", icon: Wallet },
+          ].map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
+                tab === t.id ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+              }`}>
+              <t.icon className="w-3.5 h-3.5" />{t.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-slate-400 text-center mt-1.5 px-5">
+          {tab === TAB_DEPOSIT ? "Clears credit dues first — excess goes to wallet" : "Adds directly to wallet balance"}
+        </p>
+
         {/* Body */}
-        <div className="px-6 py-5 space-y-4">
-          {/* Customer Select */}
+        <div className="px-5 py-4 space-y-4">
+          {/* Customer */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Customer
-            </label>
-            <select
-              value={selectedCustomer}
-              onChange={(e) => { setSelectedCustomer(e.target.value); setAmount(""); }}
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            >
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Customer</label>
+            <select value={selectedCustomer} onChange={e => { setSelectedCustomer(e.target.value); setAmount(""); }}
+              className={inputCls + " appearance-none cursor-pointer"}>
               <option value="">Select customer...</option>
-              {creditCustomers.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name} — Owes {formatCurrency(c.creditBalance, settings.currency)}
-                </option>
-              ))}
+              {customers.map(c => {
+                const parts = [];
+                if (c.creditBalance > 0) parts.push(`Owes: ${formatCurrency(c.creditBalance, settings.currency)}`);
+                if (c.walletBalance > 0)  parts.push(`Wallet: ${formatCurrency(c.walletBalance, settings.currency)}`);
+                return <option key={c._id} value={c._id}>{c.name} ({c.phone}){parts.length ? ` | ${parts.join(" · ")}` : ""}</option>;
+              })}
             </select>
-            {creditCustomers.length === 0 && (
-              <p className="text-xs text-gray-500 mt-1">No customers with outstanding credit</p>
-            )}
           </div>
 
-          {/* Customer Info */}
+          {/* Current balances from backend */}
           {customer && (
-            <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-              <CreditCard className="w-5 h-5 text-amber-600 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-400">{customer.name}</p>
-                <p className="text-xs text-amber-600 dark:text-amber-500">
-                  Outstanding credit: {formatCurrency(customer.creditBalance, settings.currency)}
-                </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium">Owes (Credit)</p>
+                <p className="font-bold text-red-700 dark:text-red-300 mt-0.5">{formatCurrency(creditBalance, settings.currency)}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Wallet Balance</p>
+                <p className="font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">{formatCurrency(walletBalance, settings.currency)}</p>
               </div>
             </div>
           )}
 
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Deposit Amount ({settings.currency})
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter exact amount to deposit"
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
-            {customer && amount && parseFloat(amount) > 0 && (() => {
-              const dep = parseFloat(amount);
-              const excess = Math.max(0, dep - (customer.creditBalance || 0));
-              const remaining = Math.max(0, (customer.creditBalance || 0) - dep);
-              return (
-                <div className="mt-2 space-y-1">
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                    Credit after deposit: {formatCurrency(remaining, settings.currency)}
-                  </p>
-                  {excess > 0 && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400">
-                      {formatCurrency(excess, settings.currency)} will be added to wallet balance
-                    </p>
-                  )}
-                </div>
-              );
-            })()}
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Amount ({settings.currency})</label>
+            <input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Enter amount" className={inputCls} />
           </div>
+
+          {/* Preview (indicative only — backend is source of truth) */}
+          {dep > 0 && customer && (
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Expected result</p>
+              {tab === TAB_DEPOSIT && previewDeposit && (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Owes (Credit)</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 line-through">{formatCurrency(creditBalance, settings.currency)}</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <span className={`font-bold ${previewDeposit.newCredit === 0 ? "text-emerald-600" : "text-red-600"}`}>{formatCurrency(previewDeposit.newCredit, settings.currency)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Wallet</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400 line-through">{formatCurrency(walletBalance, settings.currency)}</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <span className="font-bold text-emerald-600">{formatCurrency(previewDeposit.newWallet, settings.currency)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+              {tab === TAB_WALLET && previewWallet && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">Wallet</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400 line-through">{formatCurrency(walletBalance, settings.currency)}</span>
+                    <ArrowRight className="w-3 h-3 text-slate-400" />
+                    <span className="font-bold text-emerald-600">{formatCurrency(previewWallet.newWallet, settings.currency)}</span>
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-slate-400 italic">Actual values confirmed by server after save</p>
+            </div>
+          )}
 
           {/* Note */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Note (optional)
-            </label>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Cash received in person"
-              className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-            />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Note (optional)</label>
+            <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Cash received in person" className={inputCls} />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3 rounded-b-2xl">
+        <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
           <ModernButton variant="secondary" onClick={handleClose}>Cancel</ModernButton>
-          <ModernButton
-            variant="primary"
-            onClick={handleDeposit}
-            loading={submitting}
-            disabled={!selectedCustomer || !amount || parseFloat(amount) <= 0}
-            icon={DollarSign}
-          >
-            Confirm Deposit
+          <ModernButton variant="primary" onClick={handleSubmit} loading={submitting}
+            disabled={!selectedCustomer || !dep || dep <= 0} icon={DollarSign}>
+            {tab === TAB_DEPOSIT ? "Confirm Deposit" : "Add to Wallet"}
           </ModernButton>
         </div>
       </div>

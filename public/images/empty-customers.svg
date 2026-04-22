@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#f8fafc"/>
+  <!-- Person 1 -->
+  <circle cx="170" cy="110" r="28" fill="#e2e8f0"/>
+  <rect x="145" y="148" width="50" height="55" rx="14" fill="#e2e8f0"/>
+  <!-- Person 2 -->
+  <circle cx="230" cy="115" r="24" fill="#cbd5e1"/>
+  <rect x="207" y="149" width="46" height="50" rx="12" fill="#cbd5e1"/>
+  <!-- Leaf -->
+  <path d="M200 220 C188 208 172 210 168 196 C180 184 200 192 200 220Z" fill="#10b981" opacity="0.25"/>
+  <line x1="200" y1="220" x2="200" y2="240" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <!-- Text lines -->
+  <rect x="130" y="250" width="140" height="11" rx="5.5" fill="#e2e8f0"/>
+  <rect x="155" y="268" width="90" height="9" rx="4.5" fill="#f1f5f9"/>
+</svg>

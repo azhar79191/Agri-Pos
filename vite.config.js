@@ -12,4 +12,24 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Charts (heaviest library)
+          'vendor-charts': ['recharts'],
+          // Framer motion
+          'vendor-motion': ['framer-motion'],
+          // Icons
+          'vendor-icons': ['lucide-react'],
+          // PDF/Excel utilities
+          'vendor-pdf': ['jspdf'],
+          'vendor-excel': ['exceljs'],
+        },
+      },
+    },
+  },
 })

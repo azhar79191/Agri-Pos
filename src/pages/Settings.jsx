@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Moon, Sun, Tag, Plus, X, Loader2 } from "lucide-react";
+import { Moon, Sun, Tag, Plus, X, Loader2, Palette, Sparkles } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import Card from "../components/ui/Card";
 import { getMyShop, addBrand, deleteBrand } from "../api/shopApi";
 
 const Settings = () => {
@@ -14,7 +13,7 @@ const Settings = () => {
   const [newBrand, setNewBrand] = useState("");
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [deletingBrand, setDeletingBrand] = useState(null); // track which brand is being deleted
+  const [deletingBrand, setDeletingBrand] = useState(null);
 
   useEffect(() => {
     getMyShop()
@@ -57,75 +56,78 @@ const Settings = () => {
     } finally { setDeletingBrand(null); }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") { e.preventDefault(); handleAddBrand(); }
-  };
+  const handleKeyDown = (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddBrand(); } };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="page-title">Settings</h1>
-        <p className="page-subtitle">Manage appearance and product brands</p>
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-up">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-glow-sm flex-shrink-0">
+          <Sparkles className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Settings</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage appearance and product brands</p>
+        </div>
       </div>
 
-      {/* Theme */}
-      <Card padding="lg">
+      {/* Theme Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-            {darkMode
-              ? <Moon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              : <Sun className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
+          <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+            <Palette className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Appearance</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Customize your interface theme</p>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Appearance</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Customize your interface theme</p>
           </div>
         </div>
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700">
+
+        <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            {darkMode
-              ? <Moon className="w-5 h-5 text-indigo-500" />
-              : <Sun className="w-5 h-5 text-amber-500" />}
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${darkMode ? "bg-indigo-100 dark:bg-indigo-900/30" : "bg-amber-100 dark:bg-amber-900/30"}`}>
+              {darkMode
+                ? <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                : <Sun className="w-4 h-4 text-amber-500" />}
+            </div>
             <div>
-              <p className="font-medium text-gray-900 dark:text-white text-sm">Dark Mode</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">Dark Mode</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {darkMode ? "Currently using dark theme" : "Currently using light theme"}
               </p>
             </div>
           </div>
           <button
             onClick={actions.toggleDarkMode}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${darkMode ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${darkMode ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"}`}
           >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${darkMode ? "translate-x-6" : "translate-x-1"}`} />
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${darkMode ? "translate-x-6" : "translate-x-1"}`} />
           </button>
         </div>
-      </Card>
+      </div>
 
-      {/* Brands */}
-      <Card padding="lg">
+      {/* Brands Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-            <Tag className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Product Brands</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Brands appear as a dropdown when adding or editing products
-            </p>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Product Brands</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Brands appear as a dropdown when adding products</p>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-8 gap-2 text-gray-400">
+          <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="text-sm">Loading...</span>
           </div>
         ) : !shop ? (
-          <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-            <Tag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">No shop found.</p>
-            <p className="text-xs text-gray-400 mt-1">Complete shop setup in <strong>My Shop</strong> first.</p>
+          <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <Tag className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">No shop found.</p>
+            <p className="text-xs text-slate-400 mt-1">Complete shop setup in <strong>My Shop</strong> first.</p>
           </div>
         ) : (
           <>
@@ -138,34 +140,30 @@ const Settings = () => {
                 onChange={e => setNewBrand(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g. Syngenta, Bayer, FMC, BASF..."
-                className="flex-1 px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                className="flex-1 px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
               />
               <button
                 onClick={handleAddBrand}
                 disabled={!newBrand.trim() || adding}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors shadow-glow-sm"
               >
-                {adding
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <Plus className="w-4 h-4" />}
+                {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Add
               </button>
             </div>
 
             {/* Brands list */}
             {brands.length === 0 ? (
-              <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                <p className="text-sm text-gray-400 dark:text-gray-500">
-                  No brands yet. Type a brand name above and press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Enter</kbd> or click Add.
+              <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                <p className="text-sm text-slate-400 dark:text-slate-500">
+                  No brands yet. Type a brand name above and press{" "}
+                  <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs font-mono">Enter</kbd> or click Add.
                 </p>
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {brands.map(brand => (
-                  <span
-                    key={brand}
-                    className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-full text-sm font-medium"
-                  >
+                  <span key={brand} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-full text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors group">
                     {brand}
                     <button
                       onClick={() => handleDeleteBrand(brand)}
@@ -182,12 +180,12 @@ const Settings = () => {
               </div>
             )}
 
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-              {brands.length} brand{brands.length !== 1 ? "s" : ""} registered · Changes save instantly to database
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">
+              {brands.length} brand{brands.length !== 1 ? "s" : ""} registered · Changes save instantly
             </p>
           </>
         )}
-      </Card>
+      </div>
     </div>
   );
 };

@@ -260,7 +260,7 @@ const Dashboard = () => {
 
               <p className="text-slate-400 text-sm font-medium mb-1">{greeting()},</p>
               <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight mb-2">
-                {currentUser?.name?.split(" ")[0] || "Welcome"}
+                {currentUser?.name|| "Welcome"}
               </h1>
               <p className="text-slate-400 text-sm max-w-md leading-relaxed">
                 Here is your business overview for{" "}

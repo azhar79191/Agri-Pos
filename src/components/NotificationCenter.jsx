@@ -45,6 +45,17 @@ const NotificationCenter = () => {
   const [showDeposit, setShowDeposit] = useState(false);
   const [fetching, setFetching] = useState(false);
   const hasFetched = useRef(false);
+  const panelRef = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!showPanel) return;
+    const handler = (e) => {
+      if (panelRef.current && !panelRef.current.contains(e.target)) setShowPanel(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showPanel]);
 
   // Fetch from backend API
   const loadNotifications = useCallback(async () => {
@@ -166,7 +177,7 @@ const NotificationCenter = () => {
         </button>
 
         {/* Bell */}
-        <div className="relative">
+        <div className="relative" ref={panelRef}>
           <button
             onClick={() => setShowPanel(p => !p)}
             className="p-2.5 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all relative"
@@ -179,7 +190,6 @@ const NotificationCenter = () => {
 
           {showPanel && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowPanel(false)} />
               <div className="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden flex flex-col max-h-[32rem]">
 
                 {/* Header */}

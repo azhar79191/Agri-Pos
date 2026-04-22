@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Package, Plus, Minus, Edit3, History, AlertTriangle, Lock } from "lucide-react";
+import { Package, Plus, Minus, Edit3, History, AlertTriangle, Lock, TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useStock } from "../hooks/useStock";
 import { useProducts } from "../context/ProductsContext";
-import Card from "../components/ui/Card";
 
 const StockManagement = () => {
   const { actions, state } = useApp();
@@ -24,83 +23,69 @@ const StockManagement = () => {
     fetchProducts();
     fetchLogs();
     fetchAlerts();
-    fetchLevels().then((data) => { if (data) setStockLevels(data); }).catch(() => {});
+    fetchLevels().then(data => { if (data) setStockLevels(data); }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStockAdjustment = async () => {
-    if (!isAdmin) {
-      actions.showToast({ message: "Only admin can adjust stock", type: "error" });
-      return;
-    }
+    if (!isAdmin) { actions.showToast({ message: "Only admin can adjust stock", type: "error" }); return; }
     if (!selectedProduct || !quantity || !reason) return;
     setSubmitting(true);
     try {
-      await adjust({
-        product: selectedProduct,
-        action: adjustmentType,
-        quantity: parseInt(quantity),
-        reason,
-      });
+      await adjust({ product: selectedProduct, action: adjustmentType, quantity: parseInt(quantity), reason });
       actions.showToast({ message: "Stock adjusted successfully", type: "success" });
-      fetchLogs();
-      fetchAlerts();
-      fetchLevels().then((data) => { if (data) setStockLevels(data); }).catch(() => {});
-      setSelectedProduct(null);
-      setQuantity("");
-      setReason("");
+      fetchLogs(); fetchAlerts();
+      fetchLevels().then(data => { if (data) setStockLevels(data); }).catch(() => {});
+      setSelectedProduct(null); setQuantity(""); setReason("");
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Adjustment failed", type: "error" });
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
   const displayLevels = stockLevels.length > 0 ? stockLevels : products;
 
+  const inputCls = "w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 animate-fade-up">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Stock Management</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            <span>Monitor and adjust inventory levels</span>
-            {!isAdmin && (
-              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-sm">
-                <Lock className="w-3 h-3" />
-                View Only
-              </span>
-            )}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-glow-sm">
+            <Package className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Management</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              Monitor and adjust inventory levels
+              {!isAdmin && <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><Lock className="w-3 h-3" />View Only</span>}
+            </p>
+          </div>
         </div>
       </div>
 
+      {/* View-only notice */}
       {!isAdmin && (
-        <Card padding="md" className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-amber-900 dark:text-amber-300">View Only Access</h3>
-              <p className="text-sm text-amber-700 dark:text-amber-400">Only administrators can adjust stock levels. You can view current stock and history.</p>
-            </div>
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+            <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-        </Card>
+          <div>
+            <p className="font-semibold text-amber-900 dark:text-amber-300 text-sm">View Only Access</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400">Only administrators can adjust stock levels.</p>
+          </div>
+        </div>
       )}
 
+      {/* Low stock alerts */}
       {alerts.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            <h3 className="font-medium text-red-800 dark:text-red-400">Low Stock Alert</h3>
+        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <p className="font-semibold text-red-800 dark:text-red-300 text-sm">{alerts.length} products running low on stock</p>
           </div>
-          <p className="text-red-700 dark:text-red-300 text-sm mb-3">
-            {alerts.length} products are running low on stock
-          </p>
           <div className="flex flex-wrap gap-2">
-            {alerts.map((product) => (
-              <span key={product._id} className="bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 px-2 py-1 rounded text-xs">
+            {alerts.map(product => (
+              <span key={product._id} className="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
                 {product.name} ({product.stock} left)
               </span>
             ))}
@@ -109,46 +94,40 @@ const StockManagement = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Adjustment Panel */}
         {isAdmin && (
-          <Card padding="lg" className="shadow-xl">
-            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
-              <Edit3 className="w-5 h-5 text-emerald-600" />
-              Stock Adjustment
-            </h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Stock Adjustment</h2>
+            </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Product</label>
-                <select
-                  value={selectedProduct || ""}
-                  onChange={(e) => setSelectedProduct(e.target.value)}
-                  className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 transition-all"
-                >
+                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Product</label>
+                <select value={selectedProduct || ""} onChange={e => setSelectedProduct(e.target.value)} className={inputCls}>
                   <option value="">Select Product</option>
-                  {products.map((product) => (
-                    <option key={product._id} value={product._id}>
-                      {product.name} (Current: {product.stock})
-                    </option>
-                  ))}
+                  {products.map(p => <option key={p._id} value={p._id}>{p.name} (Current: {p.stock})</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Action</label>
-                <div className="flex gap-2">
+                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Action</label>
+                <div className="grid grid-cols-3 gap-2">
                   {[
-                    { value: "add", label: "Add Stock", icon: Plus },
-                    { value: "remove", label: "Remove Stock", icon: Minus },
-                    { value: "set", label: "Set Stock", icon: Edit3 },
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      onClick={() => setAdjustmentType(value)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    { value: "add", label: "Add Stock", icon: Plus, color: "emerald" },
+                    { value: "remove", label: "Remove", icon: Minus, color: "red" },
+                    { value: "set", label: "Set Level", icon: Edit3, color: "blue" },
+                  ].map(({ value, label, icon: Icon, color }) => (
+                    <button key={value} onClick={() => setAdjustmentType(value)}
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all ${
                         adjustmentType === value
-                          ? "bg-emerald-500 text-white shadow-lg"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
-                    >
+                          ? color === "emerald" ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
+                          : color === "red" ? "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
+                          : "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
+                          : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                      }`}>
                       <Icon className="w-4 h-4" />{label}
                     </button>
                   ))}
@@ -156,112 +135,107 @@ const StockManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">
                   {adjustmentType === "set" ? "New Stock Level" : "Quantity"}
                 </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 transition-all"
-                  placeholder="Enter quantity"
-                />
+                <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} className={inputCls} placeholder="Enter quantity" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Reason</label>
-                <input
-                  type="text"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 transition-all"
-                  placeholder="Enter reason for adjustment"
-                />
+                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Reason</label>
+                <input type="text" value={reason} onChange={e => setReason(e.target.value)} className={inputCls} placeholder="Enter reason for adjustment" />
               </div>
 
               <button
                 onClick={handleStockAdjustment}
                 disabled={!selectedProduct || !quantity || !reason || submitting}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 px-4 rounded-xl font-medium transition-all shadow-lg disabled:shadow-none"
+                className="w-full py-2.5 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed transition-all shadow-glow-sm disabled:shadow-none"
               >
                 {submitting ? "Applying..." : "Apply Adjustment"}
               </button>
             </div>
-          </Card>
+          </div>
         )}
 
-        <Card padding="lg" className={`shadow-xl ${!isAdmin ? "lg:col-span-2" : ""}`}>
-          <div className="flex items-center gap-2 mb-4">
-            <History className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Stock History</h2>
+        {/* Stock History */}
+        <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6 ${!isAdmin ? "lg:col-span-2" : ""}`}>
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <History className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Recent Stock History</h2>
           </div>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">Loading...</p>
+              <p className="text-slate-500 dark:text-slate-400 text-center py-8 text-sm">Loading...</p>
             ) : logs.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">No stock history available</p>
+              <div className="text-center py-10">
+                <History className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <p className="text-slate-500 dark:text-slate-400 text-sm">No stock history available</p>
+              </div>
             ) : (
               logs.slice(0, 10).map((entry, i) => (
-                <div key={entry._id || i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{entry.productName || entry.product?.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {entry.type === "add" ? "Added" : entry.type === "remove" ? "Removed" : "Adjusted"} {entry.quantity} units
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500">{entry.reason} • {entry.createdAt?.split("T")[0]}</p>
+                <div key={entry._id || i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${entry.type === "add" ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
+                      {entry.type === "add" ? <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-white text-sm">{entry.productName || entry.product?.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{entry.reason} · {entry.createdAt?.split("T")[0]}</p>
+                    </div>
                   </div>
-                  <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    entry.type === "add"
-                      ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-400"
-                      : "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 dark:from-red-900/30 dark:to-rose-900/30 dark:text-red-400"
-                  }`}>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${entry.type === "add" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
                     {entry.type === "add" ? "+" : "-"}{entry.quantity}
-                  </div>
+                  </span>
                 </div>
               ))
             )}
           </div>
-        </Card>
+        </div>
       </div>
 
-      <Card padding="lg" className="shadow-xl">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
-          <Package className="w-5 h-5 text-emerald-600" />
-          Current Stock Levels
-        </h2>
+      {/* Stock Levels Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+          <BarChart2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <h2 className="font-bold text-slate-900 dark:text-white text-sm">Current Stock Levels</h2>
+          <span className="ml-auto text-xs text-slate-400">{displayLevels.length} products</span>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-premium">
             <thead>
-              <tr className="border-b-2 border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Product</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Current Stock</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Unit</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+              <tr>
+                {["Product", "Current Stock", "Unit", "Status"].map(h => (
+                  <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody>
-              {displayLevels.map((product) => (
-                <tr key={product._id || product.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">{product.name}</td>
-                  <td className="py-3 px-4 text-gray-900 dark:text-white font-semibold">{product.stock}</td>
-                  <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{product.unit}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      product.stock <= 5
-                        ? "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 dark:from-red-900/30 dark:to-rose-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
-                        : product.stock <= 20
-                        ? "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
-                        : "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
-                    }`}>
-                      {product.stock <= 5 ? "Low Stock" : product.stock <= 20 ? "Medium" : "Good Stock"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {displayLevels.map(product => {
+                const status = product.stock <= 5 ? "low" : product.stock <= 20 ? "medium" : "good";
+                return (
+                  <tr key={product._id || product.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{product.name}</td>
+                    <td className="px-4 py-3.5 font-bold text-slate-900 dark:text-white">{product.stock}</td>
+                    <td className="px-4 py-3.5 text-sm text-slate-500 dark:text-slate-400">{product.unit}</td>
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        status === "low" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                        status === "medium" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${status === "low" ? "bg-red-500" : status === "medium" ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        {status === "low" ? "Low Stock" : status === "medium" ? "Medium" : "Good Stock"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

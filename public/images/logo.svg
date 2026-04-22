@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="40" fill="url(#g1)"/>
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+  </defs>
+  <!-- Leaf/sprout icon -->
+  <path d="M100 155 C100 155 100 110 100 95" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  <path d="M100 120 C85 105 65 108 60 90 C75 75 100 85 100 120Z" fill="white" opacity="0.9"/>
+  <path d="M100 105 C115 90 135 93 140 75 C125 60 100 70 100 105Z" fill="white" opacity="0.7"/>
+  <!-- Dots -->
+  <circle cx="60" cy="155" r="5" fill="white" opacity="0.4"/>
+  <circle cx="140" cy="155" r="5" fill="white" opacity="0.4"/>
+  <circle cx="100" cy="160" r="5" fill="white" opacity="0.6"/>
+</svg>

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
-  getCustomers, createCustomer, updateCustomer,
+  getCustomers, getCustomer, createCustomer, updateCustomer,
   deleteCustomer, updateCustomerCredit,
 } from "../api/customersApi";
 
@@ -24,6 +24,16 @@ export function CustomersProvider({ children }) {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Re-fetch a single customer from backend and update in local list
+  const refreshCustomer = useCallback(async (id) => {
+    try {
+      const res = await getCustomer(id);
+      const updated = res.data.data?.customer ?? res.data.data;
+      setCustomers(prev => prev.map(c => c._id === id ? updated : c));
+      return updated;
+    } catch { /* silent */ }
   }, []);
 
   const addCustomer = async (data) => {
@@ -50,7 +60,7 @@ export function CustomersProvider({ children }) {
   };
 
   return (
-    <CustomersContext.Provider value={{ customers, loading, error, fetchCustomers, addCustomer, editCustomer, removeCustomer, editCredit }}>
+    <CustomersContext.Provider value={{ customers, loading, error, fetchCustomers, refreshCustomer, addCustomer, editCustomer, removeCustomer, editCredit }}>
       {children}
     </CustomersContext.Provider>
   );

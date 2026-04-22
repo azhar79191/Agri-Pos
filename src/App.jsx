@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import Sidebar from "./components/Sidebar";
@@ -6,23 +6,31 @@ import Header from "./components/Header";
 import Toast from "./components/ui/Toast";
 import ConfirmToast from "./components/ui/ConfirmToast";
 
-// Pages
+// Eager — tiny, needed immediately
 import Login from "./pages/Login";
 import RegisterShop from "./pages/RegisterShop";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Customers from "./pages/Customers";
-import POS from "./pages/POS";
-import Reports from "./pages/Reports";
-import Settings from "./pages/Settings";
-import StockManagement from "./pages/StockManagement";
-import UserManagement from "./pages/UserManagement";
-import InvoiceManagement from "./pages/InvoiceManagement";
-import StatusManagement from "./pages/StatusManagement";
-import ProfileSettings from "./pages/ProfileSettings";
-import ShopManagement from "./pages/ShopManagement";
-import SetupWizard from "./pages/SetupWizard";
-import CustomerStatement from "./pages/CustomerStatement";
+
+// Lazy — code-split heavy pages
+const Dashboard        = lazy(() => import("./pages/Dashboard"));
+const Products         = lazy(() => import("./pages/Products"));
+const Customers        = lazy(() => import("./pages/Customers"));
+const POS              = lazy(() => import("./pages/POS"));
+const Reports          = lazy(() => import("./pages/Reports"));
+const Settings         = lazy(() => import("./pages/Settings"));
+const StockManagement  = lazy(() => import("./pages/StockManagement"));
+const UserManagement   = lazy(() => import("./pages/UserManagement"));
+const InvoiceManagement= lazy(() => import("./pages/InvoiceManagement"));
+const StatusManagement = lazy(() => import("./pages/StatusManagement"));
+const ProfileSettings  = lazy(() => import("./pages/ProfileSettings"));
+const ShopManagement   = lazy(() => import("./pages/ShopManagement"));
+const SetupWizard      = lazy(() => import("./pages/SetupWizard"));
+const CustomerStatement= lazy(() => import("./pages/CustomerStatement"));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const AppLayout = () => {
   const { state, actions } = useApp();
@@ -35,23 +43,25 @@ const AppLayout = () => {
         <Header />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 mt-16 lg:mt-0">
           <div className="max-w-7xl mx-auto page-enter">
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/pos" element={<POS />} />
-              <Route path="/invoices" element={<InvoiceManagement />} />
-              <Route path="/status" element={<StatusManagement />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/stock" element={<StockManagement />} />
-              <Route path="/users" element={<UserManagement />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/profile" element={<ProfileSettings />} />
-              <Route path="/shops" element={<ShopManagement />} />
-              <Route path="/customers/:id/statement" element={<CustomerStatement />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/pos" element={<POS />} />
+                <Route path="/invoices" element={<InvoiceManagement />} />
+                <Route path="/status" element={<StatusManagement />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/stock" element={<StockManagement />} />
+                <Route path="/users" element={<UserManagement />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/shops" element={<ShopManagement />} />
+                <Route path="/customers/:id/statement" element={<CustomerStatement />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </Suspense>
           </div>
         </main>
       </div>
@@ -73,17 +83,13 @@ const AppLayout = () => {
 const AppContent = () => {
   const { state } = useApp();
   const { isAuthenticated, currentUser } = state;
-
   const path = window.location.pathname;
 
-  // Not logged in — only allow /register (public shop registration)
   if (!isAuthenticated) {
     if (path === "/register") return <RegisterShop />;
     return <Login />;
   }
 
-  // Logged-in admin with no shop → let them register one
-  // Also allow /register explicitly so they can reach it from Login page link
   const needsSetup = currentUser?.role === "admin" && !currentUser?.shop;
   if (needsSetup || path === "/register") return <RegisterShop />;
 

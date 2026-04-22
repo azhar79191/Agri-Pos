@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <rect width="400" height="300" fill="#f8fafc"/>
+  <!-- Cart body -->
+  <path d="M120 100 L135 170 L275 170 L285 115 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <!-- Cart handle -->
+  <path d="M105 85 L120 100" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="105" cy="82" r="8" fill="#cbd5e1"/>
+  <!-- Wheels -->
+  <circle cx="165" cy="188" r="14" fill="#cbd5e1" stroke="#94a3b8" stroke-width="3"/>
+  <circle cx="245" cy="188" r="14" fill="#cbd5e1" stroke="#94a3b8" stroke-width="3"/>
+  <circle cx="165" cy="188" r="5" fill="#94a3b8"/>
+  <circle cx="245" cy="188" r="5" fill="#94a3b8"/>
+  <!-- Leaf inside cart -->
+  <path d="M200 155 C190 143 175 145 172 133 C182 122 200 130 200 155Z" fill="#10b981" opacity="0.3"/>
+  <path d="M200 148 C210 136 225 138 228 126 C218 115 200 123 200 148Z" fill="#10b981" opacity="0.2"/>
+  <line x1="200" y1="155" x2="200" y2="168" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+  <!-- Text -->
+  <rect x="140" y="215" width="120" height="11" rx="5.5" fill="#e2e8f0"/>
+  <rect x="160" y="233" width="80" height="9" rx="4.5" fill="#f1f5f9"/>
+</svg>

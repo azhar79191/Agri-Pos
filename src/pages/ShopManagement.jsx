@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Building2, Camera, Save, Phone, Mail, MapPin, Percent, DollarSign, FileText, Users, Plus, Eye, EyeOff, X } from "lucide-react";
+import { Building2, Camera, Save, Phone, Mail, MapPin, Percent, DollarSign, FileText, Users, Plus, Eye, EyeOff, X, Store } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import Card from "../components/ui/Card";
 import ModernButton from "../components/ui/ModernButton";
 import { getMyShop, createShop, updateShop, getShopUsers, addUserToShop } from "../api/shopApi";
 
 const emptyUserForm = { name: "", email: "", phone: "", password: "", role: "cashier" };
 
+const inputCls = "w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
+
+const roleConfig = {
+  admin:   "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  manager: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  cashier: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+};
+
 const ShopManagement = () => {
   const { state, actions } = useApp();
-  const { user, refreshProfile } = useAuth();
+  const { refreshProfile } = useAuth();
   const logoInputRef = useRef(null);
 
   const [shop, setShop] = useState(null);
@@ -25,7 +32,6 @@ const ShopManagement = () => {
     receiptFooter: "Thank you for your purchase!",
   });
 
-  // Users tab
   const [shopUsers, setShopUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
@@ -39,16 +45,7 @@ const ShopManagement = () => {
         const s = res.data.data?.shop;
         if (s) {
           setShop(s);
-          setForm({
-            name: s.name || "",
-            address: s.address || "",
-            phone: s.phone || "",
-            email: s.email || "",
-            taxRate: s.taxRate?.toString() || "5",
-            currency: s.currency || "Rs.",
-            logo: s.logo || "",
-            receiptFooter: s.receiptFooter || "Thank you for your purchase!",
-          });
+          setForm({ name: s.name || "", address: s.address || "", phone: s.phone || "", email: s.email || "", taxRate: s.taxRate?.toString() || "5", currency: s.currency || "Rs.", logo: s.logo || "", receiptFooter: s.receiptFooter || "Thank you for your purchase!" });
           setLogoPreview(s.logo || "");
         }
       })
@@ -56,16 +53,12 @@ const ShopManagement = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (activeTab === "users" && shop) loadUsers();
-  }, [activeTab, shop]);
+  useEffect(() => { if (activeTab === "users" && shop) loadUsers(); }, [activeTab, shop]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadUsers = async () => {
     setUsersLoading(true);
-    try {
-      const res = await getShopUsers(shop._id);
-      setShopUsers(res.data.data?.users || []);
-    } catch { setShopUsers([]); }
+    try { const res = await getShopUsers(shop._id); setShopUsers(res.data.data?.users || []); }
+    catch { setShopUsers([]); }
     finally { setUsersLoading(false); }
   };
 
@@ -84,26 +77,10 @@ const ShopManagement = () => {
     try {
       const payload = { ...form, taxRate: parseFloat(form.taxRate) || 0 };
       let updatedShop;
-      if (shop) {
-        const res = await updateShop(shop._id, payload);
-        updatedShop = res.data.data?.shop;
-      } else {
-        const res = await createShop(payload);
-        updatedShop = res.data.data?.shop;
-      }
+      if (shop) { const res = await updateShop(shop._id, payload); updatedShop = res.data.data?.shop; }
+      else { const res = await createShop(payload); updatedShop = res.data.data?.shop; }
       setShop(updatedShop);
-      // Sync to AppContext settings so receipt shows correct data
-      actions.updateSettings({
-        shopName: updatedShop.name,
-        taxRate: updatedShop.taxRate,
-        currency: updatedShop.currency,
-        address: updatedShop.address,
-        phone: updatedShop.phone,
-        email: updatedShop.email,
-        shopLogo: updatedShop.logo,
-        receiptFooter: updatedShop.receiptFooter,
-      });
-      // Refresh profile so user.shop is updated
+      actions.updateSettings({ shopName: updatedShop.name, taxRate: updatedShop.taxRate, currency: updatedShop.currency, address: updatedShop.address, phone: updatedShop.phone, email: updatedShop.email, shopLogo: updatedShop.logo, receiptFooter: updatedShop.receiptFooter });
       const updated = await refreshProfile?.();
       if (updated) actions.login(updated.email, null, { ...updated, shop: updatedShop });
       actions.showToast({ message: "Shop saved successfully", type: "success" });
@@ -113,41 +90,48 @@ const ShopManagement = () => {
   };
 
   const handleAddUser = async () => {
-    if (!userForm.name || !userForm.email || !userForm.password) {
-      actions.showToast({ message: "Name, email and password are required", type: "error" }); return;
-    }
+    if (!userForm.name || !userForm.email || !userForm.password) { actions.showToast({ message: "Name, email and password are required", type: "error" }); return; }
     setAddingUser(true);
     try {
       const res = await addUserToShop(shop._id, userForm);
       setShopUsers(prev => [...prev, res.data.data?.user]);
       actions.showToast({ message: "User added successfully", type: "success" });
-      setShowAddUser(false);
-      setUserForm(emptyUserForm);
+      setShowAddUser(false); setUserForm(emptyUserForm);
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Failed to add user", type: "error" });
     } finally { setAddingUser(false); }
   };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   const tabs = [
     { id: "info", label: "Shop Info", icon: Building2 },
     { id: "users", label: "Team Members", icon: Users },
   ];
 
-  if (loading) return <div className="text-center py-16 text-gray-500">Loading shop...</div>;
-
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="page-title">My Shop</h1>
-        <p className="page-subtitle">Manage your shop information and team</p>
+    <div className="max-w-3xl mx-auto space-y-6 animate-fade-up">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-glow-sm">
+          <Store className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">My Shop</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage your shop information and team</p>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActiveTab(id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === id ? "bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+              activeTab === id ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
             }`}>
             <Icon className="w-4 h-4" />{label}
           </button>
@@ -156,150 +140,128 @@ const ShopManagement = () => {
 
       {/* Shop Info Tab */}
       {activeTab === "info" && (
-        <Card padding="lg">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
           {/* Logo */}
-          <div className="flex items-center gap-5 mb-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-5 mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <label className="relative cursor-pointer group flex-shrink-0">
-              <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-emerald-400 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
-                {logoPreview
-                  ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain" />
-                  : <Building2 className="w-10 h-10 text-gray-300" />}
+              <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 group-hover:border-emerald-400 bg-slate-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden transition-colors">
+                {logoPreview ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain" /> : <Building2 className="w-10 h-10 text-slate-300 dark:text-slate-600" />}
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 hover:bg-emerald-600 rounded-xl flex items-center justify-center shadow transition-colors">
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 hover:bg-emerald-600 rounded-xl flex items-center justify-center shadow-glow-sm transition-colors">
                 <Camera className="w-4 h-4 text-white" />
               </div>
               <input type="file" accept="image/*" className="hidden" ref={logoInputRef} onChange={handleLogo} />
             </label>
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white text-lg">{form.name || "Your Shop Name"}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Click the camera to upload your shop logo</p>
-              <p className="text-xs text-gray-400 mt-1">PNG or JPG, max 2MB. Shown on receipts.</p>
+              <p className="font-bold text-slate-900 dark:text-white text-lg">{form.name || "Your Shop Name"}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Click the camera to upload your shop logo</p>
+              <p className="text-xs text-slate-400 mt-1">PNG or JPG, max 2MB. Shown on receipts.</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Shop Name <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Shop Name <span className="text-red-500">*</span></label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. AgroCare Pesticides"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. AgroCare Pesticides" className={inputCls} />
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Phone</label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="+92 300 0000000"
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+              {[
+                { label: "Phone", key: "phone", type: "tel", icon: Phone, placeholder: "+92 300 0000000" },
+                { label: "Email", key: "email", type: "email", icon: Mail, placeholder: "shop@example.com" },
+              ].map(({ label, key, type, icon: Icon, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>
+                  <div className="relative">
+                    <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input type={type} value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} className={inputCls} />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} placeholder="shop@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
-                </div>
-              </div>
+              ))}
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Address</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Address</label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <textarea value={form.address} rows={2} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Shop address"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none" />
+                <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <textarea value={form.address} rows={2} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Shop address" className={inputCls + " resize-none"} />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tax Rate (%)</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tax Rate (%)</label>
                 <div className="relative">
-                  <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input type="number" min="0" max="100" value={form.taxRate} onChange={e => setForm(p => ({ ...p, taxRate: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                  <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input type="number" min="0" max="100" value={form.taxRate} onChange={e => setForm(p => ({ ...p, taxRate: e.target.value }))} className={inputCls} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Currency</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Currency</label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={inputCls + " appearance-none"}>
                     {["Rs.", "₹", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Receipt Footer</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Receipt Footer</label>
               <div className="relative">
-                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input value={form.receiptFooter} onChange={e => setForm(p => ({ ...p, receiptFooter: e.target.value }))} placeholder="Thank you for your purchase!"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input value={form.receiptFooter} onChange={e => setForm(p => ({ ...p, receiptFooter: e.target.value }))} placeholder="Thank you for your purchase!" className={inputCls} />
               </div>
             </div>
-
             <div className="flex justify-end pt-2">
               <ModernButton variant="primary" onClick={handleSave} loading={saving} icon={Save}>
                 {shop ? "Save Changes" : "Create Shop"}
               </ModernButton>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Users Tab */}
       {activeTab === "users" && (
-        <Card padding="lg">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Team Members</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{shopUsers.length} member{shopUsers.length !== 1 ? "s" : ""}</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Team Members</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{shopUsers.length} member{shopUsers.length !== 1 ? "s" : ""}</p>
             </div>
             <ModernButton variant="primary" size="sm" icon={Plus} onClick={() => setShowAddUser(true)}>Add Member</ModernButton>
           </div>
 
           {usersLoading ? (
-            <p className="text-center text-gray-400 py-8 text-sm">Loading...</p>
+            <p className="text-center text-slate-400 py-8 text-sm">Loading...</p>
           ) : shopUsers.length === 0 ? (
-            <div className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-              <Users className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No team members yet</p>
+            <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+              <Users className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm text-slate-500">No team members yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {shopUsers.map(u => (
-                <div key={u._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{u.name?.[0]?.toUpperCase()}</span>
+                <div key={u._id} className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-sm">{u.name?.[0]?.toUpperCase()}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{u.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{u.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{u.email}</p>
                   </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    u.role === "admin" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" :
-                    u.role === "manager" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
-                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  }`}>{u.role}</span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${roleConfig[u.role] || roleConfig.cashier}`}>{u.role}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Add User inline form */}
           {showAddUser && (
-            <div className="mt-5 p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="mt-5 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">New Team Member</p>
-                <button onClick={() => { setShowAddUser(false); setUserForm(emptyUserForm); }} className="text-gray-400 hover:text-gray-600">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">New Team Member</p>
+                <button onClick={() => { setShowAddUser(false); setUserForm(emptyUserForm); }} className="text-slate-400 hover:text-slate-600 transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -310,25 +272,25 @@ const ShopManagement = () => {
                   { label: "Phone", key: "phone", type: "tel" },
                 ].map(({ label, key, type }) => (
                   <div key={key} className={key === "name" ? "col-span-2 sm:col-span-1" : ""}>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{label}</label>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">{label}</label>
                     <input type={type} value={userForm[key]} onChange={e => setUserForm(p => ({ ...p, [key]: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
                   </div>
                 ))}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Password *</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>
                   <div className="relative">
                     <input type={showPassword ? "text" : "password"} value={userForm.password} onChange={e => setUserForm(p => ({ ...p, password: e.target.value }))}
-                      className="w-full px-3 py-2 pr-8 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
-                    <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                      className="w-full px-3 py-2 pr-8 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
+                    <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400">
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Role</label>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Role</label>
                   <select value={userForm.role} onChange={e => setUserForm(p => ({ ...p, role: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm">
                     <option value="manager">Manager</option>
                     <option value="cashier">Cashier</option>
                   </select>
@@ -340,7 +302,7 @@ const ShopManagement = () => {
               </div>
             </div>
           )}
-        </Card>
+        </div>
       )}
     </div>
   );

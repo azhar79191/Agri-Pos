@@ -60,11 +60,11 @@ const ModernModal = ({
 
       {/* Modal */}
       <div
-        className={`relative z-[10000] w-full ${sizes[size]} overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl`}
+        className={`relative z-[10000] w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center gap-4">
             {Icon && (
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconColors[iconColor]}`}>
@@ -87,13 +87,13 @@ const ModernModal = ({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 max-h-[60vh] overflow-y-auto">
+        <div className="px-6 py-5 overflow-y-auto flex-1">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex-shrink-0">
             {footer}
           </div>
         )}

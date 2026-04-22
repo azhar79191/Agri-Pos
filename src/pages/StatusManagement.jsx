@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import { 
-  Settings, 
-  Search, 
-  Filter, 
-  FileText, 
-  Receipt, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  X,
-  Calendar,
-  User,
-  DollarSign
-} from "lucide-react";
+import { Search, FileText, Receipt, Clock, CheckCircle, AlertCircle, X, Calendar, User, DollarSign, ChevronDown, Activity } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import StatusManagement from "../components/StatusManagement";
+
+const statusConfig = {
+  Completed:  { cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", dot: "bg-emerald-500" },
+  Pending:    { cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   dot: "bg-amber-500" },
+  Processing: { cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",       dot: "bg-blue-500" },
+  Cancelled:  { cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",           dot: "bg-red-500" },
+};
+
+const selectCls = "appearance-none pl-3.5 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all cursor-pointer";
 
 const StatusManagementPage = () => {
   const { state } = useApp();
@@ -23,251 +19,142 @@ const StatusManagementPage = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
-  // Combine transactions and invoices
   const allItems = [
-    ...transactions.map(transaction => ({
-      ...transaction,
-      type: "transaction",
-      customerName: transaction.customerName || "Walk-in Customer"
-    })),
-    ...invoices.map(invoice => ({
-      ...invoice,
-      type: "invoice"
-    }))
+    ...transactions.map(t => ({ ...t, type: "transaction", customerName: t.customerName || "Walk-in Customer" })),
+    ...invoices.map(i => ({ ...i, type: "invoice" })),
   ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Filter items
   const filteredItems = allItems.filter(item => {
-    const matchesSearch = 
-      item.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.customerName.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch =
+      item.id?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.customerName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || item.status === filterStatus;
     const matchesType = filterType === "all" || item.type === filterType;
-    
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const formatCurrency = (amount) => `Rs ${amount.toFixed(2)}`;
-  const formatDate = (date) => new Date(date).toLocaleDateString('en-PK');
-
-  const getStatusStats = () => {
-    const stats = {
-      total: allItems.length,
-      pending: allItems.filter(item => item.status === "Pending").length,
-      completed: allItems.filter(item => item.status === "Completed").length,
-      cancelled: allItems.filter(item => item.status === "Cancelled").length,
-      processing: allItems.filter(item => item.status === "Processing").length
-    };
-    return stats;
+  const stats = {
+    total: allItems.length,
+    pending: allItems.filter(i => i.status === "Pending").length,
+    completed: allItems.filter(i => i.status === "Completed").length,
+    cancelled: allItems.filter(i => i.status === "Cancelled").length,
+    processing: allItems.filter(i => i.status === "Processing").length,
   };
 
-  const stats = getStatusStats();
-
-  const getTypeIcon = (type) => {
-    return type === "invoice" ? FileText : Receipt;
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "text-emerald-600 bg-emerald-100";
-      case "Pending":
-        return "text-yellow-600 bg-yellow-100";
-      case "Cancelled":
-        return "text-red-600 bg-red-100";
-      case "Processing":
-        return "text-blue-600 bg-blue-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
-  };
+  const fmt = (amount) => `Rs ${(amount || 0).toFixed(2)}`;
+  const fmtDate = (date) => date ? new Date(date).toLocaleDateString("en-PK") : "—";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-            <Settings className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Status Management</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage invoice and transaction statuses</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-glow-sm">
+          <Activity className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Status Management</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage invoice and transaction statuses</p>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Items</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {[
+          { label: "Total", value: stats.total, icon: FileText, cls: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-800" },
+          { label: "Pending", value: stats.pending, icon: Clock, cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+          { label: "Completed", value: stats.completed, icon: CheckCircle, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+          { label: "Processing", value: stats.processing, icon: AlertCircle, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
+          { label: "Cancelled", value: stats.cancelled, icon: X, cls: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" },
+        ].map(({ label, value, icon: Icon, cls, bg }, i) => (
+          <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
+                <p className={`text-2xl font-bold mt-1 ${cls}`}>{value}</p>
+              </div>
+              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
+                <Icon className={`w-4 h-4 ${cls}`} />
+              </div>
             </div>
-            <FileText className="w-8 h-8 text-gray-500" />
           </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-            </div>
-            <Clock className="w-8 h-8 text-yellow-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-bold text-emerald-600">{stats.completed}</p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Processing</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
-            </div>
-            <AlertCircle className="w-8 h-8 text-blue-500" />
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled</p>
-              <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
-            </div>
-            <X className="w-8 h-8 text-red-500" />
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by ID or customer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white outline-none"
-            />
-          </div>
-          
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-          >
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input type="text" placeholder="Search by ID or customer..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
+        </div>
+        <div className="relative">
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
             <option value="all">All Status</option>
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
           </select>
-          
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-          >
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
             <option value="all">All Types</option>
             <option value="invoice">Invoices</option>
             <option value="transaction">Transactions</option>
           </select>
-          
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-xl transition-colors">
-            <Filter className="w-4 h-4" />
-            Advanced Filter
-          </button>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
       </div>
 
-      {/* Items Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      {/* Table */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+          <table className="w-full table-premium">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  ID & Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Actions
-                </th>
+                {["ID & Type", "Customer", "Date", "Amount", "Status", "Actions"].map(h => (
+                  <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredItems.map((item) => {
-                const TypeIcon = getTypeIcon(item.type);
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {filteredItems.map(item => {
+                const TypeIcon = item.type === "invoice" ? FileText : Receipt;
+                const sc = statusConfig[item.status] || statusConfig.Pending;
                 return (
-                  <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          item.type === "invoice" ? "bg-blue-100 text-blue-600" : "bg-emerald-100 text-emerald-600"
-                        }`}>
+                  <tr key={`${item.type}-${item.id}`} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === "invoice" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"}`}>
                           <TypeIcon className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">#{item.id}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{item.type}</p>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">#{item.id}</p>
+                          <p className="text-xs text-slate-400 capitalize">{item.type}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-900 dark:text-white">{item.customerName}</span>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+                        <User className="w-3.5 h-3.5 text-slate-400" />{item.customerName}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-900 dark:text-white">{formatDate(item.date)}</span>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />{fmtDate(item.date)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {formatCurrency(item.grandTotal)}
-                        </span>
-                      </div>
+                    <td className="px-4 py-3.5">
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{fmt(item.grandTotal)}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusManagement 
-                        item={item} 
-                        type={item.type}
-                      />
+                    <td className="px-4 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${sc.cls}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{item.status}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <button className="text-purple-600 hover:text-purple-900 dark:hover:text-purple-400">
-                        View Details
-                      </button>
+                    <td className="px-4 py-3.5">
+                      <StatusManagement item={item} type={item.type} />
                     </td>
                   </tr>
                 );
@@ -275,20 +162,17 @@ const StatusManagementPage = () => {
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Empty State */}
-      {filteredItems.length === 0 && (
-        <div className="text-center py-12">
-          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No items found</h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            {searchTerm || filterStatus !== "all" || filterType !== "all" 
-              ? "Try adjusting your search or filters" 
-              : "No invoices or transactions available"}
-          </p>
-        </div>
-      )}
+        {filteredItems.length === 0 && (
+          <div className="text-center py-14">
+            <Activity className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p className="font-semibold text-slate-500 dark:text-slate-400">No items found</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+              {searchTerm || filterStatus !== "all" || filterType !== "all" ? "Try adjusting your filters" : "No invoices or transactions available"}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
