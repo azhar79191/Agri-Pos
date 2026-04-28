@@ -156,6 +156,14 @@ const Dashboard = () => {
   const totalCustomers = dashboardData?.customers?.total || 0;
   const recentInvoices = dashboardData?.recentInvoices || [];
 
+  // Expiring within 30 days
+  const expiringProducts = useMemo(() => {
+    const items = dashboardData?.products?.items || [];
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() + 30);
+    return items.filter(p => p.expiryDate && new Date(p.expiryDate) <= cutoff && new Date(p.expiryDate) >= new Date());
+  }, [dashboardData]);
+
   const categoryData = useMemo(() => {
     const dist = dashboardData?.categoryDistribution;
     if (!dist) return [];
@@ -171,7 +179,14 @@ const Dashboard = () => {
   };
 
   const now = new Date();
-  const timeStr = now.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" });
+  const [timeStr, setTimeStr] = useState(() => now.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }));
+
+  // Live clock — updates every minute
+  useEffect(() => {
+    const tick = () => setTimeStr(new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }));
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
 
   const columns = [
     {
@@ -309,6 +324,15 @@ const Dashboard = () => {
                   {lowStock} low stock {lowStock === 1 ? "item" : "items"} — View
                 </div>
               )}
+              {expiringProducts.length > 0 && (
+                <div
+                  onClick={() => navigate("/products")}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-semibold cursor-pointer hover:bg-red-500/20 transition-colors"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {expiringProducts.length} expiring in 30 days — View
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -320,6 +344,23 @@ const Dashboard = () => {
         {canProducts && <QuickBtn icon={Package}      label="Products"    sub="Manage inventory" color="slate"   onClick={() => navigate("/products")} delay={80} />}
         {canReports  && <QuickBtn icon={BarChart3}    label="Reports"     sub="View analytics"   color="blue"    onClick={() => navigate("/reports")}  delay={160} />}
       </div>
+
+      {/* ── ONBOARDING EMPTY STATE ── */}
+      {!loading && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
+        <div className="card-base p-8 text-center animate-fade-up">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4 shadow-glow">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Welcome to AgroCare POS!</h3>
+          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-6">
+            Your shop is set up and ready. Start by adding your products, then make your first sale.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {canProducts && <QuickBtn icon={Package} label="Add Products" sub="Build your inventory" color="emerald" onClick={() => navigate("/products")} />}
+            {canPOS && <QuickBtn icon={ShoppingCart} label="Make a Sale" sub="Open POS" color="blue" onClick={() => navigate("/pos")} />}
+          </div>
+        </div>
+      )}
 
       {/* ── STAT CARDS ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

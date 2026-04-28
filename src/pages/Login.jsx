@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Sprout, Eye, EyeOff, Lock, Mail, ArrowRight, User, Phone, Loader2, Sparkles, Shield, BarChart3, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -101,7 +101,7 @@ const Login = () => {
               <Sprout className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-lg tracking-tight leading-none">AgroCare POS</p>
+              <p className="font-bold text-white text-lg tracking-tight leading-none">CropNest POS</p>
               <p className="text-[11px] text-emerald-400/70 mt-0.5 tracking-widest uppercase">Pesticide Management</p>
             </div>
           </div>

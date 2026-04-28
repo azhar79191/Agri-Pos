@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, Package, Search, ChevronDown } from "lucide-react";
+import { Plus, Minus, Package, Search, ChevronDown, Clock } from "lucide-react";
 import { formatCurrency, isOutOfStock, isLowStock } from "../../utils/helpers";
 
 const categoryColors = {
@@ -23,8 +23,31 @@ const cardVariants = {
 const ProductGrid = ({
   products, cart, categories, searchTerm, selectedCategory,
   onSearchChange, onCategoryChange, onAddToCart, onUpdateQuantity, currency,
+  recentProducts = [],
 }) => (
   <div className="space-y-4">
+    {/* Recently sold quick-add chips */}
+    {recentProducts.length > 0 && !searchTerm && (
+      <div className="flex flex-wrap gap-2">
+        <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <Clock className="w-3 h-3" />Recent:
+        </span>
+        {recentProducts.slice(0, 6).map(p => {
+          const inCart = cart.find(i => i.productId === p._id);
+          return (
+            <button key={p._id} onClick={() => onAddToCart(p)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
+                inCart
+                  ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700"
+                  : "bg-white dark:bg-[#122b1c] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-emerald-900/20 hover:border-emerald-400 hover:text-emerald-600"
+              }`}>
+              <Plus className="w-3 h-3" />{p.name}
+              {inCart && <span className="font-bold">×{inCart.quantity}</span>}
+            </button>
+          );
+        })}
+      </div>
+    )}
     {/* Search + Filter */}
     <motion.div
       initial={{ opacity: 0, y: 10 }}
