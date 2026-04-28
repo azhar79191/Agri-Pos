@@ -1,7 +1,17 @@
 import React, { useEffect } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from "lucide-react";
+import { useApp } from "../../context/AppContext";
+
+const FIXED_COLORS = {
+  error:   "#ef4444",
+  warning: "#f59e0b",
+  info:    "#3b82f6",
+};
 
 const Toast = ({ message, type = "info", onClose, duration = 3000, position = "bottom-right" }) => {
+  const { state } = useApp();
+  const tc = FIXED_COLORS[type] || (state.themeColor || "#10b981");
+
   useEffect(() => {
     if (duration && onClose) {
       const timer = setTimeout(onClose, duration);
@@ -9,40 +19,24 @@ const Toast = ({ message, type = "info", onClose, duration = 3000, position = "b
     }
   }, [duration, onClose]);
 
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    warning: AlertTriangle,
-    info: Info
-  };
-
-  const styles = {
-    success: "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/30",
-    error: "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-red-500/30",
-    warning: "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-amber-500/30",
-    info: "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-blue-500/30"
-  };
-
+  const icons = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info };
   const positions = {
     "bottom-right": "fixed bottom-6 right-6 z-[9999]",
     "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999]"
   };
-
   const Icon = icons[type];
 
   return (
     <div className={`${positions[position]} animate-toast-in`}>
       <div
-        className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-sm min-w-[320px] max-w-md ${styles[type]}`}
+        className="flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-sm min-w-[320px] max-w-md text-white"
+        style={{ background: `linear-gradient(135deg, ${tc}, ${tc}cc)` }}
       >
         <div className="p-2 bg-white/20 rounded-xl">
           <Icon className="w-5 h-5 flex-shrink-0" />
         </div>
         <p className="text-sm font-medium flex-1">{message}</p>
-        <button
-          onClick={onClose}
-          className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-        >
+        <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>

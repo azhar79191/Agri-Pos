@@ -3,11 +3,22 @@ import { Moon, Sun, Tag, Plus, X, Loader2, Palette, Sparkles, Save, DollarSign, 
 import { useApp } from "../context/AppContext";
 import { getMyShop, addBrand, deleteBrand, updateShop } from "../api/shopApi";
 
+const THEME_PRESETS = [
+  { label: "Emerald",  color: "#10b981" },
+  { label: "Sky",      color: "#0ea5e9" },
+  { label: "Violet",   color: "#8b5cf6" },
+  { label: "Rose",     color: "#f43f5e" },
+  { label: "Amber",    color: "#f59e0b" },
+  { label: "Orange",   color: "#f97316" },
+  { label: "Teal",     color: "#14b8a6" },
+  { label: "Indigo",   color: "#6366f1" },
+];
+
 const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
 
 const Settings = () => {
   const { state, actions } = useApp();
-  const { darkMode } = state;
+  const { darkMode, themeColor } = state;
   const inputRef = useRef(null);
 
   const [shop, setShop] = useState(null);
@@ -108,7 +119,41 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Theme Card */}
+        {/* Theme Color Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${themeColor}22` }}>
+              <Palette className="w-4 h-4" style={{ color: themeColor }} />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">Theme Color</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Choose your accent color across the app</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {THEME_PRESETS.map(({ label, color }) => (
+              <button
+                key={color}
+                title={label}
+                onClick={() => actions.setThemeColor(color)}
+                className="w-8 h-8 rounded-full border-2 transition-all hover:scale-110"
+                style={{ background: color, borderColor: themeColor === color ? color : "transparent", boxShadow: themeColor === color ? `0 0 0 3px ${color}44` : "none" }}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-slate-600 dark:text-slate-400 font-medium">Custom:</label>
+            <input
+              type="color"
+              value={themeColor}
+              onChange={e => actions.setThemeColor(e.target.value)}
+              className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer p-0.5 bg-white dark:bg-slate-800"
+            />
+            <span className="text-sm font-mono text-slate-500 dark:text-slate-400">{themeColor}</span>
+          </div>
+        </div>
+
+        {/* Theme Card */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
@@ -221,7 +266,8 @@ const Settings = () => {
               <button
                 onClick={handleSaveShop}
                 disabled={savingShop}
-                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors shadow-glow-sm"
+                className="flex items-center gap-2 px-5 py-2.5 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors shadow-glow-sm"
+                style={{ background: themeColor }}
               >
                 {savingShop ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Settings

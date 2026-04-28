@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Trash2, X, Banknote, CreditCard, Smartphone, Receipt, ChevronDown, User, PauseCircle, UserPlus, Percent, Hash } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import Input from "../ui/Input";
+import { useApp } from "../../context/AppContext";
 
 const itemVariants = {
   hidden: { opacity: 0, x: 20, height: 0 },
@@ -25,7 +26,12 @@ const CartPanel = ({
   onRemoveItem, onUpdateQuantity, onClearCart,
   onHoldSale, onShowHeld, heldCount,
   onCheckout, currency, taxRate,
-}) => (
+}) => {
+  const { state } = useApp();
+  const tc = state.themeColor || "#10b981";
+  const tcA = (a) => `${tc}${Math.round(a * 255).toString(16).padStart(2, "0")}`;
+
+  return (
   <motion.div
     initial={{ opacity: 0, x: 30 }}
     animate={{ opacity: 1, x: 0 }}
@@ -35,13 +41,14 @@ const CartPanel = ({
     {/* Header */}
     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-emerald-900/15">
       <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${tc}, ${tcA(0.7)})` }}>
           <ShoppingCart className="w-3.5 h-3.5 text-white" />
         </div>
         <h2 className="font-bold text-slate-900 dark:text-white text-sm">Cart</h2>
         {cart.length > 0 && (
           <motion.span key={cart.length} initial={{ scale: 1.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
+            className="w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+            style={{ background: tc }}>
             {cart.length}
           </motion.span>
         )}
@@ -162,7 +169,7 @@ const CartPanel = ({
               </div>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+              <div className="flex justify-between text-xs font-medium" style={{ color: tc }}>
                 <span>Discount applied</span>
                 <span>− {formatCurrency(discountAmount, currency)}</span>
               </div>
@@ -181,7 +188,8 @@ const CartPanel = ({
           <motion.div layout className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-emerald-900/20">
             <span className="font-bold text-slate-900 dark:text-white text-sm">{cartCalculations.balanceUsed > 0 ? "Payable" : "Total"}</span>
             <motion.span key={cartCalculations.payableAmount} initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              className="text-xl font-extrabold"
+              style={{ color: tc }}>
               {formatCurrency(cartCalculations.payableAmount, currency)}
             </motion.span>
           </motion.div>
@@ -194,11 +202,15 @@ const CartPanel = ({
                 const active = paymentMethod === method.id;
                 return (
                   <motion.button key={method.id} whileTap={{ scale: 0.94 }} onClick={() => onPaymentMethodChange(method.id)}
-                    className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${
-                      active ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 shadow-sm"
-                             : "border-slate-200 dark:border-emerald-900/20 text-slate-600 dark:text-slate-400 hover:border-slate-300"
-                    }`}>
-                    <method.icon className={`w-4 h-4 ${active ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`} />
+                    className="flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 text-xs font-semibold transition-all"
+                    style={active ? {
+                      borderColor: tc,
+                      background: tcA(0.12),
+                      color: tc,
+                    } : {
+                      borderColor: "transparent",
+                    }}>
+                    <method.icon className="w-4 h-4" style={{ color: active ? tc : undefined }} />
                     {method.label}
                   </motion.button>
                 );
@@ -216,7 +228,8 @@ const CartPanel = ({
                     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                       className="flex justify-between text-sm p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800">
                       <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Change</span>
-                      <span className={`font-bold text-xs ${change >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600"}`}>
+                      <span className={`font-bold text-xs ${change >= 0 ? "" : "text-red-600"}`}
+                style={change >= 0 ? { color: tc } : {}}>
                         {formatCurrency(change >= 0 ? change : 0, currency)}
                       </span>
                     </motion.div>
@@ -237,9 +250,10 @@ const CartPanel = ({
           </AnimatePresence>
 
           {/* Checkout */}
-          <motion.button whileHover={{ scale: 1.02, boxShadow: "0 8px 25px rgba(16,185,129,0.4)" }} whileTap={{ scale: 0.97 }}
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
             onClick={onCheckout} disabled={cart.length === 0 || checkoutLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-glow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            style={{ background: `linear-gradient(135deg, ${tc}, ${tcA(0.8)})`, boxShadow: `0 4px 15px ${tcA(0.4)}` }}>
             {checkoutLoading ? (
               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
                 className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
@@ -261,6 +275,7 @@ const CartPanel = ({
       )}
     </AnimatePresence>
   </motion.div>
-);
+  );
+};
 
 export default CartPanel;

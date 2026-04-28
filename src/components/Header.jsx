@@ -22,7 +22,7 @@ const PAGE_TITLES = {
 
 const Header = () => {
   const { state, actions } = useApp();
-  const { darkMode, cart, currentUser } = state;
+  const { darkMode, cart, currentUser, themeColor = "#10b981" } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
@@ -50,7 +50,8 @@ const Header = () => {
     currentUser?.avatar ? (
       <img src={currentUser.avatar} alt={currentUser.name} className={`${size} rounded-xl object-contain`} loading="eager" decoding="sync" style={{ imageRendering: "crisp-edges" }} />
     ) : (
-      <div className={`${size} rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm`}>
+      <div className={`${size} rounded-xl flex items-center justify-center text-white font-bold text-sm`}
+        style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}bb)` }}>
         {initial}
       </div>
     );
@@ -103,7 +104,8 @@ const Header = () => {
         {page === "pos" && cartCount > 0 && (
           <button
             onClick={() => actions.setPage("pos")}
-            className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-sm font-semibold shadow-glow-sm hover:shadow-glow transition-all duration-200 hover:scale-105"
+            className="flex items-center gap-1.5 px-3 py-2 text-white rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-105"
+            style={{ background: themeColor, boxShadow: `0 0 12px ${themeColor}55` }}
           >
             <Store style={{ width: "15px", height: "15px" }} />
             <span>{cartCount}</span>

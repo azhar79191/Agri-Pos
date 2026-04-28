@@ -7,6 +7,7 @@
 /* ── CSS Variables ── */
 @layer base {
   :root {
+    --pos-primary: #10b981;
     --background: 220 20% 97%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
@@ -413,6 +414,20 @@ textarea:focus {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── Dynamic theme color utilities ── */
+.btn-primary {
+  background-color: var(--pos-primary);
+  color: white;
+  transition: filter 0.2s ease;
+}
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-primary:disabled { opacity: 0.5; }
+
+.ring-primary { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-primary) 30%, transparent); }
+.border-primary { border-color: var(--pos-primary); }
+.text-primary { color: var(--pos-primary); }
+.bg-primary-soft { background-color: color-mix(in srgb, var(--pos-primary) 12%, transparent); }
 
 /* ── Print ── */
 @media print {

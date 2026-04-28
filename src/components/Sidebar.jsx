@@ -21,26 +21,15 @@ const menuItems = [
   { id: "settings",  label: "Settings",    icon: Settings,        permission: "settings" },
 ];
 
-/* Icon accent colors per route — gives each item its own personality */
-const iconAccents = {
-  dashboard: "text-emerald-400",
-  pos:       "text-amber-400",
-  products:  "text-teal-400",
-  customers: "text-sky-400",
-  invoices:  "text-violet-400",
-  reports:   "text-purple-400",
-  stock:     "text-orange-400",
-  users:     "text-rose-400",
-  shops:     "text-cyan-400",
-  settings:  "text-slate-400",
-};
-
 const Sidebar = () => {
   const { state, actions } = useApp();
-  const { currentUser, sidebarCollapsed } = state;
+  const { currentUser, sidebarCollapsed, themeColor = "#10b981" } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const tc = themeColor;
+  const tcAlpha = (a) => `${tc}${Math.round(a * 255).toString(16).padStart(2, "0")}`;
 
   const visible = currentUser
     ? menuItems.filter(i => actions.hasPermission(i.permission))
@@ -64,11 +53,14 @@ const Sidebar = () => {
     currentUser?.avatar ? (
       <img
         src={currentUser.avatar} alt={currentUser.name}
-        className={`${size} rounded-xl object-cover ring-2 ring-emerald-400/40 shadow-lg`}
+        className={`${size} rounded-xl object-cover shadow-lg`}
         loading="eager" decoding="sync"
       />
     ) : (
-      <div className={`${size} rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold text-sm ring-2 ring-emerald-400/30 shadow-lg shadow-emerald-900/40`}>
+      <div
+        className={`${size} rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg`}
+        style={{ background: `linear-gradient(135deg, ${tc}, ${tcAlpha(0.7)})` }}
+      >
         {initial}
       </div>
     );
@@ -78,14 +70,14 @@ const Sidebar = () => {
     userRole?.color === "blue"   ? "text-sky-300 bg-sky-500/15 border-sky-400/25" :
                                    "text-emerald-300 bg-emerald-500/15 border-emerald-400/25";
 
-  /* ── Logo block ── */
   const LogoBlock = () => (
-    <div className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden shadow-lg shadow-emerald-900/50 bg-white">
+    <div className="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden shadow-lg bg-white">
       {state.settings?.shopLogo ? (
         <img src={state.settings.shopLogo} alt={state.settings.shopName}
           className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center"
+          style={{ background: `linear-gradient(135deg, ${tc}, ${tcAlpha(0.7)})` }}>
           <Sprout className="w-5 h-5 text-white" />
         </div>
       )}
@@ -98,7 +90,7 @@ const Sidebar = () => {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3"
         style={{
           background: "linear-gradient(90deg, #052e1c 0%, #063d26 100%)",
-          borderBottom: "1px solid rgba(16,185,129,0.15)",
+          borderBottom: `1px solid ${tcAlpha(0.2)}`,
           boxShadow: "0 2px 20px rgba(0,0,0,0.4)"
         }}
       >
@@ -108,7 +100,8 @@ const Sidebar = () => {
               <img src={state.settings.shopLogo} alt={state.settings.shopName}
                 className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center"
+                style={{ background: `linear-gradient(135deg, ${tc}, ${tcAlpha(0.7)})` }}>
                 <Sprout className="w-4 h-4 text-white" />
               </div>
             )}
@@ -117,12 +110,13 @@ const Sidebar = () => {
             <span className="font-bold text-white text-sm tracking-tight leading-none block">
               {state.settings?.shopName || "AgroCare"}
             </span>
-            <span className="text-[10px] text-emerald-400/70 tracking-widest uppercase">POS</span>
+            <span className="text-[10px] tracking-widest uppercase" style={{ color: tcAlpha(0.7) }}>POS</span>
           </div>
         </div>
         <button
           onClick={() => setIsMobileOpen(v => !v)}
-          className="p-2 rounded-lg text-emerald-400/70 hover:text-emerald-300 hover:bg-emerald-500/10 transition-all duration-200"
+          className="p-2 rounded-lg transition-all duration-200"
+          style={{ color: tcAlpha(0.7) }}
         >
           {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -147,21 +141,22 @@ const Sidebar = () => {
 
         {/* ── Header / Logo ── */}
         <div className="h-16 flex items-center justify-between px-4 flex-shrink-0"
-          style={{ borderBottom: "1px solid rgba(16,185,129,0.1)" }}>
+          style={{ borderBottom: `1px solid ${tcAlpha(0.12)}` }}>
           <div className="flex items-center gap-3 overflow-hidden">
             <LogoBlock />
             <div className={["overflow-hidden transition-all duration-300", sidebarCollapsed ? "lg:w-0 lg:opacity-0" : "w-auto opacity-100"].join(" ")}>
               <p className="font-bold text-white text-sm whitespace-nowrap tracking-tight leading-none">
                 {state.settings?.shopName || "AgroCare POS"}
               </p>
-              <p className="text-[10px] text-emerald-400/60 whitespace-nowrap mt-0.5 tracking-widest uppercase">
+              <p className="text-[10px] whitespace-nowrap mt-0.5 tracking-widest uppercase" style={{ color: tcAlpha(0.5) }}>
                 Agri Management
               </p>
             </div>
           </div>
           <button
             onClick={actions.toggleSidebar}
-            className="hidden lg:flex p-1.5 rounded-lg text-emerald-600/60 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-200 flex-shrink-0"
+            className="hidden lg:flex p-1.5 rounded-lg transition-all duration-200 flex-shrink-0"
+            style={{ color: tcAlpha(0.5) }}
           >
             {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
@@ -169,7 +164,7 @@ const Sidebar = () => {
 
         {/* ── User card ── */}
         <div className={["px-3 py-3 flex-shrink-0", sidebarCollapsed ? "lg:px-2" : ""].join(" ")}
-          style={{ borderBottom: "1px solid rgba(16,185,129,0.08)" }}>
+          style={{ borderBottom: `1px solid ${tcAlpha(0.08)}` }}>
           {sidebarCollapsed ? (
             <div className="hidden lg:flex justify-center">
               <Avatar size="w-9 h-9" />
@@ -177,8 +172,8 @@ const Sidebar = () => {
           ) : (
             <div className="flex items-center gap-3 p-2.5 rounded-xl"
               style={{
-                background: "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(5,150,105,0.06) 100%)",
-                border: "1px solid rgba(16,185,129,0.15)"
+                background: `linear-gradient(135deg, ${tcAlpha(0.12)} 0%, ${tcAlpha(0.06)} 100%)`,
+                border: `1px solid ${tcAlpha(0.18)}`
               }}>
               <Avatar size="w-9 h-9" />
               <div className="flex-1 min-w-0">
@@ -187,18 +182,17 @@ const Sidebar = () => {
                   {userRole?.label || "User"}
                 </span>
               </div>
-              {/* Online dot */}
-              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.8)] flex-shrink-0 animate-pulse" />
+              <div className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse"
+                style={{ background: tc, boxShadow: `0 0 6px ${tc}cc` }} />
             </div>
           )}
         </div>
 
         {/* ── Navigation ── */}
         <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-
-          {/* Section label */}
           {!sidebarCollapsed && (
-            <p className="text-[9px] font-bold text-emerald-600/50 uppercase tracking-[0.15em] px-3 pb-2 pt-1">
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] px-3 pb-2 pt-1"
+              style={{ color: tcAlpha(0.4) }}>
               Navigation
             </p>
           )}
@@ -206,7 +200,6 @@ const Sidebar = () => {
           {visible.map((item) => {
             const Icon = item.icon;
             const active = location.pathname === `/${item.id}`;
-            const accentColor = iconAccents[item.id] || "text-slate-400";
 
             return (
               <button
@@ -214,51 +207,46 @@ const Sidebar = () => {
                 onClick={() => go(item.id)}
                 title={sidebarCollapsed ? item.label : ""}
                 className={[
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
-                  active
-                    ? "nav-active nav-active-glow text-white"
-                    : "text-emerald-100/40 hover:text-white border border-transparent hover:border-emerald-500/15 hover:bg-emerald-500/8",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative border",
                   sidebarCollapsed && "lg:justify-center lg:px-2"
                 ].join(" ")}
+                style={active ? {
+                  background: `linear-gradient(135deg, ${tcAlpha(0.22)}, ${tcAlpha(0.12)})`,
+                  border: `1px solid ${tcAlpha(0.35)}`,
+                  boxShadow: `0 2px 16px ${tcAlpha(0.15)}`,
+                  color: "white"
+                } : {
+                  border: "1px solid transparent",
+                  color: "rgba(255,255,255,0.35)"
+                }}
               >
-                {/* Active left bar */}
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full"
+                    style={{ background: tc, boxShadow: `0 0 8px ${tc}cc` }} />
                 )}
 
                 <Icon
-                  className={[
-                    "flex-shrink-0 transition-all duration-200",
-                    active ? accentColor + " drop-shadow-[0_0_6px_rgba(16,185,129,0.6)]" : "text-emerald-700/70 group-hover:" + accentColor.replace("text-", "")
-                  ].join(" ")}
-                  style={{ width: "18px", height: "18px" }}
+                  className="flex-shrink-0 transition-all duration-200"
+                  style={{ width: "18px", height: "18px", color: active ? tc : undefined }}
                 />
 
                 <span className={[
                   "whitespace-nowrap transition-all duration-300 font-medium",
                   sidebarCollapsed ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : "opacity-100",
-                  active ? "text-white" : "text-emerald-100/50 group-hover:text-white"
                 ].join(" ")}>
                   {item.label}
                 </span>
 
-                {/* Active dot indicator */}
                 {active && !sidebarCollapsed && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.9)] flex-shrink-0" />
-                )}
-
-                {/* Hover shimmer line */}
-                {!active && (
-                  <span className="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: tc, boxShadow: `0 0 6px ${tc}` }} />
                 )}
               </button>
             );
           })}
 
-          {/* Divider */}
-          <div className="my-3 mx-2" style={{ borderTop: "1px solid rgba(16,185,129,0.08)" }} />
+          <div className="my-3 mx-2" style={{ borderTop: `1px solid ${tcAlpha(0.08)}` }} />
 
-          {/* Logout */}
           <button
             onClick={logout}
             title={sidebarCollapsed ? "Logout" : ""}
@@ -268,9 +256,7 @@ const Sidebar = () => {
               sidebarCollapsed && "lg:justify-center lg:px-2"
             ].join(" ")}
           >
-            <LogOut
-              className="w-[18px] h-[18px] flex-shrink-0 text-emerald-700/50 group-hover:text-red-400 transition-colors duration-200"
-            />
+            <LogOut className="w-[18px] h-[18px] flex-shrink-0 text-emerald-700/50 group-hover:text-red-400 transition-colors duration-200" />
             <span className={[
               "whitespace-nowrap transition-all duration-300",
               sidebarCollapsed ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : "opacity-100"
@@ -283,13 +269,13 @@ const Sidebar = () => {
         {/* ── Footer ── */}
         {!sidebarCollapsed && (
           <div className="px-4 py-3 flex-shrink-0"
-            style={{ borderTop: "1px solid rgba(16,185,129,0.08)" }}>
+            style={{ borderTop: `1px solid ${tcAlpha(0.08)}` }}>
             <div className="flex items-center justify-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
-              <p className="text-[10px] text-emerald-700/60 tracking-widest uppercase font-medium">
+              <div className="w-1 h-1 rounded-full" style={{ background: tcAlpha(0.4) }} />
+              <p className="text-[10px] tracking-widest uppercase font-medium" style={{ color: tcAlpha(0.5) }}>
                 v2.0 · {state.settings?.shopName || "AgroCare"}
               </p>
-              <div className="w-1 h-1 rounded-full bg-emerald-500/50" />
+              <div className="w-1 h-1 rounded-full" style={{ background: tcAlpha(0.4) }} />
             </div>
           </div>
         )}

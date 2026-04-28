@@ -9,12 +9,14 @@ const _savedUser = (() => {
 })();
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
 const _savedDarkMode = localStorage.getItem("posDarkMode") === "true";
+const _savedThemeColor = localStorage.getItem("posThemeColor") || "#10b981";
 const _savedCart = (() => {
   try { return JSON.parse(sessionStorage.getItem("posCart") || "[]"); } catch { return []; }
 })();
 
-// Apply dark class before React renders
+// Apply dark class and theme color before React renders
 if (_savedDarkMode) document.documentElement.classList.add("dark");
+document.documentElement.style.setProperty("--pos-primary", _savedThemeColor);
 
 const initialState = {
   currentUser: _savedUser || null,
@@ -22,6 +24,7 @@ const initialState = {
   cart: _savedCart,
   currentPage: "dashboard",
   darkMode: _savedDarkMode,
+  themeColor: _savedThemeColor,
   toast: null,
   modal: null,
   sidebarCollapsed: false,
@@ -43,7 +46,7 @@ const A = {
   TOGGLE_SIDEBAR: "TOGGLE_SIDEBAR", ADD_TO_CART: "ADD_TO_CART",
   UPDATE_CART_QUANTITY: "UPDATE_CART_QUANTITY", REMOVE_FROM_CART: "REMOVE_FROM_CART",
   CLEAR_CART: "CLEAR_CART", UPDATE_SETTINGS: "UPDATE_SETTINGS",
-  SET_DARK_MODE: "SET_DARK_MODE", SHOW_TOAST: "SHOW_TOAST", HIDE_TOAST: "HIDE_TOAST",
+  SET_DARK_MODE: "SET_DARK_MODE", SET_THEME_COLOR: "SET_THEME_COLOR", SHOW_TOAST: "SHOW_TOAST", HIDE_TOAST: "HIDE_TOAST",
   SHOW_MODAL: "SHOW_MODAL", HIDE_MODAL: "HIDE_MODAL", UPDATE_USER: "UPDATE_USER",
 };
 
@@ -80,6 +83,8 @@ function appReducer(state, action) {
       return { ...state, settings: { ...state.settings, ...action.payload } };
     case A.SET_DARK_MODE:
       return { ...state, darkMode: action.payload };
+    case A.SET_THEME_COLOR:
+      return { ...state, themeColor: action.payload };
     case A.SHOW_TOAST:
       return { ...state, toast: action.payload };
     case A.HIDE_TOAST:
@@ -107,6 +112,12 @@ export function AppProvider({ children }) {
     localStorage.setItem("posDarkMode", state.darkMode);
     document.documentElement.classList.toggle("dark", state.darkMode);
   }, [state.darkMode]);
+
+  // Theme color side-effect
+  useEffect(() => {
+    localStorage.setItem("posThemeColor", state.themeColor);
+    document.documentElement.style.setProperty("--pos-primary", state.themeColor);
+  }, [state.themeColor]);
 
   // Persist user
   useEffect(() => {
@@ -206,6 +217,7 @@ export function AppProvider({ children }) {
 
     updateSettings: (settings) => dispatch({ type: A.UPDATE_SETTINGS, payload: settings }),
     toggleDarkMode: () => dispatch({ type: A.SET_DARK_MODE, payload: !stateRef.current.darkMode }),
+    setThemeColor: (color) => dispatch({ type: A.SET_THEME_COLOR, payload: color }),
 
     showToast: (toast) => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);

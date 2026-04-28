@@ -28,7 +28,7 @@ const CustomerStatement = lazy(() => import("./pages/CustomerStatement"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
-    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--pos-primary) transparent transparent transparent" }} />
   </div>
 );
 
@@ -48,7 +48,8 @@ class ErrorBoundary extends Component {
         </div>
         <button
           onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
-          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold transition-colors"
+          className="px-4 py-2 text-white rounded-xl text-sm font-semibold transition-colors"
+          style={{ background: "var(--pos-primary)" }}
         >
           Reload Page
         </button>
