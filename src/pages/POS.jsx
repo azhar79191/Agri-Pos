@@ -53,7 +53,7 @@ const POS = () => {
   const [recentProducts, setRecentProducts] = useState(() => getRecentProducts());
   // Quick customer add
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
-  const [quickCustomerForm, setQuickCustomerForm] = useState({ name: "", phone: "" });
+  const [quickCustomerForm, setQuickCustomerForm] = useState({ name: "", phone: "", address: "" });
   const [addingCustomer, setAddingCustomer] = useState(false);
 
   // Keyboard shortcuts
@@ -183,14 +183,14 @@ const POS = () => {
     }
     setAddingCustomer(true);
     try {
-      const res = await addCustomer({ name: quickCustomerForm.name, phone: quickCustomerForm.phone, address: "" });
+      const res = await addCustomer({ name: quickCustomerForm.name, phone: quickCustomerForm.phone, address: quickCustomerForm.address || "N/A" });
       const newCustomer = res?._id ? res : res?.data?.data;
       if (newCustomer?._id) {
         setSelectedCustomer(newCustomer._id);
         actions.showToast({ message: `${newCustomer.name} added and selected`, type: "success" });
       }
       setShowQuickCustomer(false);
-      setQuickCustomerForm({ name: "", phone: "" });
+      setQuickCustomerForm({ name: "", phone: "", address: "" });
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Failed to add customer", type: "error" });
     } finally { setAddingCustomer(false); }
@@ -361,6 +361,12 @@ const POS = () => {
               placeholder="Phone number"
               value={quickCustomerForm.phone}
               onChange={e => setQuickCustomerForm(p => ({ ...p, phone: e.target.value }))}
+              className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-emerald-900/30 rounded-xl bg-white dark:bg-[#122b1c] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
+            />
+            <input
+              placeholder="Address (optional)"
+              value={quickCustomerForm.address}
+              onChange={e => setQuickCustomerForm(p => ({ ...p, address: e.target.value }))}
               onKeyDown={e => e.key === "Enter" && handleQuickAddCustomer()}
               className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-emerald-900/30 rounded-xl bg-white dark:bg-[#122b1c] text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
             />
