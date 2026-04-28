@@ -22,7 +22,7 @@ const CartPanel = ({
   discount, onDiscountChange, paymentMethod, onPaymentMethodChange,
   cashReceived, onCashReceivedChange, cartCalculations, change,
   needsCashInput, isOnline, checkoutLoading,
-  onRemoveItem, onClearCart, onCheckout,
+  onRemoveItem, onUpdateQuantity, onClearCart, onCheckout,
   currency, taxRate,
 }) => (
   <motion.div
@@ -109,26 +109,51 @@ const CartPanel = ({
               animate="visible"
               exit="exit"
               layout
-              className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors group"
+              className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors"
             >
+              {/* Name + unit price */}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{item.name}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {formatCurrency(item.price, currency)} × {item.quantity}
+                  {formatCurrency(item.price, currency)} each
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                  {formatCurrency(item.price * item.quantity, currency)}
-                </span>
-                <motion.button
-                  whileTap={{ scale: 0.8 }}
-                  onClick={() => onRemoveItem(item.productId)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </motion.button>
+
+              {/* Qty stepper */}
+              <div className="flex items-center gap-0.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 flex-shrink-0">
+                <button
+                  onClick={() => item.quantity <= 1 ? onRemoveItem(item.productId) : onUpdateQuantity(item.productId, item.quantity - 1)}
+                  className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors font-bold text-base rounded-l-lg"
+                >−</button>
+                <input
+                  type="number"
+                  min="1"
+                  value={item.quantity}
+                  onChange={e => {
+                    const v = parseInt(e.target.value);
+                    if (v > 0) onUpdateQuantity(item.productId, v);
+                  }}
+                  className="w-8 text-center text-xs font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none"
+                />
+                <button
+                  onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
+                  className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-colors font-bold text-base rounded-r-lg"
+                >+</button>
               </div>
+
+              {/* Line total */}
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm w-16 text-right flex-shrink-0">
+                {formatCurrency(item.price * item.quantity, currency)}
+              </span>
+
+              {/* Remove */}
+              <motion.button
+                whileTap={{ scale: 0.8 }}
+                onClick={() => onRemoveItem(item.productId)}
+                className="p-1 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </motion.button>
             </motion.div>
           ))
         )}
@@ -178,10 +203,7 @@ const CartPanel = ({
           </div>
 
           {/* Grand total */}
-          <motion.div
-            layout
-            className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700"
-          >
+          <motion.div layout className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
             <span className="font-bold text-slate-900 dark:text-white">
               {cartCalculations.balanceUsed > 0 ? "Payable Amount" : "Grand Total"}
             </span>

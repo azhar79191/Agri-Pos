@@ -148,7 +148,7 @@ const Customers = () => {
             <table className="w-full table-premium">
               <thead>
                 <tr>
-                  {["Customer", "Address", "Balance", "Actions"].map(h => (
+                  {["Customer", "Address", "Wallet", "Owes (Credit)", "Actions"].map(h => (
                     <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
                   ))}
                 </tr>
@@ -184,12 +184,21 @@ const Customers = () => {
                             <Wallet className="w-3 h-3" />{formatCurrency(customer.walletBalance, settings.currency)}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">No Balance</span>
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">—</span>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {(customer.creditBalance || 0) > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                          <Wallet className="w-3 h-3" />{formatCurrency(customer.creditBalance, settings.currency)}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button onClick={() => navigate(`/customers/${customer._id}/statement`)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                           <FileText className="w-3.5 h-3.5" />Statement
                         </button>

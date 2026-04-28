@@ -213,7 +213,8 @@ const StockManagement = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {displayLevels.map(product => {
-                const status = product.stock <= 5 ? "low" : product.stock <= 20 ? "medium" : "good";
+                const minLevel = product.minStockLevel || 5;
+                const status = product.stock <= 0 ? "low" : product.stock <= minLevel ? "low" : product.stock <= minLevel * 4 ? "medium" : "good";
                 return (
                   <tr key={product._id || product.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{product.name}</td>

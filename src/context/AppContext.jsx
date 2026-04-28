@@ -1,298 +1,234 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useMemo, useRef } from "react";
 import { hasPermission } from "../data/users";
 import { generateInvoiceNumber, getTodayDate, getCurrentTime } from "../utils/helpers";
 import { disconnectSocket } from "../hooks/useSocket";
 
-// Synchronously read auth from localStorage so first render is already authenticated
+// ── Bootstrap from storage synchronously (no flash, no extra render) ──
 const _savedUser = (() => {
   try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
 })();
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
+const _savedDarkMode = localStorage.getItem("posDarkMode") === "true";
+const _savedCart = (() => {
+  try { return JSON.parse(sessionStorage.getItem("posCart") || "[]"); } catch { return []; }
+})();
 
-// Initial state
+// Apply dark class before React renders
+if (_savedDarkMode) document.documentElement.classList.add("dark");
+
 const initialState = {
-  // Authentication
   currentUser: _savedUser || null,
   isAuthenticated: !!_savedUser && !!localStorage.getItem("token"),
-
-  // Cart
-  cart: [],
-
-  // UI State
+  cart: _savedCart,
   currentPage: "dashboard",
-  darkMode: false,
+  darkMode: _savedDarkMode,
   toast: null,
   modal: null,
   sidebarCollapsed: false,
-
-  // Settings — populated from shop on login
   settings: {
-    shopName:       _savedShop?.name           || "",
-    taxRate:        _savedShop?.taxRate         ?? 5,
-    currency:       _savedShop?.currency        || "Rs.",
-    address:        _savedShop?.address         || "",
-    phone:          _savedShop?.phone           || "",
-    email:          _savedShop?.email           || "",
-    shopLogo:       _savedShop?.logo            || "",
-    receiptFooter:  _savedShop?.receiptFooter   || "Thank you for your purchase!",
-    lowStockThreshold: 5,
-  }
+    shopName:          _savedShop?.name          || "",
+    taxRate:           _savedShop?.taxRate        ?? 5,
+    currency:          _savedShop?.currency       || "Rs.",
+    address:           _savedShop?.address        || "",
+    phone:             _savedShop?.phone          || "",
+    email:             _savedShop?.email          || "",
+    shopLogo:          _savedShop?.logo           || "",
+    receiptFooter:     _savedShop?.receiptFooter  || "Thank you for your purchase!",
+    lowStockThreshold: _savedShop?.lowStockThreshold ?? 5,
+  },
 };
 
-// Action types
-const ACTIONS = {
-  LOGIN: "LOGIN",
-  LOGOUT: "LOGOUT",
-  SET_PAGE: "SET_PAGE",
-  TOGGLE_SIDEBAR: "TOGGLE_SIDEBAR",
-  ADD_TO_CART: "ADD_TO_CART",
-  UPDATE_CART_QUANTITY: "UPDATE_CART_QUANTITY",
-  REMOVE_FROM_CART: "REMOVE_FROM_CART",
-  CLEAR_CART: "CLEAR_CART",
-  UPDATE_SETTINGS: "UPDATE_SETTINGS",
-  SET_DARK_MODE: "SET_DARK_MODE",
-  SHOW_TOAST: "SHOW_TOAST",
-  HIDE_TOAST: "HIDE_TOAST",
-  SHOW_MODAL: "SHOW_MODAL",
-  HIDE_MODAL: "HIDE_MODAL",
-  UPDATE_USER: "UPDATE_USER",
+const A = {
+  LOGIN: "LOGIN", LOGOUT: "LOGOUT", SET_PAGE: "SET_PAGE",
+  TOGGLE_SIDEBAR: "TOGGLE_SIDEBAR", ADD_TO_CART: "ADD_TO_CART",
+  UPDATE_CART_QUANTITY: "UPDATE_CART_QUANTITY", REMOVE_FROM_CART: "REMOVE_FROM_CART",
+  CLEAR_CART: "CLEAR_CART", UPDATE_SETTINGS: "UPDATE_SETTINGS",
+  SET_DARK_MODE: "SET_DARK_MODE", SHOW_TOAST: "SHOW_TOAST", HIDE_TOAST: "HIDE_TOAST",
+  SHOW_MODAL: "SHOW_MODAL", HIDE_MODAL: "HIDE_MODAL", UPDATE_USER: "UPDATE_USER",
 };
 
-// Reducer
 function appReducer(state, action) {
   switch (action.type) {
-    case ACTIONS.LOGIN:
+    case A.LOGIN:
       return { ...state, currentUser: action.payload, isAuthenticated: true };
-
-    case ACTIONS.UPDATE_USER:
+    case A.UPDATE_USER:
       return {
         ...state,
-        currentUser: {
-          ...state.currentUser,
-          ...action.payload,
-          // Never overwrite shop with null/undefined from a partial update
-          shop: action.payload.shop ?? state.currentUser?.shop,
-        },
+        currentUser: { ...state.currentUser, ...action.payload, shop: action.payload.shop ?? state.currentUser?.shop },
         isAuthenticated: true,
       };
-
-    case ACTIONS.LOGOUT:
+    case A.LOGOUT:
       return { ...initialState, darkMode: state.darkMode };
-
-    case ACTIONS.SET_PAGE:
+    case A.SET_PAGE:
       return { ...state, currentPage: action.payload };
-
-    case ACTIONS.TOGGLE_SIDEBAR:
+    case A.TOGGLE_SIDEBAR:
       return { ...state, sidebarCollapsed: !state.sidebarCollapsed };
-
-    case ACTIONS.ADD_TO_CART: {
+    case A.ADD_TO_CART: {
       const existing = state.cart.find(i => i.productId === action.payload.productId);
       if (existing) {
         return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, quantity: i.quantity + action.payload.quantity } : i) };
       }
       return { ...state, cart: [...state.cart, action.payload] };
     }
-
-    case ACTIONS.UPDATE_CART_QUANTITY:
+    case A.UPDATE_CART_QUANTITY:
       return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, quantity: action.payload.quantity } : i) };
-
-    case ACTIONS.REMOVE_FROM_CART:
+    case A.REMOVE_FROM_CART:
       return { ...state, cart: state.cart.filter(i => i.productId !== action.payload) };
-
-    case ACTIONS.CLEAR_CART:
+    case A.CLEAR_CART:
       return { ...state, cart: [] };
-
-    case ACTIONS.UPDATE_SETTINGS:
+    case A.UPDATE_SETTINGS:
       return { ...state, settings: { ...state.settings, ...action.payload } };
-
-    case ACTIONS.SET_DARK_MODE:
+    case A.SET_DARK_MODE:
       return { ...state, darkMode: action.payload };
-
-    case ACTIONS.SHOW_TOAST:
+    case A.SHOW_TOAST:
       return { ...state, toast: action.payload };
-
-    case ACTIONS.HIDE_TOAST:
+    case A.HIDE_TOAST:
       return { ...state, toast: null };
-
-    case ACTIONS.SHOW_MODAL:
+    case A.SHOW_MODAL:
       return { ...state, modal: action.payload };
-
-    case ACTIONS.HIDE_MODAL:
+    case A.HIDE_MODAL:
       return { ...state, modal: null };
-
     default:
       return state;
   }
 }
 
-// Context
 const AppContext = createContext();
 
-// Provider
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const toastTimerRef = useRef(null);
+  // Keep a ref to current state so actions don't go stale
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
-  // Load from localStorage on mount
+  // Dark mode side-effect
+  useEffect(() => {
+    localStorage.setItem("posDarkMode", state.darkMode);
+    document.documentElement.classList.toggle("dark", state.darkMode);
+  }, [state.darkMode]);
+
+  // Persist user
+  useEffect(() => {
+    if (state.currentUser) localStorage.setItem("posUser", JSON.stringify(state.currentUser));
+    else localStorage.removeItem("posUser");
+  }, [state.currentUser]);
+
+  // Persist cart
+  useEffect(() => {
+    sessionStorage.setItem("posCart", JSON.stringify(state.cart));
+  }, [state.cart]);
+
+  // Cross-tab user sync
   useEffect(() => {
     localStorage.removeItem("posSettings");
-    const savedDarkMode = localStorage.getItem("posDarkMode");
-    if (savedDarkMode) {
-      dispatch({ type: ACTIONS.SET_DARK_MODE, payload: savedDarkMode === "true" });
-    }
-
-    // Re-sync when user is updated (same tab via custom event or cross-tab via storage)
     const handleUserUpdate = (e) => {
       const incoming = e.detail || (e.newValue ? JSON.parse(e.newValue) : null);
-      if (incoming) dispatch({ type: ACTIONS.UPDATE_USER, payload: incoming });
+      if (incoming) dispatch({ type: A.UPDATE_USER, payload: incoming });
     };
     window.addEventListener("user-updated", handleUserUpdate);
-    window.addEventListener("storage", (e) => {
-      if (e.key === "user" && e.newValue) handleUserUpdate(e);
-    });
-    
-    // Listen for online status changes
-    const handleOnlineStatusChange = (event) => {
-      if (event.detail.isOnline) {
-        actions.syncOfflineData();
-      }
-    };
-    
-    window.addEventListener('online-status-changed', handleOnlineStatusChange);
-    
+    const handleStorage = (e) => { if (e.key === "user" && e.newValue) handleUserUpdate(e); };
+    window.addEventListener("storage", handleStorage);
     return () => {
-      window.removeEventListener('online-status-changed', handleOnlineStatusChange);
       window.removeEventListener("user-updated", handleUserUpdate);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 
-  // Save dark mode to localStorage only
-  useEffect(() => {
-    localStorage.setItem("posDarkMode", state.darkMode);
-    if (state.darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [state.darkMode]);
-
-  // Save user to localStorage
-  useEffect(() => {
-    if (state.currentUser) {
-      localStorage.setItem("posUser", JSON.stringify(state.currentUser));
-    } else {
-      localStorage.removeItem("posUser");
-    }
-  }, [state.currentUser]);
-
-  // Actions
-  const actions = {
-    // Auth
+  // ── Memoized actions — stable reference, no re-renders on state change ──
+  const actions = useMemo(() => ({
     login: (email, password, preloadedUser = null) => {
-      if (preloadedUser) {
-        dispatch({ type: ACTIONS.LOGIN, payload: preloadedUser });
-        localStorage.removeItem("posSettings");
-        localStorage.setItem("user", JSON.stringify(preloadedUser));
-        const shop = preloadedUser.shop;
-        const shopSettings = shop && typeof shop === 'object' ? {
-          shopName: shop.name || "",
-          taxRate: shop.taxRate ?? 5,
-          currency: shop.currency || "Rs.",
-          address: shop.address || "",
-          phone: shop.phone || "",
-          email: shop.email || "",
-          shopLogo: shop.logo || "",
-          receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-        } : { shopName: "", address: "", phone: "", email: "", shopLogo: "" };
-        dispatch({ type: ACTIONS.UPDATE_SETTINGS, payload: shopSettings });
-        dispatch({ type: ACTIONS.SHOW_TOAST, payload: { message: `Welcome back, ${preloadedUser.name}!`, type: "success", id: Date.now() } });
-        setTimeout(() => dispatch({ type: ACTIONS.HIDE_TOAST }), 3000);
-        return true;
-      }
+      if (!preloadedUser) return;
+      dispatch({ type: A.LOGIN, payload: preloadedUser });
+      localStorage.removeItem("posSettings");
+      localStorage.setItem("user", JSON.stringify(preloadedUser));
+      const shop = preloadedUser.shop;
+      dispatch({
+        type: A.UPDATE_SETTINGS,
+        payload: shop && typeof shop === "object" ? {
+          shopName: shop.name || "", taxRate: shop.taxRate ?? 5,
+          currency: shop.currency || "Rs.", address: shop.address || "",
+          phone: shop.phone || "", email: shop.email || "",
+          shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
+        } : { shopName: "", address: "", phone: "", email: "", shopLogo: "" },
+      });
+      // Welcome toast
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      dispatch({ type: A.SHOW_TOAST, payload: { message: `Welcome back, ${preloadedUser.name}!`, type: "success", id: Date.now() } });
+      toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
+      return true;
     },
 
     logout: () => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      sessionStorage.removeItem("posCart");
       disconnectSocket();
-      dispatch({ type: ACTIONS.LOGOUT });
-      actions.showToast({ message: "Logged out successfully", type: "info" });
+      dispatch({ type: A.LOGOUT });
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      dispatch({ type: A.SHOW_TOAST, payload: { message: "Logged out successfully", type: "info", id: Date.now() } });
+      toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
     },
 
-    // Navigation
-    setPage: (page) => dispatch({ type: ACTIONS.SET_PAGE, payload: page }),
-    toggleSidebar: () => dispatch({ type: ACTIONS.TOGGLE_SIDEBAR }),
+    setPage: (page) => dispatch({ type: A.SET_PAGE, payload: page }),
+    toggleSidebar: () => dispatch({ type: A.TOGGLE_SIDEBAR }),
+    hasPermission: (permission) => hasPermission(stateRef.current.currentUser, permission),
 
-    // Permission check
-    hasPermission: (permission) => hasPermission(state.currentUser, permission),
-
-    // Cart
     addToCart: (product, quantity = 1) => {
       if (product.stock < quantity) {
-        actions.showToast({ message: "Insufficient stock", type: "error" });
+        // inline toast to avoid circular ref
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        dispatch({ type: A.SHOW_TOAST, payload: { message: "Insufficient stock", type: "error", id: Date.now() } });
+        toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
         return false;
       }
       dispatch({
-        type: ACTIONS.ADD_TO_CART,
-        payload: {
-          productId: product._id || product.id,
-          name: product.name,
-          price: product.price,
-          quantity,
-          unit: product.unit,
-          barcode: product.barcode
-        }
+        type: A.ADD_TO_CART,
+        payload: { productId: product._id || product.id, name: product.name, price: product.price, quantity, unit: product.unit, barcode: product.barcode },
       });
       return true;
     },
 
     updateCartQuantity: (productId, quantity) => {
-      dispatch({ type: ACTIONS.UPDATE_CART_QUANTITY, payload: { productId, quantity } });
+      dispatch({ type: A.UPDATE_CART_QUANTITY, payload: { productId, quantity } });
       return true;
     },
 
-    removeFromCart: (productId) => dispatch({ type: ACTIONS.REMOVE_FROM_CART, payload: productId }),
-    clearCart: () => dispatch({ type: ACTIONS.CLEAR_CART }),
+    removeFromCart: (productId) => dispatch({ type: A.REMOVE_FROM_CART, payload: productId }),
+    clearCart: () => dispatch({ type: A.CLEAR_CART }),
 
-    // Transactions (local fallback only)
     createTransaction: (data) => {
-      const t = { id: generateInvoiceNumber(), date: getTodayDate(), time: getCurrentTime(), ...data, status: "Completed", createdBy: state.currentUser?.name || "System" };
-      actions.clearCart();
+      const t = { id: generateInvoiceNumber(), date: getTodayDate(), time: getCurrentTime(), ...data, status: "Completed", createdBy: stateRef.current.currentUser?.name || "System" };
+      dispatch({ type: A.CLEAR_CART });
       return t;
     },
     createInvoice: (t) => t,
 
-    // Settings
-    updateSettings: (settings) => {
-      dispatch({ type: ACTIONS.UPDATE_SETTINGS, payload: settings });
-    },
-
-    // UI
-    toggleDarkMode: () => dispatch({ type: ACTIONS.SET_DARK_MODE, payload: !state.darkMode }),
+    updateSettings: (settings) => dispatch({ type: A.UPDATE_SETTINGS, payload: settings }),
+    toggleDarkMode: () => dispatch({ type: A.SET_DARK_MODE, payload: !stateRef.current.darkMode }),
 
     showToast: (toast) => {
-      dispatch({ type: ACTIONS.SHOW_TOAST, payload: { ...toast, id: Date.now() } });
-      setTimeout(() => dispatch({ type: ACTIONS.HIDE_TOAST }), 3000);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      dispatch({ type: A.SHOW_TOAST, payload: { ...toast, id: Date.now() } });
+      toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
     },
-    hideToast: () => dispatch({ type: ACTIONS.HIDE_TOAST }),
-    showModal: (modal) => dispatch({ type: ACTIONS.SHOW_MODAL, payload: modal }),
-    hideModal: () => dispatch({ type: ACTIONS.HIDE_MODAL }),
-
-    // Sync offline data (stub)
+    hideToast: () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      dispatch({ type: A.HIDE_TOAST });
+    },
+    showModal: (modal) => dispatch({ type: A.SHOW_MODAL, payload: modal }),
+    hideModal: () => dispatch({ type: A.HIDE_MODAL }),
     syncOfflineData: () => {},
-  };
+  }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return (
-    <AppContext.Provider value={{ state, actions }}>
-      {children}
-    </AppContext.Provider>
-  );
+  // Memoize context value — only re-renders consumers when state changes
+  const value = useMemo(() => ({ state, actions }), [state, actions]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
-// Custom hook
 export function useApp() {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useApp must be used within an AppProvider");
-  }
+  if (!context) throw new Error("useApp must be used within an AppProvider");
   return context;
 }

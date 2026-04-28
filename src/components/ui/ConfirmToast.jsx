@@ -1,61 +1,45 @@
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, Check, X } from "lucide-react";
 
+const ICONS  = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info };
+const STYLES = {
+  success: "from-emerald-500 to-teal-600",
+  error:   "from-red-500 to-rose-600",
+  warning: "from-amber-500 to-orange-600",
+  info:    "from-blue-500 to-indigo-600",
+};
+
 const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
-  const icons = {
-    success: CheckCircle,
-    error: XCircle,
-    warning: AlertTriangle,
-    info: Info
-  };
-
-  const styles = {
-    success: "from-emerald-500 to-teal-600",
-    error: "from-red-500 to-rose-600",
-    warning: "from-amber-500 to-orange-600",
-    info: "from-blue-500 to-indigo-600"
-  };
-
-  const Icon = icons[type];
-
+  const Icon = ICONS[type];
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
-        {/* Header with gradient */}
-        <div className={`bg-gradient-to-r ${styles[type]} p-6 text-white`}>
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
-              <Icon className="w-8 h-8" />
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white dark:bg-[#0d1f14] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-scale-in border border-slate-200/80 dark:border-emerald-900/20">
+        <div className={`bg-gradient-to-r ${STYLES[type]} p-5 text-white`}>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-white/20 rounded-xl">
+              <Icon className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Confirmation Required</h3>
-              <p className="text-sm text-white/90 mt-1">Please confirm your action</p>
+              <h3 className="text-base font-bold">Confirm Action</h3>
+              <p className="text-xs text-white/80 mt-0.5">Please confirm to proceed</p>
             </div>
           </div>
         </div>
-
-        {/* Content */}
-        <div className="p-6">
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-            {message}
-          </p>
+        <div className="p-5">
+          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{message}</p>
         </div>
-
-        {/* Actions */}
-        <div className="flex gap-3 p-6 pt-0">
+        <div className="flex gap-3 px-5 pb-5">
           <button
             onClick={onCancel}
-            className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-[#122b1c] text-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm hover:bg-slate-200 dark:hover:bg-[#163320] transition-colors flex items-center justify-center gap-2"
           >
-            <X className="w-4 h-4" />
-            Cancel
+            <X className="w-4 h-4" />Cancel
           </button>
           <button
             onClick={onConfirm}
-            className={`flex-1 px-6 py-3 bg-gradient-to-r ${styles[type]} text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2`}
+            className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${STYLES[type]} text-white rounded-xl font-medium text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2`}
           >
-            <Check className="w-4 h-4" />
-            Confirm
+            <Check className="w-4 h-4" />Confirm
           </button>
         </div>
       </div>

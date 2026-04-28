@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /pos
+Disallow: /products
+Disallow: /customers
+Disallow: /invoices
+Disallow: /reports
+Disallow: /stock
+Disallow: /users
+Disallow: /settings
+Disallow: /profile
+Disallow: /shops
+
+# Allow public landing
+Allow: /$
+
+Sitemap: https://agri-pos.vercel.app/sitemap.xml

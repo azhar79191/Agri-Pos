@@ -12,7 +12,7 @@ const Select = forwardRef(({
   return (
     <div className={containerClassName}>
       {label && (
-        <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ${labelClassName}`}>
+        <label className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
           {label}{props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
@@ -28,11 +28,11 @@ const Select = forwardRef(({
           ))}
         </select>
         <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
-          <ChevronDown className="h-4 w-4 text-gray-400" />
+          <ChevronDown className="h-4 w-4 text-slate-400" />
         </div>
       </div>
       {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
-      {helperText && !error && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{helperText}</p>}
+      {helperText && !error && <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
     </div>
   );
 });

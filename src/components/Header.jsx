@@ -70,7 +70,7 @@ const Header = () => {
   };
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/5 shadow-sm">
+    <header className="h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-10 bg-white/90 dark:bg-[#071209]/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-emerald-900/20 shadow-sm">
 
       {/* Left */}
       <div className="flex items-center gap-3">

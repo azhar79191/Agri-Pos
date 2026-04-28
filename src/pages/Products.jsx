@@ -255,7 +255,7 @@ const Products = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3.5">
-                        <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
                             className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                             onClick={() => {

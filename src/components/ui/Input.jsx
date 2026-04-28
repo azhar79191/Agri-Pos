@@ -13,14 +13,14 @@ const Input = forwardRef(({
   return (
     <div className={containerClassName}>
       {label && (
-        <label className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ${labelClassName}`}>
+        <label className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
           {label}{props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         {LeftIcon && (
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <LeftIcon className="h-4 w-4 text-gray-400" />
+            <LeftIcon className="h-4 w-4 text-slate-400" />
           </div>
         )}
         <input
@@ -30,12 +30,12 @@ const Input = forwardRef(({
         />
         {RightIcon && (
           <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
-            <RightIcon className="h-4 w-4 text-gray-400" />
+            <RightIcon className="h-4 w-4 text-slate-400" />
           </div>
         )}
       </div>
       {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
-      {helperText && !error && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{helperText}</p>}
+      {helperText && !error && <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
     </div>
   );
 });

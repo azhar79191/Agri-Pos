@@ -38,6 +38,17 @@ const POS = () => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [quickBarcode, setQuickBarcode] = useState("");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [mobileTab, setMobileTab] = useState("products");
+
+  // Keyboard shortcuts: F2 = focus barcode input, Escape = clear search
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "F2") { e.preventDefault(); barcodeInputRef.current?.focus(); }
+      if (e.key === "Escape") setSearchTerm("");
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -59,7 +70,6 @@ const POS = () => {
   );
 
   const customer = customers.find(c => c._id === selectedCustomer);
-  // Use walletBalance directly from backend — no frontend math
   const customerBalance = customer?.walletBalance || 0;
 
   const cartCalculations = useMemo(() => {
@@ -174,7 +184,6 @@ const POS = () => {
         createdBy: currentUser?.name || "System",
       };
       actions.createTransaction(invoiceData);
-      // Re-fetch customer from backend to get accurate balances
       if (customer?._id) refreshCustomer(customer._id);
       setCompletedTransaction(transaction);
       setShowReceipt(true);
@@ -188,7 +197,6 @@ const POS = () => {
         type: isPending ? "warning" : "success",
       });
     } catch (err) {
-      console.error('[POS] Invoice creation failed:', err.response?.data);
       const transaction = actions.createTransaction(invoiceData);
       actions.createInvoice(transaction);
       setCompletedTransaction(transaction);
@@ -230,8 +238,37 @@ const POS = () => {
         inputRef={barcodeInputRef}
       />
 
+      {/* Mobile tab switcher */}
+      <div className="lg:hidden flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <button
+          onClick={() => setMobileTab("products")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            mobileTab === "products"
+              ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+              : "text-slate-500 dark:text-slate-400"
+          }`}
+        >
+          Products
+        </button>
+        <button
+          onClick={() => setMobileTab("cart")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            mobileTab === "cart"
+              ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+              : "text-slate-500 dark:text-slate-400"
+          }`}
+        >
+          Cart
+          {cartCalculations.itemCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center">
+              {cartCalculations.itemCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${mobileTab === "cart" ? "hidden lg:block" : ""}`}>
           <ProductGrid
             products={filteredProducts}
             cart={cart}
@@ -246,28 +283,31 @@ const POS = () => {
           />
         </div>
 
-        <CartPanel
-          cart={cart}
-          customerOptions={customerOptions}
-          selectedCustomer={selectedCustomer}
-          onCustomerChange={e => setSelectedCustomer(e.target.value)}
-          discount={discount}
-          onDiscountChange={e => setDiscount(parseFloat(e.target.value) || 0)}
-          paymentMethod={paymentMethod}
-          onPaymentMethodChange={setPaymentMethod}
-          cashReceived={cashReceived}
-          onCashReceivedChange={e => setCashReceived(e.target.value)}
-          cartCalculations={cartCalculations}
-          change={change}
-          needsCashInput={needsCashInput}
-          isOnline={isOnline}
-          checkoutLoading={checkoutLoading}
-          onRemoveItem={actions.removeFromCart}
-          onClearCart={handleClearCart}
-          onCheckout={handleCheckout}
-          currency={settings.currency}
-          taxRate={settings.taxRate}
-        />
+        <div className={mobileTab === "products" ? "hidden lg:block" : ""}>
+          <CartPanel
+            cart={cart}
+            customerOptions={customerOptions}
+            selectedCustomer={selectedCustomer}
+            onCustomerChange={e => setSelectedCustomer(e.target.value)}
+            discount={discount}
+            onDiscountChange={e => setDiscount(parseFloat(e.target.value) || 0)}
+            paymentMethod={paymentMethod}
+            onPaymentMethodChange={setPaymentMethod}
+            cashReceived={cashReceived}
+            onCashReceivedChange={e => setCashReceived(e.target.value)}
+            cartCalculations={cartCalculations}
+            change={change}
+            needsCashInput={needsCashInput}
+            isOnline={isOnline}
+            checkoutLoading={checkoutLoading}
+            onRemoveItem={actions.removeFromCart}
+            onUpdateQuantity={handleUpdateQuantity}
+            onClearCart={handleClearCart}
+            onCheckout={handleCheckout}
+            currency={settings.currency}
+            taxRate={settings.taxRate}
+          />
+        </div>
       </div>
 
       <BarcodeScanner
