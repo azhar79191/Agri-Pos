@@ -38,14 +38,16 @@ export function CustomersProvider({ children }) {
 
   const addCustomer = async (data) => {
     const res = await createCustomer(data);
-    setCustomers((prev) => [res.data.data, ...prev]);
-    return res.data.data;
+    const customer = res.data.data?.customer ?? res.data.data;
+    setCustomers((prev) => [customer, ...prev]);
+    return customer;
   };
 
   const editCustomer = async (id, data) => {
     const res = await updateCustomer(id, data);
-    setCustomers((prev) => prev.map((c) => (c._id === id ? res.data.data : c)));
-    return res.data.data;
+    const customer = res.data.data?.customer ?? res.data.data;
+    setCustomers((prev) => prev.map((c) => (c._id === id ? customer : c)));
+    return customer;
   };
 
   const removeCustomer = async (id) => {

@@ -19,14 +19,7 @@ const emptyForm = {
   unit: "", subUnit: "", expiryDate: "", description: "", barcode: "", minStockLevel: "5",
 };
 
-const categoryOptions = [
-  { value: "Herbicides", label: "Herbicides" },
-  { value: "Insecticides", label: "Insecticides" },
-  { value: "Fungicides", label: "Fungicides" },
-  { value: "Fertilizers", label: "Fertilizers" },
-  { value: "Seeds", label: "Seeds" },
-  { value: "Other", label: "Other" },
-];
+const DEFAULT_CATEGORIES = ["Herbicides", "Insecticides", "Fungicides", "Fertilizers", "Seeds", "Other"];
 
 const unitOptions = [
   { value: "liter", label: "Liter" },
@@ -72,8 +65,14 @@ const categoryColors = {
 };
 
 const Products = () => {
-  const { products, brands: shopBrands, loading, fetchProducts, addProduct, editProduct, removeProduct } = useProducts();
+  const { products, brands: shopBrands, shopCategories, loading, fetchProducts, addProduct, editProduct, removeProduct } = useProducts();
   const { actions, state } = useApp();
+
+  const allCategories = useMemo(() => [
+    ...DEFAULT_CATEGORIES,
+    ...(shopCategories || []).filter(c => !DEFAULT_CATEGORIES.includes(c)),
+  ], [shopCategories]);
+  const categoryOptions = allCategories.map(c => ({ value: c, label: c }));
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");

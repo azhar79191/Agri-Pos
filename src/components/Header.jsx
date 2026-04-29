@@ -6,18 +6,63 @@ import { roles } from "../data/users";
 import NotificationCenter from "./NotificationCenter";
 
 const PAGE_TITLES = {
-  dashboard: "Dashboard",
-  products:  "Products",
-  customers: "Customers",
-  pos:       "Point of Sale",
-  invoices:  "Invoices",
-  reports:   "Reports",
-  stock:     "Stock Management",
-  users:     "User Management",
-  settings:  "Settings",
-  profile:   "Profile",
-  shops:     "My Shop",
-  status:    "Status",
+  "dashboard": "Dashboard",
+  "dashboard/analytics": "Analytics",
+  "dashboard/forecasting": "Forecasting",
+  "pos": "Point of Sale",
+  "invoices": "Invoices",
+  "sales/credit": "Credit Sales",
+  "products": "Products",
+  "stock": "Stock Management",
+  "inventory/batch-expiry": "Batch & Expiry",
+  "inventory/bundles": "Product Bundles",
+  "inventory/dead-stock": "Smart Alerts",
+  "purchases/orders": "Purchase Orders",
+  "purchases/grn": "Goods Receiving",
+  "purchases/returns": "Purchase Returns",
+  "purchases/suppliers": "Suppliers",
+  "customers": "Customers",
+  "customers/dues": "Customer Dues",
+  "customers/history": "Purchase History",
+  "customers/loyalty": "Loyalty Program",
+  "recommendations/diagnosis": "Pest Diagnosis",
+  "recommendations/dosage": "Dosage Guide",
+  "recommendations/print": "Print Recommendation",
+  "reports": "Reports",
+  "reports/profit": "Profit Analysis",
+  "reports/margin": "Margin Analysis",
+  "reports/inventory": "Inventory Report",
+  "users": "User Management",
+  "staff/sales-reps": "Sales Representatives",
+  "staff/audit-logs": "Audit Logs",
+  "shops": "My Shop",
+  "settings": "Settings",
+  "profile": "Profile",
+  "status": "Status",
+};
+
+const BREADCRUMBS = {
+  "dashboard/analytics": ["Dashboard", "Analytics"],
+  "dashboard/forecasting": ["Dashboard", "Forecasting"],
+  "sales/credit": ["Sales", "Credit Sales"],
+  "inventory/batch-expiry": ["Inventory", "Batch & Expiry"],
+  "inventory/bundles": ["Inventory", "Bundles"],
+  "inventory/dead-stock": ["Inventory", "Smart Alerts"],
+  "purchases/orders": ["Purchases", "Orders"],
+  "purchases/grn": ["Purchases", "Goods Receiving"],
+  "purchases/returns": ["Purchases", "Returns"],
+  "purchases/suppliers": ["Purchases", "Suppliers"],
+  "customers/dues": ["Customers", "Dues"],
+  "customers/history": ["Customers", "History"],
+  "customers/loyalty": ["Customers", "Loyalty"],
+  "recommendations/diagnosis": ["Crop Advisory", "Diagnosis"],
+  "recommendations/dosage": ["Crop Advisory", "Dosage"],
+  "recommendations/print": ["Crop Advisory", "Print"],
+  "reports/profit": ["Reports", "Profit"],
+  "reports/margin": ["Reports", "Margin"],
+  "reports/inventory": ["Reports", "Inventory"],
+  "staff/sales-reps": ["Staff", "Sales Reps"],
+  "staff/audit-logs": ["Staff", "Audit Logs"],
 };
 
 const Header = () => {
@@ -38,8 +83,9 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, [showMenu]);
 
-  const page = location.pathname.replace("/", "") || "dashboard";
+  const page = location.pathname.replace(/^\//, "") || "dashboard";
   const title = PAGE_TITLES[page] || "Dashboard";
+  const breadcrumb = BREADCRUMBS[page] || null;
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
   const rawRole = typeof currentUser?.role === "object" ? currentUser.role?.name : currentUser?.role;
@@ -76,10 +122,19 @@ const Header = () => {
       {/* Left */}
       <div className="flex items-center gap-3">
         <div>
+          {breadcrumb ? (
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mb-0.5">
+              <span>{breadcrumb[0]}</span>
+              <span className="text-slate-300 dark:text-slate-600">/</span>
+              <span className="text-slate-600 dark:text-slate-300 font-semibold">{breadcrumb[1]}</span>
+            </div>
+          ) : null}
           <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight leading-none">{title}</h1>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 hidden sm:block">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-          </p>
+          {!breadcrumb && (
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 hidden sm:block">
+              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
+          )}
         </div>
       </div>
 

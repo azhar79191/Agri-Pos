@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Moon, Sun, Tag, Plus, X, Loader2, Palette, Sparkles, Save, DollarSign, Receipt, AlertTriangle } from "lucide-react";
+import { Moon, Sun, Tag, Plus, X, Loader2, Palette, Sparkles, Save, DollarSign, Receipt, AlertTriangle, Grid3X3 } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { getMyShop, addBrand, deleteBrand, updateShop } from "../api/shopApi";
+import { getMyShop, addBrand, deleteBrand, updateShop, addCategory, deleteCategory } from "../api/shopApi";
 
 const THEME_PRESETS = [
   { label: "Emerald",  color: "#10b981" },
@@ -23,10 +23,15 @@ const Settings = () => {
 
   const [shop, setShop] = useState(null);
   const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [newBrand, setNewBrand] = useState("");
+  const [newCategory, setNewCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
   const [deletingBrand, setDeletingBrand] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(null);
+  const categoryInputRef = useRef(null);
 
   // Shop settings form
   const [shopForm, setShopForm] = useState({ taxRate: "", currency: "", receiptFooter: "", lowStockThreshold: "" });
@@ -39,6 +44,7 @@ const Settings = () => {
         if (s) {
           setShop(s);
           setBrands(s.brands || []);
+          setCategories(s.categories || []);
           setShopForm({
             taxRate: s.taxRate ?? 5,
             currency: s.currency || "Rs.",
@@ -105,6 +111,37 @@ const Settings = () => {
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter") { e.preventDefault(); handleAddBrand(); } };
+
+  const handleAddCategory = async () => {
+    const trimmed = newCategory.trim();
+    if (!trimmed) return;
+    if (!shop) { actions.showToast({ message: "No shop found.", type: "error" }); return; }
+    if (categories.map(c => c.toLowerCase()).includes(trimmed.toLowerCase())) {
+      actions.showToast({ message: "Category already exists", type: "error" }); return;
+    }
+    setAddingCategory(true);
+    try {
+      const res = await addCategory(shop._id, trimmed);
+      setCategories(res.data.data.categories);
+      setNewCategory("");
+      categoryInputRef.current?.focus();
+      actions.showToast({ message: `"${trimmed}" added`, type: "success" });
+    } catch (err) {
+      actions.showToast({ message: err.response?.data?.message || "Failed to add category", type: "error" });
+    } finally { setAddingCategory(false); }
+  };
+
+  const handleDeleteCategory = async (cat) => {
+    if (!shop) return;
+    setDeletingCategory(cat);
+    try {
+      const res = await deleteCategory(shop._id, cat);
+      setCategories(res.data.data.categories);
+      actions.showToast({ message: `"${cat}" removed`, type: "success" });
+    } catch (err) {
+      actions.showToast({ message: err.response?.data?.message || "Failed to remove category", type: "error" });
+    } finally { setDeletingCategory(null); }
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-up">
@@ -351,6 +388,75 @@ const Settings = () => {
 
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">
               {brands.length} brand{brands.length !== 1 ? "s" : ""} registered · Changes save instantly
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Categories Card */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <Grid3X3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Product Categories</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Custom categories appear in product forms and POS filters</p>
+          </div>
+        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
+            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span>
+          </div>
+        ) : !shop ? (
+          <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <p className="text-sm text-slate-500 dark:text-slate-400">No shop found. Complete shop setup first.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex gap-2 mb-5">
+              <input
+                ref={categoryInputRef}
+                type="text"
+                value={newCategory}
+                onChange={e => setNewCategory(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleAddCategory(); } }}
+                placeholder="e.g. Herbicides, Seeds, Fertilizers..."
+                className="flex-1 px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all"
+              />
+              <button
+                onClick={handleAddCategory}
+                disabled={!newCategory.trim() || addingCategory}
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold transition-colors"
+              >
+                {addingCategory ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Add
+              </button>
+            </div>
+            {categories.length === 0 ? (
+              <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                <p className="text-sm text-slate-400 dark:text-slate-500">
+                  No custom categories yet. The default categories (Herbicides, Insecticides, etc.) are always available.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories.map(cat => (
+                  <span key={cat} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-full text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                    {cat}
+                    <button
+                      onClick={() => handleDeleteCategory(cat)}
+                      disabled={deletingCategory === cat}
+                      className="flex items-center justify-center w-4 h-4 hover:text-red-500 disabled:opacity-50 transition-colors"
+                    >
+                      {deletingCategory === cat ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">
+              {categories.length} custom categor{categories.length !== 1 ? "ies" : "y"} · Changes save instantly
             </p>
           </>
         )}

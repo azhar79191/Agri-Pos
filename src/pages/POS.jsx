@@ -26,7 +26,7 @@ const addRecentProduct = (product) => {
 const POS = () => {
   const { state, actions } = useApp();
   const { settings, currentUser, cart } = state;
-  const { products, fetchProducts } = useProducts();
+  const { products, shopCategories, fetchProducts } = useProducts();
   const { customers, fetchCustomers, refreshCustomer, addCustomer } = useCustomers();
   const { addInvoice } = useInvoices();
   const navigate = useNavigate();
@@ -68,7 +68,12 @@ const POS = () => {
 
   useEffect(() => { fetchProducts(); fetchCustomers(); }, []); // eslint-disable-line
 
-  const categories = useMemo(() => [...new Set(products.map(p => p.category))], [products]);
+  const DEFAULT_CATS = ["Herbicides", "Insecticides", "Fungicides", "Fertilizers", "Seeds", "Other"];
+  const categories = useMemo(() => {
+    const fromProducts = [...new Set(products.map(p => p.category))];
+    const custom = (shopCategories || []).filter(c => !DEFAULT_CATS.includes(c));
+    return [...new Set([...fromProducts, ...custom])];
+  }, [products, shopCategories]);
 
   const filteredProducts = useMemo(() =>
     products.filter(product => {

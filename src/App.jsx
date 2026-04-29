@@ -26,6 +26,33 @@ const ShopManagement    = lazy(() => import("./pages/ShopManagement"));
 const SetupWizard       = lazy(() => import("./pages/SetupWizard"));
 const CustomerStatement = lazy(() => import("./pages/CustomerStatement"));
 
+// New modules — Phase 2: Core Business
+const BatchExpiry       = lazy(() => import("./pages/inventory/BatchExpiry"));
+const DeadStockAlerts   = lazy(() => import("./pages/inventory/DeadStockAlerts"));
+const Bundles           = lazy(() => import("./pages/inventory/Bundles"));
+const PurchaseOrders    = lazy(() => import("./pages/purchases/PurchaseOrders"));
+const GoodsReceiving    = lazy(() => import("./pages/purchases/GoodsReceiving"));
+const PurchaseReturns   = lazy(() => import("./pages/purchases/PurchaseReturns"));
+const Suppliers         = lazy(() => import("./pages/purchases/Suppliers"));
+const CreditSales       = lazy(() => import("./pages/sales/CreditSales"));
+const CustomerDues      = lazy(() => import("./pages/customers/CustomerDues"));
+const AuditLogs         = lazy(() => import("./pages/staff/AuditLogs"));
+
+// New modules — Phase 3: Intelligence
+const PestDiagnosis     = lazy(() => import("./pages/recommendations/PestDiagnosis"));
+const DosageSuggestions = lazy(() => import("./pages/recommendations/DosageSuggestions"));
+const RecommendationPrint = lazy(() => import("./pages/recommendations/RecommendationPrint"));
+const PurchaseHistory   = lazy(() => import("./pages/customers/PurchaseHistory"));
+const Loyalty           = lazy(() => import("./pages/customers/Loyalty"));
+const ProfitReports     = lazy(() => import("./pages/reports/ProfitReports"));
+const MarginReports     = lazy(() => import("./pages/reports/MarginReports"));
+const InventoryReports  = lazy(() => import("./pages/reports/InventoryReports"));
+
+// New modules — Phase 4: Advanced
+const SalesReps         = lazy(() => import("./pages/staff/SalesReps"));
+const Analytics         = lazy(() => import("./pages/dashboard/Analytics"));
+const Forecasting       = lazy(() => import("./pages/dashboard/Forecasting"));
+
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
     <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--pos-primary) transparent transparent transparent" }} />
@@ -73,6 +100,7 @@ const AppLayout = () => {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  {/* Existing routes — preserved as-is */}
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/customers" element={<Customers />} />
@@ -86,6 +114,44 @@ const AppLayout = () => {
                   <Route path="/profile" element={<ProfileSettings />} />
                   <Route path="/shops" element={<ShopManagement />} />
                   <Route path="/customers/:id/statement" element={<CustomerStatement />} />
+
+                  {/* Dashboard subpages */}
+                  <Route path="/dashboard/analytics" element={<Analytics />} />
+                  <Route path="/dashboard/forecasting" element={<Forecasting />} />
+
+                  {/* Inventory */}
+                  <Route path="/inventory/batch-expiry" element={<BatchExpiry />} />
+                  <Route path="/inventory/bundles" element={<Bundles />} />
+                  <Route path="/inventory/dead-stock" element={<DeadStockAlerts />} />
+
+                  {/* Purchases */}
+                  <Route path="/purchases/orders" element={<PurchaseOrders />} />
+                  <Route path="/purchases/grn" element={<GoodsReceiving />} />
+                  <Route path="/purchases/returns" element={<PurchaseReturns />} />
+                  <Route path="/purchases/suppliers" element={<Suppliers />} />
+
+                  {/* Sales */}
+                  <Route path="/sales/credit" element={<CreditSales />} />
+
+                  {/* Customers */}
+                  <Route path="/customers/dues" element={<CustomerDues />} />
+                  <Route path="/customers/history" element={<PurchaseHistory />} />
+                  <Route path="/customers/loyalty" element={<Loyalty />} />
+
+                  {/* Recommendations */}
+                  <Route path="/recommendations/diagnosis" element={<PestDiagnosis />} />
+                  <Route path="/recommendations/dosage" element={<DosageSuggestions />} />
+                  <Route path="/recommendations/print" element={<RecommendationPrint />} />
+
+                  {/* Reports */}
+                  <Route path="/reports/profit" element={<ProfitReports />} />
+                  <Route path="/reports/margin" element={<MarginReports />} />
+                  <Route path="/reports/inventory" element={<InventoryReports />} />
+
+                  {/* Staff */}
+                  <Route path="/staff/sales-reps" element={<SalesReps />} />
+                  <Route path="/staff/audit-logs" element={<AuditLogs />} />
+
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>

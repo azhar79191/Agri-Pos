@@ -6,9 +6,9 @@ import { useApp } from "../context/AppContext";
 import { getSetupStatus, registerUser } from "../api/authApi";
 
 const features = [
-  { icon: Package,   title: "Smart Inventory",   desc: "Real-time stock tracking & alerts" },
-  { icon: BarChart3, title: "Deep Analytics",     desc: "Insights that drive decisions" },
-  { icon: Shield,    title: "Role-Based Access",  desc: "Secure multi-user management" },
+  { icon: Package, title: "Smart Inventory", desc: "Real-time stock tracking & alerts" },
+  { icon: BarChart3, title: "Deep Analytics", desc: "Insights that drive decisions" },
+  { icon: Shield, title: "Role-Based Access", desc: "Secure multi-user management" },
 ];
 
 const InputField = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra }) => (
@@ -101,8 +101,13 @@ const Login = () => {
               <Sprout className="w-6 h-6 text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-lg tracking-tight leading-none">CropNest POS</p>
-              <p className="text-[11px] text-emerald-400/70 mt-0.5 tracking-widest uppercase">Pesticide Management</p>
+              <p className="font-bold text-white text-lg tracking-tight leading-none">
+                CropNest POS
+              </p>
+
+              <p className="text-[11px] text-emerald-400/70 mt-0.5 tracking-widest uppercase">
+                Pesticide Management
+              </p>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ const ProductsContext = createContext();
 export function ProductsProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [shopCategories, setShopCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -19,8 +20,8 @@ export function ProductsProvider({ children }) {
       const res = await getProducts({ isActive: true, ...params });
       const data = res.data.data;
       setProducts(Array.isArray(data) ? data : data?.products ?? data?.docs ?? []);
-      // Store brands from response
       if (Array.isArray(data?.brands)) setBrands(data.brands);
+      if (Array.isArray(data?.categories)) setShopCategories(data.categories);
       return res.data;
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch products");
@@ -54,7 +55,7 @@ export function ProductsProvider({ children }) {
   };
 
   return (
-    <ProductsContext.Provider value={{ products, brands, loading, error, fetchProducts, fetchLowStock, addProduct, editProduct, removeProduct }}>
+    <ProductsContext.Provider value={{ products, brands, shopCategories, loading, error, fetchProducts, fetchLowStock, addProduct, editProduct, removeProduct }}>
       {children}
     </ProductsContext.Provider>
   );

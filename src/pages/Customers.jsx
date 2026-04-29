@@ -58,7 +58,13 @@ const Customers = () => {
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
-    setFormData({ name: customer.name, phone: customer.phone, address: customer.address, creditBalance: customer.creditBalance?.toString() || "0" });
+    // walletBalance = advance (balance > 0), creditBalance = owes (balance < 0)
+    setFormData({
+      name: customer.name,
+      phone: customer.phone,
+      address: customer.address,
+      creditBalance: customer.walletBalance?.toString() || "0"
+    });
     setIsModalOpen(true);
   };
 
@@ -66,7 +72,13 @@ const Customers = () => {
     e?.preventDefault();
     setSubmitting(true);
     try {
-      const payload = { ...formData, creditBalance: parseFloat(formData.creditBalance) || 0 };
+      const payload = {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+        // creditBalance in form = wallet advance (positive balance)
+        balance: parseFloat(formData.creditBalance) || 0,
+      };
       if (editingCustomer) {
         await editCustomer(editingCustomer._id, payload);
         actions.showToast({ message: "Customer updated successfully", type: "success" });
