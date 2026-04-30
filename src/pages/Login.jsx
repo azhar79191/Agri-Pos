@@ -18,7 +18,7 @@ const InputField = ({ label, type = "text", icon: Icon, value, onChange, placeho
       <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
       <input
         type={type} value={value} onChange={onChange} placeholder={placeholder} required={required}
-        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-sm"
+        className="input-premium w-full pl-10"
       />
       {extra}
     </div>
@@ -68,12 +68,12 @@ const Login = () => {
   };
 
   if (mode === "checking") return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-glow animate-pulse">
+        <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center animate-pulse">
           <Sprout className="w-6 h-6 text-white" />
         </div>
-        <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
         <p className="text-sm text-slate-500">Connecting to server...</p>
       </div>
     </div>
@@ -83,38 +83,25 @@ const Login = () => {
     <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
 
       {/* ── Left branding panel ── */}
-      <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative overflow-hidden bg-slate-950 flex-col justify-between p-12">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
-        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-emerald-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/8 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-gold-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+      <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative overflow-hidden flex-col justify-between p-12" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)" }}>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full translate-x-1/4 -translate-y-1/4 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/8 rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl" />
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-
-        {/* Content */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-16">
-            <div className="w-11 h-11 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-glow">
-              <Sprout className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Sprout className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-lg tracking-tight leading-none">
-                CropNest POS
-              </p>
-
-              <p className="text-[11px] text-emerald-400/70 mt-0.5 tracking-widest uppercase">
-                Pesticide Management
-              </p>
+              <p className="font-semibold text-white text-lg tracking-tight leading-none">CropNest POS</p>
+              <p className="text-[11px] text-blue-400/70 mt-0.5 tracking-widest uppercase">Pesticide Management</p>
             </div>
           </div>
 
           <div className="mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-medium text-emerald-400 tracking-wide">Premium Agricultural POS</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-xs font-medium text-blue-400 tracking-wide">Premium Agricultural POS</span>
             </div>
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight tracking-tight mb-4">
               {mode === "setup" ? "Welcome.\nLet's get started." : "Manage your\nagri business."}
@@ -128,12 +115,12 @@ const Login = () => {
 
           <div className="space-y-3">
             {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-center gap-4 p-4 rounded-2xl bg-white/3 border border-white/5 backdrop-blur-sm hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-emerald-400" />
+              <div key={title} className="flex items-center gap-4 p-4 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">{title}</p>
+                  <p className="text-sm font-medium text-white">{title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                 </div>
               </div>
@@ -152,10 +139,10 @@ const Login = () => {
 
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-glow-sm">
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
               <Sprout className="w-5 h-5 text-white" />
             </div>
-            <p className="font-bold text-slate-900 dark:text-white text-lg">AgroCare POS</p>
+            <p className="font-semibold text-slate-900 dark:text-white text-lg">AgroCare POS</p>
           </div>
 
           {/* Heading */}
@@ -172,8 +159,8 @@ const Login = () => {
 
           {/* Error */}
           {error && (
-            <div className="mb-5 flex items-start gap-3 p-3.5 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/50 rounded-xl">
-              <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="mb-5 flex items-start gap-3 p-3.5 bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800/50 rounded-lg">
+              <div className="w-5 h-5 rounded bg-red-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-white text-xs font-bold">!</span>
               </div>
               <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
@@ -197,7 +184,7 @@ const Login = () => {
                 value={setupForm.confirmPassword} onChange={e => setSetupForm(p => ({ ...p, confirmPassword: e.target.value }))}
                 placeholder="Repeat password" required
               />
-              <button type="submit" disabled={setupLoading} className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-glow-sm hover:shadow-glow transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+              <button type="submit" disabled={setupLoading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
                 {setupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
@@ -213,7 +200,7 @@ const Login = () => {
                 placeholder="Enter your password" required
                 extra={<button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">{showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>}
               />
-              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-xl shadow-glow-sm hover:shadow-glow transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
               </button>
             </form>
@@ -222,7 +209,7 @@ const Login = () => {
           <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
               New shop?{" "}
-              <button onClick={() => navigate("/register")} className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline underline-offset-2">
+              <button onClick={() => navigate("/register")} className="text-blue-600 dark:text-blue-400 font-medium hover:underline underline-offset-2">
                 Register here
               </button>
             </p>

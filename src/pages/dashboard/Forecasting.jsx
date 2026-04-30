@@ -26,7 +26,7 @@ const Forecasting = () => {
   return (
     <div className="space-y-6 animate-fade-up">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-glow-sm"><TrendingUp className="w-5 h-5 text-white" /></div>
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm"><TrendingUp className="w-5 h-5 text-white" /></div>
         <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sales Forecasting</h1><p className="text-sm text-slate-500 dark:text-slate-400">Trend analysis and revenue projections</p></div>
       </div>
 
@@ -44,7 +44,7 @@ const Forecasting = () => {
             ))}
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Revenue: Actual vs Forecast</h3>
             {combined.length > 0 ? (
               <div className="h-72"><ResponsiveContainer width="100%" height="100%">
@@ -59,7 +59,7 @@ const Forecasting = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <p className="text-sm text-blue-700 dark:text-blue-300"><strong>Note:</strong> Forecasts use a 3-month moving average based on your actual sales history.</p>
           </div>
         </>

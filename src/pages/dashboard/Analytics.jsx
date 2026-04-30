@@ -30,7 +30,7 @@ const Analytics = () => {
   return (
     <div className="space-y-6 animate-fade-up">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-glow-sm"><BarChart3 className="w-5 h-5 text-white" /></div>
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm"><BarChart3 className="w-5 h-5 text-white" /></div>
         <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Analytics</h1><p className="text-sm text-slate-500 dark:text-slate-400">Deep-dive into your business performance</p></div>
       </div>
 
@@ -40,17 +40,17 @@ const Analytics = () => {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { l: "Monthly Revenue", v: formatCurrency(currentMonthSales, settings.currency), c: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30", icon: DollarSign },
+              { l: "Monthly Revenue", v: formatCurrency(currentMonthSales, settings.currency), c: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-blue-900/20", icon: DollarSign },
               { l: "Growth Rate", v: `${growthRate >= 0 ? "+" : ""}${growthRate}%`, c: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30", icon: TrendingUp },
               { l: "Customers", v: totalCustomers, c: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30", icon: Users },
               { l: "Transactions", v: totalInvoices, c: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30", icon: ShoppingCart },
             ].map(({ l, v, c, bg, icon: I }) => (
-              <div key={l} className="stat-card-premium"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}><I className={`w-5 h-5 ${c}`} /></div><div><p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{l}</p><p className={`text-lg font-bold mt-0.5 ${c}`}>{v}</p></div></div></div>
+              <div key={l} className="stat-card-premium"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center`}><I className={`w-5 h-5 ${c}`} /></div><div><p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{l}</p><p className={`text-lg font-bold mt-0.5 ${c}`}>{v}</p></div></div></div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Monthly Revenue Trend</h3>
               {salesData.length > 0 ? (
                 <div className="h-64"><ResponsiveContainer width="100%" height="100%"><LineChart data={salesData}><CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} /><XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} /><YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${settings.currency}${(v/1000).toFixed(0)}k`} /><Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)" }} formatter={v => [formatCurrency(v, settings.currency), "Sales"]} /><Line type="monotone" dataKey="sales" stroke="#10b981" strokeWidth={2.5} dot={{ r: 4, fill: "#10b981" }} /></LineChart></ResponsiveContainer></div>
@@ -58,7 +58,7 @@ const Analytics = () => {
                 <div className="h-64 flex items-center justify-center text-slate-400 text-sm">No sales data yet</div>
               )}
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Products by Category</h3>
               {categoryData.length > 0 ? (
                 <>

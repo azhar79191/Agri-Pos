@@ -8,3 +8,4 @@ export const getRecentTransactions = () => API.get("/invoices/recent/transaction
 export const createInvoice = (data) => API.post("/invoices", data);
 export const updateInvoiceStatus = (id, status) => API.put(`/invoices/${id}/status`, { status });
 export const refundInvoice = (id) => API.post(`/invoices/${id}/refund`);
+export const deleteInvoice = (id) => API.delete(`/invoices/${id}`);

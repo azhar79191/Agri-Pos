@@ -4,13 +4,13 @@ import { useApp } from "../context/AppContext";
 import StatusManagement from "../components/StatusManagement";
 
 const statusConfig = {
-  Completed:  { cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", dot: "bg-emerald-500" },
+  Completed:  { cls: "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400", dot: "bg-emerald-500" },
   Pending:    { cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   dot: "bg-amber-500" },
   Processing: { cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",       dot: "bg-blue-500" },
   Cancelled:  { cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",           dot: "bg-red-500" },
 };
 
-const selectCls = "appearance-none pl-3.5 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all cursor-pointer";
+const selectCls = "appearance-none pl-3.5 pr-8 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer";
 
 const StatusManagementPage = () => {
   const { state } = useApp();
@@ -48,7 +48,7 @@ const StatusManagementPage = () => {
     <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-glow-sm">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm">
           <Activity className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -62,7 +62,7 @@ const StatusManagementPage = () => {
         {[
           { label: "Total", value: stats.total, icon: FileText, cls: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-800" },
           { label: "Pending", value: stats.pending, icon: Clock, cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
-          { label: "Completed", value: stats.completed, icon: CheckCircle, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+          { label: "Completed", value: stats.completed, icon: CheckCircle, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-blue-900/20" },
           { label: "Processing", value: stats.processing, icon: AlertCircle, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
           { label: "Cancelled", value: stats.cancelled, icon: X, cls: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" },
         ].map(({ label, value, icon: Icon, cls, bg }, i) => (
@@ -72,7 +72,7 @@ const StatusManagementPage = () => {
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
                 <p className={`text-2xl font-bold mt-1 ${cls}`}>{value}</p>
               </div>
-              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
+              <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center`}>
                 <Icon className={`w-4 h-4 ${cls}`} />
               </div>
             </div>
@@ -85,7 +85,7 @@ const StatusManagementPage = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input type="text" placeholder="Search by ID or customer..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" />
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="relative">
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
@@ -108,7 +108,7 @@ const StatusManagementPage = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-premium">
             <thead>
@@ -126,7 +126,7 @@ const StatusManagementPage = () => {
                   <tr key={`${item.type}-${item.id}`} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2.5">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === "invoice" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"}`}>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === "invoice" ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-emerald-100 dark:bg-blue-900/20 text-emerald-600 dark:text-emerald-400"}`}>
                           <TypeIcon className="w-4 h-4" />
                         </div>
                         <div>

@@ -140,7 +140,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     >
       <div className="space-y-4">
         {/* Mode Toggle */}
-        <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
+        <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
           {[{ id: "camera", icon: Camera, label: "Camera" }, { id: "manual", icon: Keyboard, label: "Manual" }].map(({ id, icon: Icon, label }) => (
             <button
               key={id}
@@ -158,9 +158,9 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
 
         {/* ── SCAN RESULT ── */}
         {scanResult && (
-          <div className={`rounded-xl border-2 p-4 ${
+          <div className={`rounded-lg border-2 p-4 ${
             scanResult.product
-              ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20"
+              ? "border-emerald-400 bg-emerald-50 dark:bg-blue-900/15"
               : "border-red-400 bg-red-50 dark:bg-red-900/20"
           }`}>
             <div className="flex items-start gap-3">
@@ -225,7 +225,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
         {scanMode === "camera" && !scanResult && (
           <div className="space-y-3">
             {cameraError ? (
-              <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <div className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm text-red-700 dark:text-red-400">{cameraError}</p>
@@ -233,7 +233,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
                 </div>
               </div>
             ) : (
-              <div className="relative aspect-video bg-gray-900 rounded-xl overflow-hidden">
+              <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
                 <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-56 h-36 relative">
@@ -270,7 +270,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
                 value={manualBarcode}
                 onChange={(e) => setManualBarcode(e.target.value)}
                 placeholder="Type or paste barcode..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-lg font-mono tracking-wider"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg font-mono tracking-wider"
                 autoFocus
               />
             </div>

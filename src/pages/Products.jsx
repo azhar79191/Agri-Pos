@@ -56,12 +56,12 @@ const generateSKU = (name, category) => {
 };
 
 const categoryColors = {
-  Herbicides: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  Insecticides: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  Fungicides: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  Fertilizers: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  Seeds: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  Other: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
+  Herbicides: "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+  Insecticides: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400",
+  Fungicides: "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+  Fertilizers: "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
+  Seeds: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
+  Other: "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
 };
 
 const Products = () => {
@@ -149,16 +149,16 @@ const Products = () => {
   }), [products]);
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-5 animate-fade-up">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-glow-sm flex-shrink-0">
-            <Package className="w-5 h-5 text-white" />
+          <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
+            <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Products</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{pagination.total} products in inventory</p>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Products</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{pagination.total} products in inventory</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -170,13 +170,13 @@ const Products = () => {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total Products", value: stockStats.total, color: "emerald", icon: Package },
-          { label: "Low Stock", value: stockStats.low, color: "amber", icon: Package },
-          { label: "Out of Stock", value: stockStats.out, color: "red", icon: Package },
-        ].map(({ label, value, color, icon: Icon }, i) => (
-          <div key={label} className={`stat-card-premium ${color} animate-fade-up stagger-${i + 1}`}>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${color === "emerald" ? "text-emerald-600" : color === "amber" ? "text-amber-600" : "text-red-600"}`}>{value}</p>
+          { label: "Total Products", value: stockStats.total, color: "blue" },
+          { label: "Low Stock", value: stockStats.low, color: "amber" },
+          { label: "Out of Stock", value: stockStats.out, color: "red" },
+        ].map(({ label, value, color }, i) => (
+          <div key={label} className={`card-base p-4 animate-fade-up stagger-${i + 1}`}>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+            <p className={`text-2xl font-bold ${color === "blue" ? "text-blue-600" : color === "amber" ? "text-amber-600" : "text-red-600"}`}>{value}</p>
           </div>
         ))}
       </div>
@@ -184,19 +184,19 @@ const Products = () => {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search products by name..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
+            className="input-premium w-full pl-10"
           />
         </div>
         <div className="relative">
           <select
             value={filterCategory}
             onChange={e => setFilterCategory(e.target.value)}
-            className="appearance-none pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all cursor-pointer"
+            className="select-premium pr-9"
           >
             <option value="">All Categories</option>
             {categoryOptions.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -206,57 +206,57 @@ const Products = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="card-base overflow-hidden">
         {loading ? <TableSkeleton rows={LIMIT} cols={6} /> : (
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
                 <tr>
                   {["Product", "Category", "Brand", "Unit", "Price", "Stock", "Actions"].map(h => (
-                    <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
+                    <th key={h}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody>
                 {filteredProducts.map((product, i) => {
                   const stockStatus = product.stock <= 0 ? "out" : product.stock <= (product.minStockLevel || 5) ? "low" : "good";
                   return (
-                    <tr key={product._id || product.id} className="group hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 transition-colors">
-                      <td className="px-4 py-3.5">
+                    <tr key={product._id || product.id} className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0">
-                            <Leaf className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
+                            <Leaf className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900 dark:text-white text-sm">{product.name}</p>
+                            <p className="font-medium text-slate-900 dark:text-white text-sm">{product.name}</p>
                             <p className="text-xs text-slate-400 font-mono">{product.sku}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${categoryColors[product.category] || categoryColors.Other}`}>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${categoryColors[product.category] || categoryColors.Other}`}>
                           {product.category}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-slate-600 dark:text-slate-400">{product.manufacturer || <span className="text-slate-300 dark:text-slate-600">—</span>}</td>
-                      <td className="px-4 py-3.5 text-sm text-slate-600 dark:text-slate-400">{product.unit}</td>
-                      <td className="px-4 py-3.5">
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price, "Rs.")}</span>
+                      <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{product.manufacturer || <span className="text-slate-300 dark:text-slate-600">—</span>}</td>
+                      <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{product.unit}</td>
+                      <td className="px-4 py-3">
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(product.price, "Rs.")}</span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          stockStatus === "out" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                          stockStatus === "low" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
-                          "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                          stockStatus === "out" ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400" :
+                          stockStatus === "low" ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
+                          "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${stockStatus === "out" ? "bg-red-500" : stockStatus === "low" ? "bg-amber-500" : "bg-emerald-500"}`} />
                           {product.stock} {product.unit}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex gap-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
-                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/15 transition-colors"
                             onClick={() => {
                               setEditingProduct(product);
                               const mfr = product.manufacturer || "";
@@ -264,7 +264,7 @@ const Products = () => {
                               setIsModalOpen(true);
                             }}
                           ><Edit2 size={15} /></button>
-                          <button className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" onClick={() => setDeleteConfirm(product)}>
+                          <button className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors" onClick={() => setDeleteConfirm(product)}>
                             <Trash2 size={15} />
                           </button>
                         </div>
@@ -276,9 +276,9 @@ const Products = () => {
             </table>
             {filteredProducts.length === 0 && (
               <div className="text-center py-16">
-                <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium">No products found</p>
-                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Try adjusting your search or filters</p>
+                <Package className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No products found</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try adjusting your search or filters</p>
               </div>
             )}
           </div>

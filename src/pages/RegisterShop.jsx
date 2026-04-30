@@ -17,7 +17,7 @@ const STEPS = [
 
 const emptyMember = { name: "", email: "", phone: "", password: "", role: "cashier" };
 
-const inputCls = "w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm";
+const inputCls = "w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm";
 
 export default function RegisterShop() {
   const navigate = useNavigate();
@@ -166,7 +166,7 @@ export default function RegisterShop() {
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/2 translate-y-1/2" />
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
+          <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center mb-6">
             <Sprout className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-5xl font-bold mb-4">AgroCare POS</h1>
@@ -177,7 +177,7 @@ export default function RegisterShop() {
               const done   = step > s.id;
               const active = step === s.id;
               return (
-                <div key={s.id} className={`flex items-center gap-4 rounded-xl p-4 transition-all ${active ? "bg-white/20" : done ? "bg-white/10" : "bg-white/5"}`}>
+                <div key={s.id} className={`flex items-center gap-4 rounded-lg p-4 transition-all ${active ? "bg-white/20" : done ? "bg-white/10" : "bg-white/5"}`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${done ? "bg-emerald-400" : active ? "bg-white/30" : "bg-white/10"}`}>
                     {done ? <CheckCircle className="w-5 h-5 text-white" /> : <Icon className="w-5 h-5 text-white" />}
                   </div>
@@ -195,7 +195,7 @@ export default function RegisterShop() {
 
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
               <Sprout className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">AgroCare POS</span>
@@ -205,7 +205,7 @@ export default function RegisterShop() {
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             {STEPS.map((s, i) => (
               <React.Fragment key={s.id}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.id ? "bg-emerald-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.id ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400"}`}>
                   {step > s.id ? "✓" : s.id}
                 </div>
                 {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${step > s.id ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
@@ -213,11 +213,11 @@ export default function RegisterShop() {
             ))}
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8">
 
             {/* Error banner */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">{error}</div>
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">{error}</div>
             )}
 
             {/* ── STEP 1: Admin Account ── */}
@@ -262,7 +262,7 @@ export default function RegisterShop() {
                     </div>
                   </div>
                   <button onClick={goNext}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-sm transition-colors mt-2">
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors mt-2">
                     Continue <ArrowRight className="w-5 h-5" />
                   </button>
                 </div>
@@ -284,7 +284,7 @@ export default function RegisterShop() {
                 {/* Logo upload */}
                 <div className="flex items-center gap-4 mb-5">
                   <label className="relative cursor-pointer group flex-shrink-0">
-                    <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-emerald-400 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
+                    <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-emerald-400 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
                       {logoPreview ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain" /> : <Building2 className="w-8 h-8 text-gray-300" />}
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center shadow">
@@ -318,23 +318,23 @@ export default function RegisterShop() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tax Rate (%)</label>
                       <input type="number" min="0" max="100" value={shopForm.taxRate} onChange={e => setS("taxRate", e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 text-sm" />
+                        className="w-full px-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Currency</label>
                       <select value={shopForm.currency} onChange={e => setS("currency", e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 text-sm">
+                        className="w-full px-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm">
                         {["Rs.", "₹", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button onClick={() => { setError(""); setStep(1); }}
-                      className="flex items-center gap-2 px-5 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                      className="flex items-center gap-2 px-5 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                       <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                     <button onClick={goNext}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold text-sm transition-colors">
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors">
                       Continue <ArrowRight className="w-5 h-5" />
                     </button>
                   </div>
@@ -354,7 +354,7 @@ export default function RegisterShop() {
 
                 <div className="space-y-4 max-h-72 overflow-y-auto pr-1">
                   {members.map((m, i) => (
-                    <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700 space-y-3">
+                    <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-lg border border-gray-100 dark:border-gray-700 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Member {i + 1}</span>
                         {members.length > 1 && (
@@ -391,15 +391,15 @@ export default function RegisterShop() {
 
                 <div className="flex gap-3 mt-6">
                   <button onClick={() => { setError(""); setStep(2); }}
-                    className="flex items-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    className="flex items-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
                   <button onClick={() => handleSubmit(true)} disabled={saving}
-                    className="px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-60">
+                    className="px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-60">
                     Skip
                   </button>
                   <button onClick={() => handleSubmit(false)} disabled={saving}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white rounded-xl font-semibold text-sm transition-colors">
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors">
                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Finish Setup <ArrowRight className="w-5 h-5" /></>}
                   </button>
                 </div>
@@ -409,7 +409,7 @@ export default function RegisterShop() {
             {/* ── STEP 4: Done ── */}
             {step === 4 && (
               <div className="text-center py-4">
-                <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+                <div className="w-20 h-20 bg-emerald-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-5">
                   <CheckCircle className="w-10 h-10 text-emerald-500" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Shop Created!</h2>
@@ -423,7 +423,7 @@ export default function RegisterShop() {
                 )}
                 <p className="text-sm text-gray-400 mb-8">You are now logged in as admin. Start adding products and processing sales.</p>
                 <button onClick={() => navigate("/dashboard")}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold transition-colors">
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
                   Go to Dashboard
                 </button>
               </div>

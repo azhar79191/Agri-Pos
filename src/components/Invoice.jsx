@@ -31,9 +31,9 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
   const shopInitials = shopName.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none">
+    <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-lg overflow-hidden print:shadow-none print:rounded-none">
       {/* Header Actions - Hidden in print */}
-      <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 print:hidden">
+      <div className="bg-blue-600 p-4 print:hidden">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Invoice #{invoice.invoiceNumber || invoice.id}</h2>
           <div className="flex gap-3">
@@ -65,13 +65,13 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
       {/* Invoice Content */}
       <div ref={ref} className="p-8 print:p-6">
         {/* Company Header */}
-        <div className="border-b-2 border-emerald-500 pb-6 mb-8">
+        <div className="border-b-2 border-blue-600 pb-6 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               {shopLogo ? (
-                <img src={shopLogo} alt={shopName} className="w-16 h-16 object-contain rounded-2xl shadow-lg" />
+                <img src={shopLogo} alt={shopName} className="w-16 h-16 object-contain rounded-lg shadow-lg" />
               ) : (
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">{shopInitials}</span>
                 </div>
               )}
@@ -100,7 +100,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
               </div>
             </div>
             <div className="text-right">
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-lg border border-emerald-200">
                 <h2 className="text-2xl font-bold text-emerald-700 mb-2">INVOICE</h2>
                 <div className="space-y-1 text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
@@ -123,7 +123,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
 
         {/* Customer & Transaction Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-gray-50 p-6 rounded-xl">
+          <div className="bg-gray-50 p-6 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <User className="w-5 h-5 text-emerald-600" />
               Bill To
@@ -145,7 +145,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
             </div>
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-xl">
+          <div className="bg-gray-50 p-6 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-emerald-600" />
               Payment Details
@@ -179,7 +179,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
 
         {/* Items Table */}
         <div className="mb-8">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-t-xl">
+          <div className="bg-blue-600 text-white p-4 rounded-t-xl">
             <h3 className="text-lg font-semibold">Items Purchased</h3>
           </div>
           <div className="border border-gray-200 rounded-b-xl overflow-hidden">
@@ -228,7 +228,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
         {/* Totals */}
         <div className="flex justify-end mb-8">
           <div className="w-full max-w-md">
-            <div className="bg-gray-50 p-6 rounded-xl space-y-3">
+            <div className="bg-gray-50 p-6 rounded-lg space-y-3">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal:</span>
                 <span className="font-medium">{formatCurrency(invoice.subtotal || 0)}</span>
@@ -269,7 +269,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
               </ul>
             </div>
             <div className="text-right">
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-lg border border-emerald-200">
                 <p className="text-sm text-gray-600 mb-2">{receiptFooter}</p>
                 <p className="font-semibold text-emerald-700">{shopName}</p>
                 {shopEmail && (

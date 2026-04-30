@@ -48,32 +48,32 @@ const SalesReps = () => {
     <div className="space-y-6 animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-glow-sm"><UserCheck className="w-5 h-5 text-white" /></div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-sm"><UserCheck className="w-5 h-5 text-white" /></div>
           <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sales Representatives</h1><p className="text-sm text-slate-500 dark:text-slate-400">{reps.length} reps · Commission paid: {formatCurrency(totalEarned,settings.currency)}</p></div>
         </div>
-        <button onClick={()=>setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-glow-sm"><Plus className="w-4 h-4"/>Add Rep</button>
+        <button onClick={()=>setShowModal(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-semibold text-sm shadow-sm"><Plus className="w-4 h-4"/>Add Rep</button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reps.map(r=>(
-          <div key={r._id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 space-y-3 hover:shadow-premium-lg transition-all">
+          <div key={r._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 space-y-3 hover:shadow-premium-lg transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center"><span className="text-white font-bold">{r.name[0]}</span></div>
+              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center"><span className="text-white font-bold">{r.name[0]}</span></div>
               <div className="flex-1"><p className="font-bold text-slate-900 dark:text-white text-sm">{r.name}</p><p className="text-xs text-slate-400">{r.territory}</p></div>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${r.status==="active"?"bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400":"bg-red-100 text-red-700"}`}>{r.status}</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${r.status==="active"?"bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400":"bg-red-100 text-red-700"}`}>{r.status}</span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60"><p className="text-xs text-slate-400">Sales</p><p className="font-bold text-sm text-slate-900 dark:text-white">{formatCurrency(r.totalSales,settings.currency)}</p></div>
               <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60"><p className="text-xs text-slate-400">Rate</p><p className="font-bold text-sm text-blue-600">{r.commission}%</p></div>
-              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20"><p className="text-xs text-slate-400">Earned</p><p className="font-bold text-sm text-emerald-600">{formatCurrency(r.earned,settings.currency)}</p></div>
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-blue-900/15"><p className="text-xs text-slate-400">Earned</p><p className="font-bold text-sm text-emerald-600">{formatCurrency(r.earned,settings.currency)}</p></div>
             </div>
           </div>
         ))}
       </div>
       {reps.length===0 && <EmptyState icon={UserCheck} title="No sales reps" actionLabel="Add Rep" onAction={()=>setShowModal(true)}/>}
-      <ModernModal isOpen={showModal} onClose={()=>setShowModal(false)} title="Add Sales Rep" footer={<button onClick={handleAdd} disabled={saving} className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl text-sm font-semibold">{saving ? "Adding..." : "Add"}</button>}>
+      <ModernModal isOpen={showModal} onClose={()=>setShowModal(false)} title="Add Sales Rep" footer={<button onClick={handleAdd} disabled={saving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold">{saving ? "Adding..." : "Add"}</button>}>
         <div className="space-y-4">
           {[{l:"Name *",k:"name"},{l:"Phone",k:"phone"},{l:"Territory",k:"territory"},{l:"Commission %",k:"commission",t:"number"}].map(({l,k,t})=>(
-            <div key={k}><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label><input type={t||"text"} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white"/></div>
+            <div key={k}><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label><input type={t||"text"} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white"/></div>
           ))}
         </div>
       </ModernModal>

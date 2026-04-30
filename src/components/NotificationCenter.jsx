@@ -6,11 +6,11 @@ import { useSocket, fetchNotificationsFromAPI } from "../hooks/useSocket";
 import DepositCashModal from "./DepositCashModal";
 
 const SEVERITY_STYLES = {
-  critical: { bg: "from-red-500 to-rose-600",     dot: "bg-red-500",    badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-  high:     { bg: "from-orange-500 to-red-500",   dot: "bg-orange-500", badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-  warning:  { bg: "from-amber-500 to-orange-500", dot: "bg-amber-500",  badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
-  info:     { bg: "from-blue-500 to-indigo-500",  dot: "bg-blue-500",   badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  success:  { bg: "from-emerald-500 to-teal-500", dot: "bg-emerald-500",badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  critical: { bg: "bg-red-100 dark:bg-red-900/20",     dot: "bg-red-500",    iconColor: "text-red-600 dark:text-red-400" },
+  high:     { bg: "bg-orange-100 dark:bg-orange-900/20", dot: "bg-orange-500", iconColor: "text-orange-600 dark:text-orange-400" },
+  warning:  { bg: "bg-amber-100 dark:bg-amber-900/20",  dot: "bg-amber-500",  iconColor: "text-amber-600 dark:text-amber-400" },
+  info:     { bg: "bg-blue-100 dark:bg-blue-900/20",    dot: "bg-blue-500",   iconColor: "text-blue-600 dark:text-blue-400" },
+  success:  { bg: "bg-emerald-100 dark:bg-emerald-900/20", dot: "bg-emerald-500", iconColor: "text-emerald-600 dark:text-emerald-400" },
 };
 
 const TYPE_ICON = {
@@ -101,7 +101,7 @@ const NotificationCenter = () => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowDeposit(true)}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors border border-emerald-200 dark:border-emerald-800/50"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/15 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900/25 transition-colors border border-blue-200/80 dark:border-blue-800/50"
         >
           <DollarSign className="w-3.5 h-3.5" />Deposit
         </button>
@@ -109,27 +109,27 @@ const NotificationCenter = () => {
         <div className="relative" ref={panelRef}>
           <button
             onClick={() => setShowPanel(p => !p)}
-            className="p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#122b1c] transition-all relative"
+            className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all relative"
           >
             <Bell className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             {notifications.length > 0 && (
-              <span className={`absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-[#071209] ${criticalCount > 0 ? "bg-red-500 animate-pulse" : "bg-amber-500"}`} />
+              <span className={`absolute top-1 right-1 w-2 h-2 rounded-full border-2 border-white dark:border-slate-900 ${criticalCount > 0 ? "bg-red-500 animate-pulse" : "bg-amber-500"}`} />
             )}
           </button>
 
           {showPanel && (
-            <div className="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-[#0d1f14] rounded-2xl shadow-2xl border border-slate-200 dark:border-emerald-900/20 z-50 overflow-hidden flex flex-col max-h-[32rem] animate-scale-in">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-emerald-900/15 flex items-center justify-between flex-shrink-0">
+            <div className="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-slate-900 rounded-lg shadow-premium-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col max-h-[32rem] animate-scale-in">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h3>
                   {notifications.length > 0 && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${criticalCount > 0 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-slate-100 text-slate-600 dark:bg-[#122b1c] dark:text-slate-400"}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded font-medium ${criticalCount > 0 ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"}`}>
                       {notifications.length}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={loadNotifications} disabled={fetching} className="p-1.5 hover:bg-slate-100 dark:hover:bg-[#122b1c] rounded-lg transition-colors">
+                  <button onClick={loadNotifications} disabled={fetching} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <RefreshCw className={`w-3.5 h-3.5 text-slate-400 ${fetching ? "animate-spin" : ""}`} />
                   </button>
                   {notifications.length > 0 && (
@@ -157,10 +157,10 @@ const NotificationCenter = () => {
                     const Icon = TYPE_ICON[n.type] || TYPE_ICON.default;
                     const style = SEVERITY_STYLES[n.severity] || SEVERITY_STYLES.info;
                     return (
-                      <div key={n.id} className="px-4 py-3 border-b border-slate-50 dark:border-emerald-900/8 hover:bg-slate-50 dark:hover:bg-[#122b1c]/60 cursor-pointer transition-colors" onClick={() => n.action?.()}>
+                      <div key={n.id} className="px-4 py-3 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors" onClick={() => n.action?.()}>
                         <div className="flex items-start gap-3">
-                          <div className={`p-2 rounded-xl bg-gradient-to-br ${style.bg} flex-shrink-0 mt-0.5`}>
-                            <Icon className="w-3.5 h-3.5 text-white" />
+                          <div className={`p-2 rounded-lg ${style.bg} flex-shrink-0 mt-0.5`}>
+                            <Icon className={`w-3.5 h-3.5 ${style.iconColor}`} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -169,7 +169,7 @@ const NotificationCenter = () => {
                             </div>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
                           </div>
-                          <button onClick={e => { e.stopPropagation(); dismiss(n.id); }} className="p-1 hover:bg-slate-200 dark:hover:bg-[#122b1c] rounded-lg flex-shrink-0 transition-colors">
+                          <button onClick={e => { e.stopPropagation(); dismiss(n.id); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md flex-shrink-0 transition-colors">
                             <X className="w-3 h-3 text-slate-400" />
                           </button>
                         </div>

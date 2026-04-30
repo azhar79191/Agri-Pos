@@ -7,74 +7,30 @@ const QuickActions = () => {
   const [showActions, setShowActions] = useState(false);
 
   const quickActions = [
-    {
-      id: "add-product",
-      label: "Add Product",
-      icon: Package,
-      color: "from-emerald-500 to-teal-600",
-      action: () => {
-        actions.setPage("products");
-        actions.showModal({ type: "addProduct" });
-      },
-      permission: "products"
-    },
-    {
-      id: "new-sale",
-      label: "New Sale",
-      icon: ShoppingCart,
-      color: "from-blue-500 to-indigo-600",
-      action: () => actions.setPage("pos"),
-      permission: "pos"
-    },
-    {
-      id: "add-customer",
-      label: "Add Customer",
-      icon: Users,
-      color: "from-purple-500 to-violet-600",
-      action: () => {
-        actions.setPage("customers");
-        actions.showModal({ type: "addCustomer" });
-      },
-      permission: "customers"
-    },
-    {
-      id: "view-reports",
-      label: "Reports",
-      icon: TrendingUp,
-      color: "from-orange-500 to-red-600",
-      action: () => actions.setPage("reports"),
-      permission: "reports"
-    }
+    { id: "add-product", label: "Add Product", icon: Package, color: "bg-blue-600 hover:bg-blue-700", action: () => { actions.setPage("products"); actions.showModal({ type: "addProduct" }); }, permission: "products" },
+    { id: "new-sale", label: "New Sale", icon: ShoppingCart, color: "bg-emerald-600 hover:bg-emerald-700", action: () => actions.setPage("pos"), permission: "pos" },
+    { id: "add-customer", label: "Add Customer", icon: Users, color: "bg-purple-600 hover:bg-purple-700", action: () => { actions.setPage("customers"); actions.showModal({ type: "addCustomer" }); }, permission: "customers" },
+    { id: "view-reports", label: "Reports", icon: TrendingUp, color: "bg-amber-600 hover:bg-amber-700", action: () => actions.setPage("reports"), permission: "reports" },
   ];
 
-  const availableActions = quickActions.filter(action => 
-    actions.hasPermission(action.permission)
-  );
+  const availableActions = quickActions.filter(action => actions.hasPermission(action.permission));
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Quick Actions Menu */}
       {showActions && (
-        <div className="absolute bottom-16 right-0 space-y-3 animate-in slide-in-from-bottom-2">
+        <div className="absolute bottom-14 right-0 space-y-2 animate-fade-up">
           {availableActions.map((action, index) => {
             const Icon = action.icon;
             return (
-              <div
-                key={action.id}
-                className="flex items-center gap-3 animate-in slide-in-from-right-2"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <span className="bg-white dark:bg-gray-800 text-sm font-medium px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 whitespace-nowrap">
+              <div key={action.id} className="flex items-center gap-2 animate-fade-up" style={{ animationDelay: `${index * 60}ms` }}>
+                <span className="bg-white dark:bg-slate-800 text-xs font-medium px-2.5 py-1.5 rounded-md shadow-premium-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap text-slate-700 dark:text-slate-300">
                   {action.label}
                 </span>
                 <button
-                  onClick={() => {
-                    action.action();
-                    setShowActions(false);
-                  }}
-                  className={`w-12 h-12 rounded-full bg-gradient-to-r ${action.color} text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center`}
+                  onClick={() => { action.action(); setShowActions(false); }}
+                  className={`w-10 h-10 rounded-lg ${action.color} text-white shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </button>
               </div>
             );
@@ -82,14 +38,11 @@ const QuickActions = () => {
         </div>
       )}
 
-      {/* Main FAB Button */}
       <button
         onClick={() => setShowActions(!showActions)}
-        className={`w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center ${
-          showActions ? "rotate-45" : ""
-        }`}
+        className={`w-12 h-12 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center ${showActions ? "rotate-45" : ""}`}
       >
-        {showActions ? <Plus className="w-6 h-6" /> : <Zap className="w-6 h-6" />}
+        {showActions ? <Plus className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
       </button>
     </div>
   );

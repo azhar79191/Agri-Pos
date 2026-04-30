@@ -21,24 +21,24 @@ const Modal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
       <div
-        className={`relative z-[10000] w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-[#0d1f14] shadow-2xl border border-slate-200/80 dark:border-emerald-900/20 animate-scale-in`}
+        className={`relative z-[10000] w-full ${sizes[size]} max-h-[90vh] flex flex-col overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 animate-scale-in`}
         onClick={e => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-emerald-900/15 flex-shrink-0">
-            {title && <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            {title && <h3 className="text-base font-semibold text-slate-800 dark:text-white">{title}</h3>}
             {showCloseButton && (
-              <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#122b1c] rounded-xl transition-all">
+              <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors">
                 <X className="h-5 w-5" />
               </button>
             )}
           </div>
         )}
-        <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
+        <div className="px-5 py-4 overflow-y-auto flex-1">{children}</div>
         {footer && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-emerald-900/15 bg-slate-50/50 dark:bg-[#0a1a0e]/50 flex-shrink-0">
+          <div className="px-5 py-3.5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex-shrink-0">
             {footer}
           </div>
         )}

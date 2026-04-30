@@ -36,7 +36,9 @@ const PurchaseReturns   = lazy(() => import("./pages/purchases/PurchaseReturns")
 const Suppliers         = lazy(() => import("./pages/purchases/Suppliers"));
 const CreditSales       = lazy(() => import("./pages/sales/CreditSales"));
 const CustomerDues      = lazy(() => import("./pages/customers/CustomerDues"));
-const AuditLogs         = lazy(() => import("./pages/staff/AuditLogs"));
+
+// Staff Hub — unified
+const StaffHub          = lazy(() => import("./pages/staff/StaffHub"));
 
 // New modules — Phase 3: Intelligence
 const PestDiagnosis     = lazy(() => import("./pages/recommendations/PestDiagnosis"));
@@ -49,7 +51,6 @@ const MarginReports     = lazy(() => import("./pages/reports/MarginReports"));
 const InventoryReports  = lazy(() => import("./pages/reports/InventoryReports"));
 
 // New modules — Phase 4: Advanced
-const SalesReps         = lazy(() => import("./pages/staff/SalesReps"));
 const Analytics         = lazy(() => import("./pages/dashboard/Analytics"));
 const Forecasting       = lazy(() => import("./pages/dashboard/Forecasting"));
 
@@ -90,7 +91,7 @@ const AppLayout = () => {
   const { toast } = state;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#071209] flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
@@ -109,7 +110,7 @@ const AppLayout = () => {
                   <Route path="/status" element={<StatusManagement />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/stock" element={<StockManagement />} />
-                  <Route path="/users" element={<UserManagement />} />
+                  <Route path="/users" element={<StaffHub />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<ProfileSettings />} />
                   <Route path="/shops" element={<ShopManagement />} />
@@ -148,9 +149,14 @@ const AppLayout = () => {
                   <Route path="/reports/margin" element={<MarginReports />} />
                   <Route path="/reports/inventory" element={<InventoryReports />} />
 
-                  {/* Staff */}
-                  <Route path="/staff/sales-reps" element={<SalesReps />} />
-                  <Route path="/staff/audit-logs" element={<AuditLogs />} />
+                  {/* Staff Hub — all staff routes */}
+                  <Route path="/staff" element={<StaffHub />} />
+                  <Route path="/staff/sales-reps" element={<StaffHub />} />
+                  <Route path="/staff/audit-logs" element={<StaffHub />} />
+                  <Route path="/staff/users" element={<StaffHub />} />
+                  <Route path="/staff/reps" element={<StaffHub />} />
+                  <Route path="/staff/audit" element={<StaffHub />} />
+                  <Route path="/staff/overview" element={<StaffHub />} />
 
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

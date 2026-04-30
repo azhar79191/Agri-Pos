@@ -1,46 +1,49 @@
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, Check, X } from "lucide-react";
-import { useApp } from "../../context/AppContext";
 
 const ICONS = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info };
-const FIXED_STYLES = {
-  error:   "#ef4444",
-  warning: "#f59e0b",
-  info:    "#3b82f6",
+
+const STYLES = {
+  success: { iconBg: "bg-emerald-50 dark:bg-emerald-900/20", iconColor: "text-emerald-500", btnBg: "bg-emerald-600 hover:bg-emerald-700" },
+  error:   { iconBg: "bg-red-50 dark:bg-red-900/20",     iconColor: "text-red-500",     btnBg: "bg-red-600 hover:bg-red-700" },
+  warning: { iconBg: "bg-amber-50 dark:bg-amber-900/20",   iconColor: "text-amber-500",   btnBg: "bg-amber-600 hover:bg-amber-700" },
+  info:    { iconBg: "bg-blue-50 dark:bg-blue-900/20",    iconColor: "text-blue-500",    btnBg: "bg-blue-600 hover:bg-blue-700" },
 };
 
 const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
-  const { state } = useApp();
-  const tc = type === "success" || !FIXED_STYLES[type] ? (state.themeColor || "#10b981") : FIXED_STYLES[type];
-  const Icon = ICONS[type];
+  const Icon = ICONS[type] || AlertTriangle;
+  const style = STYLES[type] || STYLES.warning;
+
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-[#0d1f14] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-scale-in border border-slate-200/80 dark:border-emerald-900/20">
-        <div className="p-5 text-white" style={{ background: `linear-gradient(135deg, ${tc}, ${tc}bb)` }}>
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/20 rounded-xl">
-              <Icon className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold">Confirm Action</h3>
-              <p className="text-xs text-white/80 mt-0.5">Please confirm to proceed</p>
-            </div>
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 modal-backdrop animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 rounded-lg shadow-premium-lg max-w-sm w-full overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-700">
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${style.iconBg}`}>
+            <Icon className={`w-5 h-5 ${style.iconColor}`} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Confirm Action</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Please confirm to proceed</p>
           </div>
         </div>
-        <div className="p-5">
-          <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{message}</p>
+
+        {/* Body */}
+        <div className="px-5 py-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{message}</p>
         </div>
-        <div className="flex gap-3 px-5 pb-5">
+
+        {/* Actions */}
+        <div className="flex gap-3 px-5 pb-4">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-[#122b1c] text-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm hover:bg-slate-200 dark:hover:bg-[#163320] transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md font-medium text-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
           >
             <X className="w-4 h-4" />Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 text-white rounded-xl font-medium text-sm shadow-md transition-all flex items-center justify-center gap-2"
-            style={{ background: `linear-gradient(135deg, ${tc}, ${tc}bb)` }}
+            className={`flex-1 px-4 py-2 text-white rounded-md font-medium text-sm transition-colors flex items-center justify-center gap-2 ${style.btnBg}`}
           >
             <Check className="w-4 h-4" />Confirm
           </button>

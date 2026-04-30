@@ -19,7 +19,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 24 }}
           transition={{ type: "spring", stiffness: 280, damping: 22 }}
-          className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-slate-200/80 dark:border-slate-700/50 overflow-hidden"
+          className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-slate-200/80 dark:border-slate-700/50 overflow-hidden"
         >
           {/* Modal header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
@@ -28,10 +28,10 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.15 }}
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                className={`w-9 h-9 rounded-lg flex items-center justify-center ${
                   transaction.status === "Pending"
                     ? "bg-amber-100 dark:bg-amber-900/30"
-                    : "bg-emerald-100 dark:bg-emerald-900/30"
+                    : "bg-emerald-100 dark:bg-blue-900/20"
                 }`}
               >
                 {transaction.status === "Pending"
@@ -47,7 +47,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
             >
               <X className="w-4 h-4" />
             </motion.button>
@@ -55,13 +55,13 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
 
           {/* Receipt content */}
           <div className="flex-1 overflow-y-auto p-5">
-            <div className="receipt bg-white rounded-xl border-2 border-dashed border-slate-200 p-5">
+            <div className="receipt bg-white rounded-lg border-2 border-dashed border-slate-200 p-5">
               {/* Pending notice */}
               {transaction.status === "Pending" && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-center"
+                  className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center"
                 >
                   <p className="text-amber-700 font-semibold text-sm">⏳ Payment Pending Confirmation</p>
                   <p className="text-amber-600 text-xs mt-0.5">Awaiting admin confirmation.</p>
@@ -140,18 +140,18 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
           {/* Footer actions */}
           <div className="flex gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
             <motion.button whileTap={{ scale: 0.96 }} onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              className="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               Close
             </motion.button>
             <motion.button whileTap={{ scale: 0.96 }} onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <Printer className="w-4 h-4" />Print
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => downloadInvoicePDF(transaction, settings)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-glow-sm hover:from-emerald-600 hover:to-teal-700 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-all"
             >
               <Download className="w-4 h-4" />PDF
             </motion.button>

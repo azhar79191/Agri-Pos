@@ -70,7 +70,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
       iconColor="emerald"
     >
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
+      <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
         <button
           onClick={() => setActiveTab("manage")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -98,7 +98,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
       {activeTab === "manage" ? (
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Current Stock Display */}
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+          <div className="p-4 bg-emerald-50 dark:bg-blue-900/15 rounded-lg border border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-emerald-600 dark:text-emerald-400">Current Stock</p>
@@ -106,7 +106,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                   {product.stock} <span className="text-lg">{product.unit}</span>
                 </p>
               </div>
-              <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
+              <div className="w-14 h-14 bg-emerald-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
                 <Package className="w-7 h-7 text-emerald-600" />
               </div>
             </div>
@@ -123,7 +123,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                   key={op.id}
                   type="button"
                   onClick={() => setOperation(op.id)}
-                  className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all ${
+                  className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
                     operation === op.id
                       ? `border-${op.color}-500 bg-${op.color}-50 dark:bg-${op.color}-900/20`
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
@@ -161,7 +161,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                   min="0"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="flex-1 px-4 py-3 text-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-lg font-semibold"
+                  className="flex-1 px-4 py-3 text-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-lg font-semibold"
                   placeholder="0"
                 />
                 <button
@@ -183,7 +183,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                 min="0"
                 value={newStockValue}
                 onChange={(e) => setNewStockValue(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-lg font-semibold"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-lg font-semibold"
                 placeholder={`Current: ${product.stock}`}
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -200,7 +200,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
             >
               <option value="">Select a reason...</option>
               {reasonOptions[operation].map((r) => (
@@ -211,7 +211,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
 
           {/* Preview */}
           {quantity && operation !== "adjust" && (
-            <div className={`p-4 rounded-xl ${
+            <div className={`p-4 rounded-lg ${
               operation === "add" 
                 ? "bg-green-50 dark:bg-green-900/20 border border-green-200" 
                 : "bg-red-50 dark:bg-red-900/20 border border-red-200"
@@ -259,7 +259,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
             productHistory.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${

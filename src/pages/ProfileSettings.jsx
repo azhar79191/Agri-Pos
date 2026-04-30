@@ -7,12 +7,12 @@ import { updateProfile, updatePassword } from "../api/authApi";
 import { getMyShop } from "../api/shopApi";
 import { formatDate } from "../utils/helpers";
 
-const inputCls = "w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
+const inputCls = "w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
 const roleConfig = {
   admin:   { label: "Administrator", gradient: "from-purple-500 to-violet-600", cls: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
   manager: { label: "Manager",       gradient: "from-blue-500 to-indigo-600",   cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  cashier: { label: "Cashier",       gradient: "from-emerald-500 to-teal-600",  cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  cashier: { label: "Cashier",       gradient: "from-blue-600 to-blue-700",  cls: "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" },
 };
 
 const ProfileSettings = () => {
@@ -89,7 +89,7 @@ const ProfileSettings = () => {
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-glow-sm">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
           <User className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -99,10 +99,10 @@ const ProfileSettings = () => {
       </div>
 
       {/* Avatar Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="relative flex-shrink-0">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-premium">
+            <div className="w-24 h-24 rounded-lg overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-premium">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
@@ -112,7 +112,7 @@ const ProfileSettings = () => {
               )}
             </div>
             <button onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-glow-sm transition-colors">
+              className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center shadow-sm transition-colors">
               <Camera className="w-4 h-4" />
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
@@ -133,7 +133,7 @@ const ProfileSettings = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActiveTab(id)}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
@@ -146,7 +146,7 @@ const ProfileSettings = () => {
 
       {/* Profile Tab */}
       {activeTab === "profile" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-5">Personal Information</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -181,14 +181,14 @@ const ProfileSettings = () => {
             </div>
 
             {/* Permissions */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-700">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="w-4 h-4 text-slate-500" />
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Role & Permissions</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {(displayUser?.permissions || []).map(p => (
-                  <span key={p} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-800">
+                  <span key={p} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-emerald-50 dark:bg-blue-900/15 text-emerald-700 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-800">
                     <CheckCircle className="w-2.5 h-2.5" />{p}
                   </span>
                 ))}
@@ -204,7 +204,7 @@ const ProfileSettings = () => {
 
       {/* Security Tab */}
       {activeTab === "security" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-5">Change Password</h3>
           <div className="space-y-4">
             {[
@@ -232,12 +232,12 @@ const ProfileSettings = () => {
 
       {/* Shop Tab */}
       {activeTab === "shop" && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-5">Shop Information</h3>
           {shop ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-700">
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-700">
+                <div className="w-14 h-14 rounded-lg overflow-hidden bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
                   {shop.logo ? <img src={shop.logo} alt={shop.name} className="w-full h-full object-contain" /> : <Building2 className="w-7 h-7 text-slate-400" />}
                 </div>
                 <div>
@@ -253,7 +253,7 @@ const ProfileSettings = () => {
                   { label: "Currency", value: shop.currency },
                   { label: "Credit Enabled", value: shop.enableCredit ? "Yes" : "No" },
                 ].map(({ label, value }) => (
-                  <div key={label} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                  <div key={label} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
                     <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
                     <p className="font-semibold text-slate-900 dark:text-white text-sm mt-0.5">{value || "—"}</p>
                   </div>

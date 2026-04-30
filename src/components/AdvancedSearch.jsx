@@ -101,7 +101,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={placeholder}
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
           />
         </div>
         
@@ -109,7 +109,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
         <select
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
-          className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium shadow-sm hover:shadow-md cursor-pointer"
+          className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium shadow-sm hover:shadow-md cursor-pointer"
         >
           {searchTypes.map(type => (
             <option key={type.id} value={type.id}>{type.label}</option>
@@ -119,9 +119,9 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
         {/* Filter Toggle */}
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`p-2.5 rounded-xl border transition-all ${
+          className={`p-2.5 rounded-lg border transition-all ${
             showFilters 
-              ? "bg-emerald-500 text-white border-emerald-500" 
+              ? "bg-blue-600 text-white border-blue-600" 
               : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           }`}
         >
@@ -131,7 +131,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50">
+        <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-gray-900 dark:text-white">Filters</h3>
             <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                 >
                   <option value="">All Categories</option>
                   {getUniqueValues(state.products, "category").map(category => (
@@ -171,7 +171,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                 <select
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                 >
                   <option value="">All Brands</option>
                   {getUniqueValues(state.products, "brand").map(brand => (
@@ -185,7 +185,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                 <select
                   value={filters.stockLevel}
                   onChange={(e) => setFilters(prev => ({ ...prev, stockLevel: e.target.value }))}
-                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                  className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                 >
                   <option value="">All Stock</option>
                   <option value="available">In Stock</option>
@@ -205,7 +205,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                       ...prev, 
                       priceRange: { ...prev.priceRange, min: e.target.value }
                     }))}
-                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md"
+                    className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md"
                   />
                   <input
                     type="number"

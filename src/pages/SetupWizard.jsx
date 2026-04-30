@@ -97,7 +97,7 @@ const SetupWizard = () => {
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-brand">
+          <div className="p-3 bg-blue-600 rounded-lg shadow-sm">
             <Sprout className="w-7 h-7 text-white" />
           </div>
           <span className="text-2xl font-bold text-gray-900 dark:text-white">AgroCare POS</span>
@@ -113,7 +113,7 @@ const SetupWizard = () => {
               <React.Fragment key={s.id}>
                 <div className="flex flex-col items-center gap-1.5">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                    done ? "bg-emerald-500 text-white" : active ? "bg-emerald-500 text-white shadow-brand" : "bg-gray-200 dark:bg-gray-700 text-gray-400"
+                    done ? "bg-blue-600 text-white" : active ? "bg-blue-600 text-white shadow-sm" : "bg-gray-200 dark:bg-gray-700 text-gray-400"
                   }`}>
                     {done ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                   </div>
@@ -128,7 +128,7 @@ const SetupWizard = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-100 dark:border-gray-800">
 
           {/* ── Step 1: Shop Info ── */}
           {step === 1 && (
@@ -141,7 +141,7 @@ const SetupWizard = () => {
               {/* Logo */}
               <div className="flex items-center gap-5 mb-6">
                 <label className="relative cursor-pointer group">
-                  <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-emerald-400 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
+                  <div className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 group-hover:border-emerald-400 bg-gray-50 dark:bg-gray-800 flex items-center justify-center overflow-hidden transition-colors">
                     {logoPreview
                       ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain" />
                       : <Building2 className="w-8 h-8 text-gray-400" />}
@@ -163,13 +163,13 @@ const SetupWizard = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shop Name <span className="text-red-500">*</span></label>
                     <input value={shopForm.name} onChange={e => setShopForm(p => ({ ...p, name: e.target.value }))}
                       placeholder="e.g. AgroCare Pesticides"
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
                     <input value={shopForm.phone} onChange={e => setShopForm(p => ({ ...p, phone: e.target.value }))}
                       placeholder="+92 300 0000000"
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -177,25 +177,25 @@ const SetupWizard = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                     <input type="email" value={shopForm.email} onChange={e => setShopForm(p => ({ ...p, email: e.target.value }))}
                       placeholder="shop@example.com"
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
                     <input value={shopForm.address} onChange={e => setShopForm(p => ({ ...p, address: e.target.value }))}
                       placeholder="Shop address"
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Rate (%)</label>
                     <input type="number" min="0" max="100" value={shopForm.taxRate} onChange={e => setShopForm(p => ({ ...p, taxRate: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
                     <select value={shopForm.currency} onChange={e => setShopForm(p => ({ ...p, currency: e.target.value }))}
-                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                      className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                       {["Rs.", "₹", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -204,7 +204,7 @@ const SetupWizard = () => {
 
               <div className="flex justify-end mt-8">
                 <button onClick={handleCreateShop} disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white rounded-xl font-semibold text-sm transition-colors shadow-brand">
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
                   {saving ? "Creating..." : "Create Shop"} <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -221,7 +221,7 @@ const SetupWizard = () => {
 
               <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
                 {users.map((u, i) => (
-                  <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700 space-y-3">
+                  <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-lg border border-gray-100 dark:border-gray-700 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">User {i + 1}</span>
                       {users.length > 1 && (
@@ -257,15 +257,15 @@ const SetupWizard = () => {
               </button>
 
               <div className="flex justify-between mt-8">
-                <button onClick={() => setStep(1)} className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <button onClick={() => setStep(1)} className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   <ArrowLeft className="w-4 h-4" />Back
                 </button>
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(3)} className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                  <button onClick={() => setStep(3)} className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     Skip for now
                   </button>
                   <button onClick={handleAddUsers} disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 text-white rounded-xl font-semibold text-sm transition-colors shadow-brand">
+                    className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
                     {saving ? "Adding..." : "Add Users"} <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -276,7 +276,7 @@ const SetupWizard = () => {
           {/* ── Step 3: Done ── */}
           {step === 3 && (
             <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-5">
                 <CheckCircle className="w-10 h-10 text-emerald-500" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">You're all set!</h2>
@@ -292,7 +292,7 @@ const SetupWizard = () => {
                   { label: "Start Selling", path: "/pos", emoji: "💰" },
                 ].map(item => (
                   <button key={item.path} onClick={() => navigate(item.path)}
-                    className="p-4 bg-gray-50 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-gray-100 dark:border-gray-700 rounded-xl transition-colors">
+                    className="p-4 bg-gray-50 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-gray-100 dark:border-gray-700 rounded-lg transition-colors">
                     <div className="text-2xl mb-1">{item.emoji}</div>
                     <p className="font-medium text-gray-700 dark:text-gray-300">{item.label}</p>
                   </button>
@@ -300,7 +300,7 @@ const SetupWizard = () => {
               </div>
 
               <button onClick={handleFinish}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold transition-colors shadow-brand">
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors shadow-sm">
                 Go to Dashboard
               </button>
             </div>

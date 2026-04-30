@@ -23,7 +23,7 @@ const getExpiryStatus = (expiryDate) => {
   if (days <= 30) return { label: "< 30 days", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", dot: "bg-red-500", days };
   if (days <= 60) return { label: "< 60 days", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400", dot: "bg-orange-500", days };
   if (days <= 90) return { label: "< 90 days", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-500", days };
-  return { label: "Good", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", dot: "bg-emerald-500", days };
+  return { label: "Good", color: "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400", dot: "bg-emerald-500", days };
 };
 
 const BatchExpiry = () => {
@@ -76,10 +76,10 @@ const BatchExpiry = () => {
     <div className="space-y-6 animate-fade-up">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-glow-sm"><Calendar className="w-5 h-5 text-white" /></div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-sm"><Calendar className="w-5 h-5 text-white" /></div>
           <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Batch & Expiry</h1><p className="text-sm text-slate-500 dark:text-slate-400">Track batches, lots, and expiry dates</p></div>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-glow-sm"><Plus className="w-4 h-4" />Add Batch</button>
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm"><Plus className="w-4 h-4" />Add Batch</button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -89,16 +89,16 @@ const BatchExpiry = () => {
           { label: "Expiring < 60d", value: stats.expiring60, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-100 dark:bg-orange-900/30", icon: Clock },
           { label: "Expired", value: stats.expired, color: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30", icon: AlertTriangle },
         ].map(({ label, value, color, bg, icon: Icon }) => (
-          <div key={label} className="stat-card-premium"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}><Icon className={`w-5 h-5 ${color}`} /></div><div><p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p><p className={`text-xl font-bold mt-0.5 ${color}`}>{value}</p></div></div></div>
+          <div key={label} className="stat-card-premium"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center`}><Icon className={`w-5 h-5 ${color}`} /></div><div><p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p><p className={`text-xl font-bold mt-0.5 ${color}`}>{value}</p></div></div></div>
         ))}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by product or batch #..." className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all" /></div>
-        <div className="relative"><select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer"><option value="all">All Batches</option><option value="expiring">Expiring Soon</option><option value="expired">Expired</option></select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" /></div>
+        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by product or batch #..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" /></div>
+        <div className="relative"><select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer"><option value="all">All Batches</option><option value="expiring">Expiring Soon</option><option value="expired">Expired</option></select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" /></div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-premium">
             <thead><tr>{["Product", "Batch/Lot #", "Mfg Date", "Expiry Date", "Qty", "Remaining", "Status"].map(h => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
@@ -123,18 +123,18 @@ const BatchExpiry = () => {
         </div>
       </div>
 
-      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Batch" footer={<button onClick={handleAdd} className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold transition-colors">Add Batch</button>}>
+      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Batch" footer={<button onClick={handleAdd} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">Add Batch</button>}>
         <div className="space-y-4">
-          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Product Name *</label><input value={form.productName} onChange={e => setForm(p => ({ ...p, productName: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" placeholder="Product name" /></div>
+          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Product Name *</label><input value={form.productName} onChange={e => setForm(p => ({ ...p, productName: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" placeholder="Product name" /></div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Batch/Lot # *</label><input value={form.batchNo} onChange={e => setForm(p => ({ ...p, batchNo: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label><input type="number" value={form.quantity} onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Batch/Lot # *</label><input value={form.batchNo} onChange={e => setForm(p => ({ ...p, batchNo: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label><input type="number" value={form.quantity} onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Mfg Date</label><input type="date" value={form.mfgDate} onChange={e => setForm(p => ({ ...p, mfgDate: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Expiry Date *</label><input type="date" value={form.expiryDate} onChange={e => setForm(p => ({ ...p, expiryDate: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Mfg Date</label><input type="date" value={form.mfgDate} onChange={e => setForm(p => ({ ...p, mfgDate: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
+            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Expiry Date *</label><input type="date" value={form.expiryDate} onChange={e => setForm(p => ({ ...p, expiryDate: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" /></div>
           </div>
-          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cost Price</label><input type="number" value={form.costPrice} onChange={e => setForm(p => ({ ...p, costPrice: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" placeholder="0" /></div>
+          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cost Price</label><input type="number" value={form.costPrice} onChange={e => setForm(p => ({ ...p, costPrice: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm" placeholder="0" /></div>
         </div>
       </ModernModal>
     </div>

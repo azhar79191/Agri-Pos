@@ -7,13 +7,13 @@ import { downloadInvoicePDF } from "../utils/pdfGenerator";
 import { formatCurrency, formatDate } from "../utils/helpers";
 
 const statusCls = {
-  Completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Completed: "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400",
   Cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   Pending:   "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 const paymentCls = {
   Credit: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-  Cash:   "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Cash:   "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400",
 };
 
 const CustomerStatement = () => {
@@ -48,7 +48,7 @@ const CustomerStatement = () => {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -58,11 +58,11 @@ const CustomerStatement = () => {
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate("/customers")} className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-600 dark:text-slate-400">
+        <button onClick={() => navigate("/customers")} className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-glow-sm">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
             <User className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -75,13 +75,13 @@ const CustomerStatement = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Purchases", value: formatCurrency(customer.totalPurchases || 0, settings.currency), icon: TrendingUp, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+          { label: "Total Purchases", value: formatCurrency(customer.totalPurchases || 0, settings.currency), icon: TrendingUp, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-blue-900/20" },
           { label: "Wallet Balance", value: formatCurrency(customer.walletBalance || 0, settings.currency), icon: Wallet, cls: (customer.walletBalance || 0) > 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400", bg: (customer.walletBalance || 0) > 0 ? "bg-blue-100 dark:bg-blue-900/30" : "bg-slate-100 dark:bg-slate-800" },
           { label: "Total Invoices", value: pagination.total, icon: ShoppingBag, cls: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
         ].map(({ label, value, icon: Icon, cls, bg }, i) => (
           <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+              <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon className={`w-5 h-5 ${cls}`} />
               </div>
               <div>
@@ -94,7 +94,7 @@ const CustomerStatement = () => {
       </div>
 
       {/* Customer Info */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
         <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Customer Details</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
@@ -105,7 +105,7 @@ const CustomerStatement = () => {
             { label: "City", value: customer.city || "—", icon: MapPin },
             { label: "Last Purchase", value: customer.lastPurchaseDate ? formatDate(customer.lastPurchaseDate.split("T")[0]) : "—", icon: Calendar },
           ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <div key={label} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
               <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mb-1">
                 <Icon className="w-3 h-3" />{label}
               </p>
@@ -116,7 +116,7 @@ const CustomerStatement = () => {
       </div>
 
       {/* Purchase History */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">Purchase History</h3>
           <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{pagination.total} invoices</span>
@@ -132,7 +132,7 @@ const CustomerStatement = () => {
             {invoices.map(inv => (
               <div key={inv._id} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
                     <ShoppingBag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>

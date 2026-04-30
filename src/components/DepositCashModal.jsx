@@ -72,29 +72,29 @@ const DepositCashModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all";
+  const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={handleClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative z-[10000] w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-700/50" onClick={e => e.stopPropagation()}>
+      <div className="relative z-[10000] w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700/50" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-blue-900/20 flex items-center justify-center">
             <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-slate-900 dark:text-white">Customer Payment</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Deposit cash or top up wallet</p>
           </div>
-          <button onClick={handleClose} className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <button onClick={handleClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 mx-5 mt-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <div className="flex gap-1 p-1 mx-5 mt-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
           {[
             { id: TAB_DEPOSIT, label: "Clear Credit", icon: CreditCard },
             { id: TAB_WALLET,  label: "Wallet Top-up", icon: Wallet },
@@ -131,11 +131,11 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           {/* Current balances from backend */}
           {customer && (
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                 <p className="text-xs text-red-600 dark:text-red-400 font-medium">Owes (Credit)</p>
                 <p className="font-bold text-red-700 dark:text-red-300 mt-0.5">{formatCurrency(creditBalance, settings.currency)}</p>
               </div>
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+              <div className="p-3 rounded-lg bg-emerald-50 dark:bg-blue-900/15 border border-emerald-200 dark:border-emerald-800">
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Wallet Balance</p>
                 <p className="font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">{formatCurrency(walletBalance, settings.currency)}</p>
               </div>
@@ -150,7 +150,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
 
           {/* Preview (indicative only — backend is source of truth) */}
           {dep > 0 && customer && (
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Expected result</p>
               {tab === TAB_DEPOSIT && previewDeposit && (
                 <>
