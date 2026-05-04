@@ -190,7 +190,8 @@ const AppContent = () => {
     return (
       <Routes>
         <Route path="/register" element={<RegisterShop />} />
-        <Route path="*" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
   }
