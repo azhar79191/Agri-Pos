@@ -1,7 +1,7 @@
 {
-  "name": "AgroCare POS",
-  "short_name": "AgroCare",
-  "description": "Pesticide & Agricultural Products Management System",
+  "name": "AgriNest - Agriculture Dealers Platform",
+  "short_name": "AgriNest",
+  "description": "Leading platform for agriculture dealers, suppliers, and distributors. Buy, sell, and promote agricultural products. Grow your agri business online.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#071209",
@@ -12,6 +12,8 @@
     { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
     { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
   ],
-  "categories": ["business", "productivity"],
-  "lang": "en-PK"
+  "categories": ["business", "productivity", "shopping"],
+  "lang": "en-PK",
+  "scope": "/",
+  "dir": "ltr"
 }

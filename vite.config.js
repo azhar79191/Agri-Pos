@@ -21,7 +21,8 @@ export default defineConfig({
     target: 'es2020',
     minify: 'esbuild',
     cssMinify: true,
-    chunkSizeWarningLimit: 1000, // ExcelJS is 937KB — known, lazy-loaded, acceptable
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
     esbuildOptions: {
       drop: ['console', 'debugger'],
     },
@@ -72,6 +73,7 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
+        compact: true,
       },
     },
   },
