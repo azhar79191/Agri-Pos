@@ -29,7 +29,7 @@ const ModernModal = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
       <div className="absolute inset-0 modal-backdrop" />
       <div
         className={`relative z-10000 w-full ${sizes[size]} max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-lg sm:rounded-lg bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in`}

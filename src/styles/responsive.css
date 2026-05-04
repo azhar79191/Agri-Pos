@@ -27,7 +27,7 @@
   }
   
   /* Ensure modal takes full width with minimal padding */
-  .fixed.inset-0.z-\\[9999\\] > div:last-child {
+  .fixed.inset-0.z-50 > div:last-child {
     margin: 0.5rem;
   }
 }
@@ -331,7 +331,7 @@
 
 @media print {
   /* Hide modals when printing */
-  .fixed.inset-0.z-\\[9999\\] {
+  .fixed.inset-0.z-50 {
     display: none !important;
   }
   

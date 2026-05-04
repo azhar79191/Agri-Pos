@@ -226,7 +226,7 @@ const UserManagement = () => {
 
       {/* Add/Edit Modal */}
       {showAddUser && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={() => { setShowAddUser(false); setEditingUser(null); }}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => { setShowAddUser(false); setEditingUser(null); }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="relative z-10000 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
@@ -277,7 +277,7 @@ const UserManagement = () => {
 
       {/* Permissions Modal */}
       {showPermissions && selectedUser && (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={() => setShowPermissions(false)}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowPermissions(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="relative z-10000 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">

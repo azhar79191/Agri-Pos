@@ -95,7 +95,7 @@ const SetupWizard = () => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-99999 bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999]9 bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 overflow-y-auto">
       <div className="w-full max-w-2xl">
 
         {/* Logo */}

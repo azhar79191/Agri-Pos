@@ -15,7 +15,7 @@ const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
   const style = STYLES[type] || STYLES.warning;
 
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 modal-backdrop animate-fade-in">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 modal-backdrop animate-fade-in">
       <div className="bg-white dark:bg-slate-900 rounded-lg shadow-premium-lg max-w-sm w-full overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-700">
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">

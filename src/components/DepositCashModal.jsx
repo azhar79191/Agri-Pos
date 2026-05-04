@@ -75,7 +75,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
   const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
   return createPortal(
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={handleClose}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={handleClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div className="relative z-10000 w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700/50" onClick={e => e.stopPropagation()}>
 

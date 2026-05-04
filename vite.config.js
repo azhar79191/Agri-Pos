@@ -20,11 +20,14 @@ export default defineConfig({
   build: {
     target: 'es2020',
     minify: 'esbuild',
-    cssMinify: true,
+    cssMinify: 'esbuild',
     chunkSizeWarningLimit: 1000,
     sourcemap: false,
     esbuildOptions: {
       drop: ['console', 'debugger'],
+      logOverride: {
+        'css-syntax-error': 'silent',
+      },
     },
     rollupOptions: {
       output: {
