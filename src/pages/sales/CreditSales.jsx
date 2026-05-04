@@ -63,9 +63,17 @@ const CreditSales = () => {
       return;
     }
 
+    // Use _id if invoiceId is not available
+    const invoiceId = paymentModal.invoiceId || paymentModal._id;
+    
+    if (!invoiceId) {
+      actions.showToast({ message: "Invalid invoice ID", type: "error" });
+      return;
+    }
+
     setProcessing(true);
     try {
-      await updateInvoicePayment(paymentModal.invoiceId, {
+      await updateInvoicePayment(invoiceId, {
         amount,
         method: paymentMethod,
         notes: paymentNotes
