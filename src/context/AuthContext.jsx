@@ -39,8 +39,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    // Force navigation and reload to ensure clean state
-    window.location.href = "/login";
+    // Force full page reload at login
+    window.location.replace("/login");
   };
 
   // Refresh profile from backend and sync to localStorage

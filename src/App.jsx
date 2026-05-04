@@ -185,15 +185,20 @@ const AppLayout = () => {
 const AppContent = () => {
   const { state } = useApp();
   const { isAuthenticated, currentUser } = state;
-  const path = window.location.pathname;
 
   if (!isAuthenticated) {
-    if (path === "/register") return <RegisterShop />;
-    return <Login />;
+    return (
+      <Routes>
+        <Route path="/register" element={<RegisterShop />} />
+        <Route path="*" element={<Login />} />
+      </Routes>
+    );
   }
 
   const needsSetup = currentUser?.role === "admin" && !currentUser?.shop;
-  if (needsSetup || path === "/register") return <RegisterShop />;
+  if (needsSetup) {
+    return <RegisterShop />;
+  }
 
   return <AppLayout />;
 };
