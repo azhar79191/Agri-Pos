@@ -1,0 +1,83 @@
+/* ServiceDesk Plus Inspired Design System */
+
+:root {
+  --sdp-primary: #2563eb;
+  --sdp-primary-hover: #1d4ed8;
+  --sdp-success: #10b981;
+  --sdp-warning: #f59e0b;
+  --sdp-danger: #ef4444;
+  
+  --sdp-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --sdp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --sdp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.sdp-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: var(--sdp-shadow);
+  transition: all 0.2s ease;
+}
+
+.sdp-card:hover {
+  box-shadow: var(--sdp-shadow-md);
+  transform: translateY(-1px);
+}
+
+.dark .sdp-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.sdp-stat-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--sdp-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sdp-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--sdp-primary), var(--sdp-primary-hover));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sdp-stat-card:hover::before {
+  opacity: 1;
+}
+
+.sdp-stat-card:hover {
+  box-shadow: var(--sdp-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.dark .sdp-stat-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+@keyframes sdp-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sdp-animate-in {
+  animation: sdp-fade-in 0.3s ease-out;
+}

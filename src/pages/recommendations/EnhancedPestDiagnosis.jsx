@@ -44,7 +44,10 @@ Use common pesticide/fungicide/herbicide names available in Pakistan. Be specifi
       const res = await API.post('/ai/crop-advisory', { prompt, crop, issue, symptoms });
       return res.data.data;
     }
-  } catch {
+  } catch (err) {
+    if (imageFile) {
+      throw err;
+    }
     return {
       diagnosis: `${issue} detected on ${crop}. This is a common pest/disease that requires immediate attention.`,
       severity: "Medium",
@@ -141,11 +144,19 @@ const EnhancedPestDiagnosis = () => {
     setLoading(true);
     try {
       const data = await askAI(selectedCrop, "Image-based detection", symptoms, uploadedImage);
-      setSelectedIssue(data.detectedIssue || "Detected Issue");
-      setResult(data);
+      if (!data || data.aiError || data.detectedIssue === "Unable to detect from image") {
+        setSelectedIssue("Unable to detect from image");
+        setResult(null);
+      } else {
+        setSelectedIssue(data.detectedIssue || "Detected Issue");
+        setResult(data);
+      }
       setStep(3);
     } catch (err) {
       console.error('Image detection failed:', err);
+      setSelectedIssue("Unable to detect from image");
+      setResult(null);
+      setStep(3);
     } finally {
       setLoading(false);
     }
@@ -418,7 +429,30 @@ const EnhancedPestDiagnosis = () => {
               </div>
             </div>
           ) : (
-            <EmptyState icon={Bug} title="Could not get recommendation" description="Please try again" actionLabel="Retry" onAction={() => getRecommendation(selectedIssue)} />
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedIssue || "Unable to detect from image"}</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">Crop: {cropData?.name} • Field: {fieldSize} acre(s)</p>
+                  </div>
+                  <SeverityBadge severity="Medium" />
+                </div>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-8 text-center">
+                <AlertTriangle className="w-12 h-12 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
+                <p className="text-amber-900 dark:text-amber-300 font-semibold mb-2">Image analysis failed. Please select the issue manually or provide more details about symptoms on your {cropData?.name} crop.</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">⚠️ Consult with agronomist for accurate diagnosis</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => { setStep(2); setResult(null); setSelectedIssue(null); }} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
+                  ← Select Issue Manually
+                </button>
+                <button onClick={reset} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  <RefreshCw className="w-4 h-4" />Try Again
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

@@ -7,5 +7,6 @@ export const getTodaySales = () => API.get("/invoices/today/sales");
 export const getRecentTransactions = () => API.get("/invoices/recent/transactions");
 export const createInvoice = (data) => API.post("/invoices", data);
 export const updateInvoiceStatus = (id, status) => API.put(`/invoices/${id}/status`, { status });
+export const updateInvoicePayment = (id, data) => API.post(`/invoices/${id}/payment`, data);
 export const refundInvoice = (id) => API.post(`/invoices/${id}/refund`);
 export const deleteInvoice = (id) => API.delete(`/invoices/${id}`);

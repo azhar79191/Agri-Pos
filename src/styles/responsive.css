@@ -1,0 +1,398 @@
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN SYSTEM - Mobile First Approach
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+/* Desktop - Default */
+.modal-content-scroll {
+  max-height: calc(92vh - 140px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .modal-content-scroll {
+    max-height: calc(94vh - 130px);
+  }
+}
+
+/* Mobile Portrait */
+@media (max-width: 768px) {
+  .modal-content-scroll {
+    max-height: calc(96vh - 120px);
+  }
+  
+  /* Ensure modal takes full width with minimal padding */
+  .fixed.inset-0.z-\\[9999\\] > div:last-child {
+    margin: 0.5rem;
+  }
+}
+
+/* Mobile Landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal-content-scroll {
+    max-height: calc(96vh - 100px);
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 640px) {
+  .modal-content-scroll {
+    max-height: calc(96vh - 110px);
+  }
+}
+
+/* Very Small Mobile (iPhone SE, etc) */
+@media (max-width: 375px) {
+  .modal-content-scroll {
+    max-height: calc(96vh - 100px);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TABLE RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+/* Ensure tables scroll horizontally on mobile */
+@media (max-width: 1024px) {
+  .table-premium {
+    min-width: 800px;
+  }
+  
+  /* Wrapper should allow horizontal scroll */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-premium {
+    min-width: 700px;
+  }
+  
+  .table-premium thead th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.65rem;
+  }
+  
+  .table-premium tbody td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-premium {
+    min-width: 600px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GRID RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+/* Force single column on mobile for specific grids */
+@media (max-width: 640px) {
+  .grid.grid-cols-2:not(.keep-cols) {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid.grid-cols-3:not(.keep-cols) {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid.grid-cols-4:not(.keep-cols) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BUTTON RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Stack buttons vertically in modals */
+  .modal-content-scroll + div .flex.gap-3,
+  .modal-content-scroll + div .flex.gap-2 {
+    flex-direction: column;
+  }
+  
+  /* Full width buttons on mobile */
+  .modal-content-scroll + div button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CARD RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .card-premium,
+  .stat-card-premium,
+  .sdp-card,
+  .sdp-stat-card {
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .card-premium,
+  .stat-card-premium,
+  .sdp-card,
+  .sdp-stat-card {
+    padding: 0.75rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.375rem;
+    line-height: 1.3;
+  }
+  
+  h2 {
+    font-size: 1.125rem;
+    line-height: 1.35;
+  }
+  
+  h3 {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.25rem;
+  }
+  
+  h2 {
+    font-size: 1rem;
+  }
+  
+  h3 {
+    font-size: 0.875rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FORM RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Stack form fields vertically */
+  .grid.grid-cols-2 > div:has(input),
+  .grid.grid-cols-2 > div:has(select),
+  .grid.grid-cols-2 > div:has(textarea) {
+    grid-column: span 2;
+  }
+  
+  /* Adjust input padding */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPACING RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Reduce spacing on mobile */
+  .space-y-6 {
+    gap: 1rem;
+  }
+  
+  .space-y-5 {
+    gap: 0.875rem;
+  }
+  
+  .space-y-4 {
+    gap: 0.75rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FILTER BAR RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Stack filters vertically */
+  .flex.flex-col.sm\\:flex-row {
+    flex-direction: column;
+  }
+  
+  /* Make filter buttons scrollable */
+  .flex.gap-1.p-1 {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .flex.gap-1.p-1::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STAT CARDS RESPONSIVE SYSTEM
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* 2 columns on small mobile */
+  .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Reduce icon sizes */
+  .stat-card-premium .w-10.h-10,
+  .sdp-stat-card .w-10.h-10 {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .stat-card-premium .w-10.h-10 svg,
+  .sdp-stat-card .w-10.h-10 svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLLBAR OPTIMIZATION FOR MOBILE
+   ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* Thinner scrollbars on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  /* Hide scrollbars on mobile but keep functionality */
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 2px;
+  }
+  
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 2px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TOUCH OPTIMIZATION
+   ───────────────────────────────────────────────────────────── */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets */
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .hover\\:bg-slate-50:hover,
+  .hover\\:bg-slate-100:hover,
+  .dark .hover\\:bg-slate-800:hover {
+    background-color: inherit;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SAFE AREA INSETS (for notched devices)
+   ───────────────────────────────────────────────────────────── */
+
+@supports (padding: max(0px)) {
+  .modal-content-scroll {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PRINT OPTIMIZATION
+   ───────────────────────────────────────────────────────────── */
+
+@media print {
+  /* Hide modals when printing */
+  .fixed.inset-0.z-\\[9999\\] {
+    display: none !important;
+  }
+  
+  /* Expand tables for print */
+  .overflow-x-auto {
+    overflow: visible !important;
+  }
+  
+  .table-premium {
+    min-width: 100% !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ACCESSIBILITY IMPROVEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+/* Focus visible for keyboard navigation */
+@media (prefers-reduced-motion: no-preference) {
+  *:focus-visible {
+    outline: 2px solid var(--pos-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LANDSCAPE TABLET OPTIMIZATION
+   ───────────────────────────────────────────────────────────── */
+
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  .modal-content-scroll {
+    max-height: calc(90vh - 120px);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ULTRA-WIDE SCREEN OPTIMIZATION
+   ───────────────────────────────────────────────────────────── */
+
+@media (min-width: 1920px) {
+  /* Limit modal width on ultra-wide screens */
+  .max-w-lg {
+    max-width: 36rem;
+  }
+  
+  .max-w-xl {
+    max-width: 42rem;
+  }
+  
+  .max-w-2xl {
+    max-width: 48rem;
+  }
+}

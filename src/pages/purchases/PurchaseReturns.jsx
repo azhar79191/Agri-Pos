@@ -1,25 +1,25 @@
-import React, { useState, useCallback } from "react";
-import { RotateCcw, Plus, X, Loader2, CheckCircle, Clock, XCircle, Package } from "lucide-react";
+import React, { useState, useCallback, useEffect } from "react";
+import { RotateCcw, Plus, X, Loader2, CheckCircle, Clock, XCircle, Package, Eye, AlertCircle, Edit2, Trash2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
 import Pagination from "../../components/ui/Pagination";
 import FilterBar from "../../components/ui/FilterBar";
 import { usePaginatedApi } from "../../hooks/usePaginatedApi";
-import { getPurchaseReturns, createPurchaseReturn, updateReturnStatus } from "../../api/purchaseReturnsApi";
+import { getPurchaseReturns, createPurchaseReturn, updatePurchaseReturn, updateReturnStatus, deletePurchaseReturn, getSupplierProducts } from "../../api/purchaseReturnsApi";
 import { getSuppliers } from "../../api/suppliersApi";
 import ModernModal from "../../components/ui/ModernModal";
 
 const LIMIT = 15;
 
 const statusCfg = {
-  Pending:   { cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: Clock },
-  Approved:  { cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle },
-  Rejected:  { cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",           icon: XCircle },
-  Completed: { cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",        icon: CheckCircle },
+  Pending:   { cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: Clock, desc: "Awaiting approval" },
+  Approved:  { cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: CheckCircle, desc: "Stock & amount adjusted" },
+  Rejected:  { cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",           icon: XCircle, desc: "Return rejected" },
+  Completed: { cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",        icon: CheckCircle, desc: "Fully processed" },
 };
 
-const emptyForm = { supplierId: "", reason: "", notes: "", items: [{ productName: "", quantity: 1, unitCost: 0 }] };
+const emptyForm = { supplierId: "", reason: "", notes: "", items: [{ product: "", productName: "", quantity: 1, unitCost: 0 }] };
 
 const PurchaseReturns = () => {
   const { state, actions } = useApp();
@@ -30,7 +30,11 @@ const PurchaseReturns = () => {
     usePaginatedApi(getPurchaseReturns, { search: "", status: "" }, LIMIT);
 
   const [suppliers, setSuppliers] = useState([]);
+  const [supplierProducts, setSupplierProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedReturn, setSelectedReturn] = useState(null);
+  const [editingReturn, setEditingReturn] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [updatingId, setUpdatingId] = useState(null);
@@ -40,36 +44,122 @@ const PurchaseReturns = () => {
     try { const res = await getSuppliers({ limit: 100 }); setSuppliers(res.data.data.suppliers || []); } catch {}
   }, [suppliers.length]);
 
-  const openModal = () => { loadSuppliers(); setForm(emptyForm); setShowModal(true); };
+  const loadSupplierProducts = useCallback(async (supplierId) => {
+    if (!supplierId) { setSupplierProducts([]); return; }
+    try { 
+      const res = await getSupplierProducts(supplierId); 
+      setSupplierProducts(res.data.data.products || []); 
+    } catch (err) {
+      actions.showToast({ message: "Failed to load supplier products", type: "error" });
+      setSupplierProducts([]);
+    }
+  }, [actions]);
 
-  const addItem = () => setForm(p => ({ ...p, items: [...p.items, { productName: "", quantity: 1, unitCost: 0 }] }));
+  useEffect(() => {
+    if (form.supplierId) {
+      loadSupplierProducts(form.supplierId);
+    }
+  }, [form.supplierId, loadSupplierProducts]);
+
+  const openModal = () => { loadSuppliers(); setForm(emptyForm); setEditingReturn(null); setShowModal(true); };
+  const openEditModal = (returnItem) => { 
+    loadSuppliers();
+    setEditingReturn(returnItem);
+    setForm({
+      supplierId: returnItem.supplier?._id || returnItem.supplier,
+      reason: returnItem.reason,
+      notes: returnItem.notes || "",
+      items: returnItem.items.map(i => ({
+        product: i.product?._id || i.product,
+        productName: i.productName,
+        quantity: i.quantity,
+        unitCost: i.unitCost
+      }))
+    });
+    setShowModal(true);
+  };
+  const openDetailsModal = (returnItem) => { setSelectedReturn(returnItem); setShowDetailsModal(true); };
+
+  const addItem = () => setForm(p => ({ ...p, items: [...p.items, { product: "", productName: "", quantity: 1, unitCost: 0 }] }));
   const removeItem = (i) => setForm(p => ({ ...p, items: p.items.filter((_, idx) => idx !== i) }));
-  const updateItem = (i, key, val) => setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? { ...item, [key]: val } : item) }));
+  const updateItem = (i, key, val) => {
+    if (key === 'product') {
+      const product = supplierProducts.find(p => p._id === val);
+      setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? { 
+        ...item, 
+        product: val, 
+        productName: product?.name || "",
+        unitCost: product?.costPrice || 0 
+      } : item) }));
+    } else {
+      setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? { ...item, [key]: val } : item) }));
+    }
+  };
 
   const handleCreate = async () => {
     if (!form.supplierId) { actions.showToast({ message: "Select a supplier", type: "error" }); return; }
     if (!form.reason.trim()) { actions.showToast({ message: "Reason is required", type: "error" }); return; }
-    if (form.items.some(i => !i.productName.trim())) { actions.showToast({ message: "All items need a product name", type: "error" }); return; }
+    if (form.items.some(i => !i.product)) { actions.showToast({ message: "All items need a product selected", type: "error" }); return; }
     setSaving(true);
     try {
-      const items = form.items.map(i => ({ productName: i.productName, quantity: parseInt(i.quantity) || 1, unitCost: parseFloat(i.unitCost) || 0, total: (parseInt(i.quantity) || 1) * (parseFloat(i.unitCost) || 0) }));
-      await createPurchaseReturn({ supplierId: form.supplierId, reason: form.reason, notes: form.notes, items });
-      actions.showToast({ message: "Purchase return created", type: "success" });
+      const items = form.items.map(i => ({ 
+        product: i.product,
+        productName: i.productName, 
+        quantity: parseInt(i.quantity) || 1, 
+        unitCost: parseFloat(i.unitCost) || 0, 
+        total: (parseInt(i.quantity) || 1) * (parseFloat(i.unitCost) || 0) 
+      }));
+      
+      if (editingReturn) {
+        await updatePurchaseReturn(editingReturn._id, { supplierId: form.supplierId, reason: form.reason, notes: form.notes, items });
+        actions.showToast({ message: "Purchase return updated", type: "success" });
+      } else {
+        await createPurchaseReturn({ supplierId: form.supplierId, reason: form.reason, notes: form.notes, items });
+        actions.showToast({ message: "Purchase return created", type: "success" });
+      }
       setShowModal(false);
       refresh();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Failed to create return", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || "Failed to save return", type: "error" });
     } finally { setSaving(false); }
   };
 
   const handleStatusUpdate = async (id, status) => {
+    const returnItem = returns.find(r => r._id === id);
+    
+    if (status === "Approved") {
+      const totalAmount = returnItem.total || returnItem.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0;
+      const confirmMsg = `Approving this return will:\n\n` +
+        `• Reduce stock for ${returnItem.items?.length || 0} item(s)\n` +
+        `• Deduct ${formatCurrency(totalAmount, settings.currency)} from supplier balance\n\n` +
+        `This action cannot be undone. Continue?`;
+      
+      if (!window.confirm(confirmMsg)) return;
+    }
+    
     setUpdatingId(id);
     try {
       await updateReturnStatus(id, status);
-      actions.showToast({ message: `Return ${status.toLowerCase()}`, type: "success" });
+      const msg = status === "Approved" 
+        ? "Return approved. Stock reduced and amount deducted from supplier."
+        : `Return ${status.toLowerCase()}`;
+      actions.showToast({ message: msg, type: "success" });
       refresh();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Failed to update status", type: "error" });
+      const errMsg = err.response?.data?.message || "Failed to update status";
+      actions.showToast({ message: errMsg, type: "error" });
+    } finally { setUpdatingId(null); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this return? This action cannot be undone.')) return;
+    setUpdatingId(id);
+    try {
+      await deletePurchaseReturn(id);
+      actions.showToast({ message: "Return deleted successfully", type: "success" });
+      refresh();
+    } catch (err) {
+      actions.showToast({ message: err.response?.data?.message || "Failed to delete return", type: "error" });
     } finally { setUpdatingId(null); }
   };
 
@@ -144,25 +234,46 @@ const PurchaseReturns = () => {
                       <td className="px-4 py-3.5 text-sm text-slate-500">{r.items?.length || 0} items</td>
                       <td className="px-4 py-3.5 text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(r.total, settings.currency)}</td>
                       <td className="px-4 py-3.5">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${sc.cls}`}>
-                          <SIcon className="w-3 h-3" />{r.status}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${sc.cls} w-fit`}>
+                            <SIcon className="w-3 h-3" />{r.status}
+                          </span>
+                          {r.status === "Approved" && r.stockAdjusted && (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">✓ Processed</span>
+                          )}
+                          {r.status === "Approved" && !r.stockAdjusted && (
+                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">⚠ Pending adjustment</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3.5 text-sm text-slate-500">{formatDate(r.createdAt?.split?.("T")[0] || r.createdAt)}</td>
                       {isAdmin && (
                         <td className="px-4 py-3.5">
-                          {r.status === "Pending" && (
-                            <div className="flex gap-1.5">
-                              <button onClick={() => handleStatusUpdate(r._id, "Approved")} disabled={updatingId === r._id}
-                                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 transition-colors disabled:opacity-50">
-                                {updatingId === r._id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Approve"}
+                          <div className="flex gap-1.5">
+                            <button onClick={() => openDetailsModal(r)} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" title="View Details">
+                              <Eye className="w-3 h-3" />
+                            </button>
+                            {r.status === "Pending" && (
+                              <>
+                                <button onClick={() => openEditModal(r)} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 transition-colors" title="Edit">
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button onClick={() => handleStatusUpdate(r._id, "Approved")} disabled={updatingId === r._id}
+                                  className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 transition-colors disabled:opacity-50" title="Approve">
+                                  {updatingId === r._id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Approve"}
+                                </button>
+                                <button onClick={() => handleStatusUpdate(r._id, "Rejected")} disabled={updatingId === r._id}
+                                  className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50" title="Reject">
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                            {r.status === "Rejected" && (
+                              <button onClick={() => handleDelete(r._id)} disabled={updatingId === r._id} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50" title="Delete">
+                                {updatingId === r._id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                               </button>
-                              <button onClick={() => handleStatusUpdate(r._id, "Rejected")} disabled={updatingId === r._id}
-                                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50">
-                                Reject
-                              </button>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -175,14 +286,14 @@ const PurchaseReturns = () => {
         <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
       </div>
 
-      {/* Create Modal */}
-      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title="New Purchase Return" size="lg"
+      {/* Create/Edit Modal */}
+      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title={editingReturn ? "Edit Purchase Return" : "New Purchase Return"} size="lg"
         footer={
-          <div className="flex gap-3 justify-end">
-            <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-            <button onClick={handleCreate} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: "var(--pos-primary)" }}>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
+            <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors order-2 sm:order-1">Cancel</button>
+            <button onClick={handleCreate} disabled={saving} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 order-1 sm:order-2" style={{ background: "var(--pos-primary)" }}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-              Create Return
+              {editingReturn ? "Update Return" : "Create Return"}
             </button>
           </div>
         }
@@ -216,17 +327,26 @@ const PurchaseReturns = () => {
             <div className="space-y-2">
               {form.items.map((item, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                  <input value={item.productName} onChange={e => updateItem(i, 'productName', e.target.value)}
-                    placeholder="Product name" className="col-span-5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
+                  <select value={item.product} onChange={e => updateItem(i, 'product', e.target.value)}
+                    className="col-span-12 sm:col-span-5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
+                    <option value="">Select Product</option>
+                    {supplierProducts.map(p => <option key={p._id} value={p._id}>{p.name} (Stock: {p.stock})</option>)}
+                  </select>
                   <input type="number" min="1" value={item.quantity} onChange={e => updateItem(i, 'quantity', e.target.value)}
-                    placeholder="Qty" className="col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white text-center focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
-                  <input type="number" min="0" value={item.unitCost} onChange={e => updateItem(i, 'unitCost', e.target.value)}
-                    placeholder="Unit cost" className="col-span-4 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
+                    placeholder="Qty" className="col-span-5 sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white text-center focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
+                  <input type="number" min="0" step="0.01" value={item.unitCost} onChange={e => updateItem(i, 'unitCost', e.target.value)}
+                    placeholder="Unit cost" className="col-span-6 sm:col-span-4 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
                   <button onClick={() => removeItem(i)} disabled={form.items.length === 1} className="col-span-1 flex items-center justify-center text-slate-400 hover:text-red-500 disabled:opacity-30 transition-colors">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
+              {!form.supplierId && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">⚠ Select a supplier first to see available products</p>
+              )}
+              {form.supplierId && supplierProducts.length === 0 && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">No products found for this supplier</p>
+              )}
             </div>
           </div>
 
@@ -237,6 +357,121 @@ const PurchaseReturns = () => {
               placeholder="Optional notes..." />
           </div>
         </div>
+      </ModernModal>
+
+      {/* Details Modal */}
+      <ModernModal isOpen={showDetailsModal} onClose={() => setShowDetailsModal(false)} title="Return Details" size="lg">
+        {selectedReturn && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Return Number</p>
+                <p className="font-mono text-sm font-bold text-red-600 dark:text-red-400">{selectedReturn.returnNumber}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Status</p>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusCfg[selectedReturn.status]?.cls}`}>
+                  {selectedReturn.status}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Supplier</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-white">{selectedReturn.supplierName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Amount</p>
+                <p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(selectedReturn.total, settings.currency)}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Reason</p>
+              <p className="text-sm text-slate-900 dark:text-white">{selectedReturn.reason}</p>
+            </div>
+
+            {selectedReturn.notes && (
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Notes</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{selectedReturn.notes}</p>
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Items</p>
+              <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800">
+                    <tr>
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Product</th>
+                      <th className="text-center px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Qty</th>
+                      <th className="text-right px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Unit Cost</th>
+                      <th className="text-right px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {selectedReturn.items?.map((item, i) => (
+                      <tr key={i}>
+                        <td className="px-3 py-2 text-slate-900 dark:text-white">{item.productName}</td>
+                        <td className="px-3 py-2 text-center text-slate-600 dark:text-slate-400">{item.quantity}</td>
+                        <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(item.unitCost, settings.currency)}</td>
+                        <td className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(item.total, settings.currency)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {selectedReturn.status === "Approved" && (
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-300 mb-2">Processing Status</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        {selectedReturn.stockAdjusted ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        )}
+                        <span className="text-xs text-emerald-800 dark:text-emerald-300">
+                          Stock reduced from inventory
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedReturn.amountAdjusted ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        )}
+                        <span className="text-xs text-emerald-800 dark:text-emerald-300">
+                          Amount deducted from supplier balance
+                        </span>
+                      </div>
+                    </div>
+                    {selectedReturn.processedAt && (
+                      <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-2">
+                        Processed on {formatDate(selectedReturn.processedAt)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Created</p>
+                <p className="text-sm text-slate-900 dark:text-white">{formatDate(selectedReturn.createdAt)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Updated</p>
+                <p className="text-sm text-slate-900 dark:text-white">{formatDate(selectedReturn.updatedAt)}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </ModernModal>
     </div>
   );

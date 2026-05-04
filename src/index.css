@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import responsive design system */
+@import './styles/responsive.css';
+
 /* ── CSS Variables — SDP-inspired clean enterprise palette ── */
 @layer base {
   :root {
@@ -599,4 +602,86 @@ textarea:focus {
   .stat-card-premium { padding: 1rem; }
   .table-premium tbody td { padding: 0.625rem 0.75rem; font-size: 0.8rem; }
   .table-premium thead th { padding: 0.625rem 0.75rem; font-size: 0.7rem; }
+  
+  /* Modal responsive adjustments */
+  .modal-content-scroll {
+    max-height: calc(96vh - 120px);
+  }
+  
+  /* Ensure tables scroll horizontally on mobile */
+  .table-premium {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  /* Stack form elements on mobile */
+  .grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Modal content scroll optimization ── */
+.modal-content-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.modal-content-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+}
+
+.modal-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .modal-content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148,163,184,0.2);
+}
+
+.dark .modal-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148,163,184,0.3);
+}
+
+/* ── Mobile-first responsive utilities ── */
+@media (max-width: 640px) {
+  /* Reduce padding on small screens */
+  .card-premium,
+  .stat-card-premium {
+    padding: 0.875rem;
+  }
+  
+  /* Make buttons full width on mobile */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Adjust font sizes */
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1.125rem; }
+  h3 { font-size: 0.9375rem; }
+  
+  /* Modal adjustments for very small screens */
+  .modal-content-scroll {
+    max-height: calc(96vh - 100px);
+  }
+}
+
+/* ── Landscape mobile optimization ── */
+@media (max-width: 768px) and (orientation: landscape) {
+  .modal-content-scroll {
+    max-height: calc(96vh - 80px);
+  }
 }
