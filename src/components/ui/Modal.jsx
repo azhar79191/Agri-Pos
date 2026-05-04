@@ -20,10 +20,10 @@ const Modal = ({
   const sizes = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-4xl", "2xl": "max-w-6xl", full: "max-w-full mx-4" };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
+    <div className="fixed inset-0 z-9999 flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
       <div
-        className={`relative z-[10000] w-full ${sizes[size]} max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 animate-scale-in`}
+        className={`relative z-10000 w-full ${sizes[size]} max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 animate-scale-in`}
         onClick={e => e.stopPropagation()}
       >
         {(title || showCloseButton) && (

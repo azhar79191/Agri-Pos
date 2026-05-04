@@ -175,9 +175,9 @@ const CustomerDues = () => {
 
       {/* Deposit Modal */}
       {depositModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setDepositModal(null)}>
+        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={() => setDepositModal(null)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-[10000] w-full max-w-sm bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200/80 dark:border-slate-700/50 animate-scale-in p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="relative z-10000 w-full max-w-sm bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200/80 dark:border-slate-700/50 animate-scale-in p-6 space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-900 dark:text-white">Collect Payment</h3>
               <button onClick={() => setDepositModal(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="w-5 h-5" /></button>

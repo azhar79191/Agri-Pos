@@ -23,8 +23,8 @@ const Toast = ({ message, type = "info", onClose, duration = 3000, position = "b
   const Icon = ICONS[type] || Info;
 
   const positions = {
-    "bottom-right": "fixed bottom-6 right-6 z-[9999]",
-    "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999]",
+    "bottom-right": "fixed bottom-6 right-6 z-9999",
+    "center": "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-9999",
   };
 
   return (
@@ -45,7 +45,7 @@ export const ToastContainer = ({ toasts, onRemove }) => {
   if (!toasts || toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
+    <div className="fixed bottom-6 right-6 z-9999 flex flex-col gap-3">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
