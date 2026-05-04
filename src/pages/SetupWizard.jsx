@@ -89,7 +89,10 @@ const SetupWizard = () => {
   };
 
   // ── Step 3: Finish ────────────────────────────────────────────
-  const handleFinish = () => navigate("/dashboard");
+  const handleFinish = () => {
+    // Force full page reload to ensure app re-renders with new shop data
+    window.location.href = "/dashboard";
+  };
 
   return createPortal(
     <div className="fixed inset-0 z-[99999] bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 overflow-y-auto">
