@@ -45,7 +45,7 @@ const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate
 
 const UserManagement = () => {
   const { state, actions } = useApp();
-  const { users, loading, fetchUsers, addUser, editUser, removeUser, editPermissions } = useUsers();
+  const { users, loading, fetchUsers, addUser, editUser, removeUser, editPermissions, grantAll, revokeAll } = useUsers();
 
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -104,15 +104,21 @@ const UserManagement = () => {
 
   const handleGrantAll = async (userId) => {
     setPermSubmitting(true);
-    try { await editPermissions(userId, ALL_PERMISSIONS); actions.showToast({ message: "Full access granted", type: "success" }); }
-    catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
+    try {
+      await grantAll(userId);
+      actions.showToast({ message: "Full access granted", type: "success" });
+      fetchUsers();
+    } catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
     finally { setPermSubmitting(false); }
   };
 
   const handleRevokeAll = async (userId) => {
     setPermSubmitting(true);
-    try { await editPermissions(userId, BASIC_PERMISSIONS); actions.showToast({ message: "Access revoked", type: "warning" }); }
-    catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
+    try {
+      await revokeAll(userId);
+      actions.showToast({ message: "Access revoked to minimum", type: "warning" });
+      fetchUsers();
+    } catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
     finally { setPermSubmitting(false); }
   };
 
@@ -121,8 +127,11 @@ const UserManagement = () => {
     if (!user) return;
     const current = user.permissions || [];
     const updated = current.includes(permKey) ? current.filter(p => p !== permKey) : [...current, permKey];
-    try { await editPermissions(userId, updated); }
-    catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
+    try {
+      await editPermissions(userId, updated);
+      // Refresh users so permission count badge updates
+      fetchUsers();
+    } catch (err) { actions.showToast({ message: err.response?.data?.message || "Failed", type: "error" }); }
   };
 
   const isAdmin = state.currentUser?.role === "admin" || (state.currentUser?.permissions || []).some(p => p.startsWith("users:"));

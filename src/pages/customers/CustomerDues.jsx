@@ -1,29 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Wallet, DollarSign, Users, Loader2, X, TrendingDown, AlertTriangle, Phone } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
 import Pagination from "../../components/ui/Pagination";
 import FilterBar from "../../components/ui/FilterBar";
-import { usePaginatedApi } from "../../hooks/usePaginatedApi";
 import { getCustomers, depositCredit } from "../../api/customersApi";
 
 const LIMIT = 15;
-
-// Fetch only customers who owe money (balance < 0 → creditBalance > 0)
-const fetchDues = (params) => getCustomers({ ...params, hasCredit: 'true' });
 
 const CustomerDues = () => {
   const { state, actions } = useApp();
   const { settings } = state;
   const isAdmin = state.currentUser?.role === "admin" || state.currentUser?.role === "manager";
 
-  const { data: dues, loading, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
-    usePaginatedApi(fetchDues, { search: "" }, LIMIT);
-
+  const [dues, setDues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
   const [depositModal, setDepositModal] = useState(null);
   const [depositAmount, setDepositAmount] = useState("");
   const [depositing, setDepositing] = useState(false);
+
+  const fetchDues = async () => {
+    setLoading(true);
+    try {
+      const params = { page, limit: LIMIT, hasCredit: 'true' };
+      if (search) params.search = search;
+      
+      const res = await getCustomers(params);
+      const data = res.data.data;
+      
+      // Handle different response structures
+      const customers = Array.isArray(data) ? data : data?.customers ?? data?.docs ?? [];
+      const pagination = data?.pagination ?? {};
+      
+      // Filter customers with credit balance > 0
+      const customersWithDues = customers.filter(c => (c.creditBalance || 0) > 0);
+      
+      setDues(customersWithDues);
+      setTotal(pagination.total ?? customersWithDues.length);
+      setTotalPages(pagination.pages ?? Math.ceil(customersWithDues.length / LIMIT));
+    } catch (err) {
+      console.error('Failed to fetch customer dues:', err);
+      actions.showToast({ message: "Failed to load customer dues", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDues();
+  }, [page, search]); // eslint-disable-line
 
   const totalDue = dues.reduce((s, d) => s + (d.creditBalance || 0), 0);
   const overdueCount = dues.filter(d => (d.creditBalance || 0) > 5000).length;
@@ -37,7 +67,7 @@ const CustomerDues = () => {
       actions.showToast({ message: `Rs. ${amount} deposited for ${depositModal.name}`, type: "success" });
       setDepositModal(null);
       setDepositAmount("");
-      refresh();
+      fetchDues();
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Deposit failed", type: "error" });
     } finally { setDepositing(false); }
@@ -75,13 +105,28 @@ const CustomerDues = () => {
       </div>
 
       {/* Filters */}
-      <FilterBar
-        filters={[{ type: 'search', key: 'search', placeholder: 'Search by name or phone...' }]}
-        values={filters}
-        onChange={setFilter}
-        onClear={() => setFilters({ search: '' })}
-        total={total}
-      />
+      <div className="relative">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="Search by name or phone..."
+          className="w-full px-4 py-2.5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition-all"
+        />
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        {search && (
+          <button
+            onClick={() => { setSearch(""); setPage(1); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
 
       {/* List */}
       {loading ? (

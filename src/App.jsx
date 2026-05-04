@@ -41,8 +41,9 @@ const CustomerDues      = lazy(() => import("./pages/customers/CustomerDues"));
 const StaffHub          = lazy(() => import("./pages/staff/StaffHub"));
 
 // New modules — Phase 3: Intelligence
-const PestDiagnosis     = lazy(() => import("./pages/recommendations/PestDiagnosis"));
-const DosageSuggestions = lazy(() => import("./pages/recommendations/DosageSuggestions"));
+const PestDiagnosis     = lazy(() => import("./pages/recommendations/EnhancedPestDiagnosis"));
+const DosageSuggestions = lazy(() => import("./pages/recommendations/AdvancedDosageCalculator"));
+const CropCalendar      = lazy(() => import("./pages/recommendations/CropCalendar"));
 const RecommendationPrint = lazy(() => import("./pages/recommendations/RecommendationPrint"));
 const PurchaseHistory   = lazy(() => import("./pages/customers/PurchaseHistory"));
 const Loyalty           = lazy(() => import("./pages/customers/Loyalty"));
@@ -142,6 +143,7 @@ const AppLayout = () => {
                   {/* Recommendations */}
                   <Route path="/recommendations/diagnosis" element={<PestDiagnosis />} />
                   <Route path="/recommendations/dosage" element={<DosageSuggestions />} />
+                  <Route path="/recommendations/calendar" element={<CropCalendar />} />
                   <Route path="/recommendations/print" element={<RecommendationPrint />} />
 
                   {/* Reports */}

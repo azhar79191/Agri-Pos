@@ -15,6 +15,8 @@ import ReceiptModal from "../components/pos/ReceiptModal";
 import HeldSalesModal, { holdSale, getHeldSales } from "../components/pos/HeldSalesModal";
 import { formatCurrency, calculateTax, calculateGrandTotal, generateInvoiceNumber, getTodayDate, getCurrentTime, isOutOfStock } from "../utils/helpers";
 import { createCustomer } from "../api/customersApi";
+import { getSalesReps } from "../api/salesRepsApi";
+import { getBundles } from "../api/bundlesApi";
 
 const RECENT_KEY = "pos_recent_products";
 const getRecentProducts = () => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; } };
@@ -51,6 +53,9 @@ const POS = () => {
   const [showHeld, setShowHeld] = useState(false);
   const [heldCount, setHeldCount] = useState(() => getHeldSales().length);
   const [recentProducts, setRecentProducts] = useState(() => getRecentProducts());
+  const [selectedSalesRep, setSelectedSalesRep] = useState("");
+  const [salesReps, setSalesReps] = useState([]);
+  const [bundles, setBundles] = useState([]);
   // Quick customer add
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomerForm, setQuickCustomerForm] = useState({ name: "", phone: "", address: "" });
@@ -66,7 +71,17 @@ const POS = () => {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  useEffect(() => { fetchProducts(); fetchCustomers(); }, []); // eslint-disable-line
+  useEffect(() => {
+    fetchProducts();
+    fetchCustomers();
+    // Load sales reps and bundles for POS
+    getSalesReps({ status: 'active', limit: 100 })
+      .then(res => setSalesReps(res.data.data.reps || []))
+      .catch(() => {});
+    getBundles({ isActive: true, limit: 100 })
+      .then(res => setBundles(res.data.data.bundles || []))
+      .catch(() => {});
+  }, []); // eslint-disable-line
 
   const DEFAULT_CATS = ["Herbicides", "Insecticides", "Fungicides", "Fertilizers", "Seeds", "Other"];
   const categories = useMemo(() => {
@@ -128,6 +143,28 @@ const POS = () => {
     actions.addToCart(product, 1);
     addRecentProduct(product);
     setRecentProducts(getRecentProducts());
+  }, [actions]);
+
+  // Add all bundle items to cart at bundle price (distributed proportionally)
+  const handleAddBundle = useCallback((bundle) => {
+    if (!bundle.items || bundle.items.length === 0) return;
+    const totalValue = bundle.items.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
+    const ratio = totalValue > 0 ? bundle.bundlePrice / totalValue : 1;
+    bundle.items.forEach(item => {
+      const adjustedPrice = parseFloat((item.price * ratio).toFixed(2));
+      // Use actual product ID if available, otherwise use the product field
+      const productId = item.product?._id || item.product || item.productId;
+      
+      actions.addToCart({
+        _id: productId,
+        name: `[Bundle] ${item.productName}`,
+        price: adjustedPrice,
+        unit: item.unit || "piece",
+        barcode: "",
+        stock: 9999,
+      }, item.quantity || 1);
+    });
+    actions.showToast({ message: `"${bundle.name}" added to cart`, type: "success" });
   }, [actions]);
 
   const handleBarcodeScan = (product) => {
@@ -215,7 +252,14 @@ const POS = () => {
 
     const invoiceData = {
       ...(customer?._id && { customer: customer._id }),
-      items: cart.map(item => ({ product: item.productId, quantity: item.quantity, discount: 0 })),
+      ...(selectedSalesRep && { salesRepId: selectedSalesRep }),
+      items: cart.map(item => ({
+        product: item.productId,
+        productName: item.name?.replace(/^\[Bundle\] /, '') || item.name,
+        unitPrice: item.price,
+        quantity: item.quantity,
+        discount: 0,
+      })),
       paymentMethod,
       amountPaid: paymentMethod === "Cash" ? parseFloat(cashReceived) : 0,
       discount: discountAmount,
@@ -244,7 +288,7 @@ const POS = () => {
       if (customer?._id) refreshCustomer(customer._id);
       setCompletedTransaction(transaction);
       setShowReceipt(true);
-      setCashReceived(""); setDiscount(0); setSelectedCustomer("");
+      setCashReceived(""); setDiscount(0); setSelectedCustomer(""); setSelectedSalesRep("");
       actions.showToast({
         message: isPending ? `Invoice #${invoiceRecord.invoiceNumber} created — awaiting admin confirmation` : `Sale completed! Invoice #${invoiceRecord.invoiceNumber} generated`,
         type: isPending ? "warning" : "success",
@@ -307,6 +351,8 @@ const POS = () => {
             onUpdateQuantity={handleUpdateQuantity}
             currency={settings.currency}
             recentProducts={recentProducts}
+            bundles={bundles}
+            onAddBundle={handleAddBundle}
           />
         </div>
 
@@ -317,6 +363,9 @@ const POS = () => {
             selectedCustomer={selectedCustomer}
             onCustomerChange={e => setSelectedCustomer(e.target.value)}
             onAddCustomer={() => setShowQuickCustomer(true)}
+            salesReps={salesReps}
+            selectedSalesRep={selectedSalesRep}
+            onSalesRepChange={e => setSelectedSalesRep(e.target.value)}
             discount={discount}
             discountType={discountType}
             discountAmount={discountAmount}

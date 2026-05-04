@@ -46,7 +46,13 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
     if (!po) return;
     const payload = {
       notes,
-      items: items.map(i => ({ productId: i.productId, received: i.received, ordered: i.ordered })),
+      items: items.map(i => ({
+        productId:   i.productId,
+        productName: i.productName,
+        received:    i.received,
+        ordered:     i.ordered,
+        unitCost:    i.unitPrice,
+      })),
     };
     setSaving(true);
     try {

@@ -92,6 +92,20 @@ const NotificationCenter = () => {
       actions.showToast({ message: data.message, type: data.severity === "critical" ? "error" : "warning" });
       addNotification({ id: `stock-${data.productId || Date.now()}`, type: data.type || "stock_alert", severity: data.severity || "warning", title: data.title || "Stock Alert", message: data.message, source: "socket", createdAt: new Date().toISOString(), action: () => { navigate("/products"); setShowPanel(false); } });
     }, [addNotification, actions, navigate]),
+    onPermissionsUpdated: useCallback((data) => {
+      // Check if this update is for the currently logged-in user
+      try {
+        const me = JSON.parse(localStorage.getItem("user") || "{}");
+        const myId = me._id || me.id;
+        if (myId && String(myId) === String(data.userId)) {
+          // Update localStorage and dispatch to AppContext
+          const updated = { ...me, permissions: data.permissions };
+          localStorage.setItem("user", JSON.stringify(updated));
+          window.dispatchEvent(new CustomEvent("user-updated", { detail: updated }));
+          actions.showToast({ message: "Your permissions have been updated by admin", type: "info" });
+        }
+      } catch {}
+    }, [actions]),
   });
 
   const criticalCount = notifications.filter(n => n.severity === "critical" || n.severity === "high").length;

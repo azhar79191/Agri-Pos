@@ -22,6 +22,7 @@ const PAY_COLORS = {
 
 const CartPanel = ({
   cart, customerOptions, selectedCustomer, onCustomerChange, onAddCustomer,
+  salesReps = [], selectedSalesRep, onSalesRepChange,
   discount, discountType, discountAmount, onDiscountChange, onDiscountTypeToggle,
   paymentMethod, onPaymentMethodChange,
   cashReceived, onCashReceivedChange, cartCalculations, change,
@@ -91,6 +92,18 @@ const CartPanel = ({
             <UserPlus className="w-3.5 h-3.5" />
           </button>
         </div>
+        {/* Sales Rep selector */}
+        {salesReps.length > 0 && (
+          <div className="relative mt-2">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <select value={selectedSalesRep} onChange={onSalesRepChange}
+              className="w-full appearance-none pl-8 pr-7 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all cursor-pointer outline-none">
+              <option value="">No Sales Rep</option>
+              {salesReps.map(r => <option key={r._id} value={r._id}>{r.name} ({r.commission}% commission)</option>)}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+          </div>
+        )}
       </div>
 
       {/* ── Cart items ── */}

@@ -59,9 +59,10 @@ const menuGroups = [
   {
     id: "recommendations", label: "Crop Advisory", icon: Bug, permission: "products",
     children: [
-      { id: "recommendations/diagnosis", label: "Pest Diagnosis", icon: Bug },
-      { id: "recommendations/dosage", label: "Dosage Guide", icon: Beaker },
-      { id: "recommendations/print", label: "Print Slip", icon: Printer },
+      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis", icon: Bug },
+      { id: "recommendations/dosage", label: "Dosage Calculator", icon: Beaker },
+      { id: "recommendations/calendar", label: "Crop Calendar", icon: Calendar },
+      { id: "recommendations/print", label: "Print Advisory", icon: Printer },
     ]
   },
   {

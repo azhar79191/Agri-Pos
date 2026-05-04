@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useMemo, useRe
 import { hasPermission } from "../data/users";
 import { generateInvoiceNumber, getTodayDate, getCurrentTime } from "../utils/helpers";
 import { disconnectSocket } from "../hooks/useSocket";
+import { getProfile } from "../api/authApi";
 
 // ── Bootstrap from storage synchronously (no flash, no extra render) ──
 const _savedUser = (() => {
@@ -145,6 +146,27 @@ export function AppProvider({ children }) {
       window.removeEventListener("storage", handleStorage);
     };
   }, []);
+
+  // ── Refresh permissions from backend on startup ──
+  // This ensures any permission changes made by admin are reflected immediately
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token || !state.isAuthenticated) return;
+    getProfile()
+      .then(res => {
+        const fresh = res.data?.data?.user ?? res.data?.user;
+        if (!fresh) return;
+        // Only update if permissions actually changed
+        const current = stateRef.current.currentUser;
+        const freshPerms = JSON.stringify(fresh.permissions || []);
+        const currentPerms = JSON.stringify(current?.permissions || []);
+        if (freshPerms !== currentPerms || fresh.isActive !== current?.isActive) {
+          dispatch({ type: A.UPDATE_USER, payload: fresh });
+          localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
+        }
+      })
+      .catch(() => {}); // silent — don't break app if backend is down
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Memoized actions — stable reference, no re-renders on state change ──
   const actions = useMemo(() => ({

@@ -50,6 +50,17 @@ export const useUserStore = create(
         set((s) => ({
           users: s.users.map((u) => u._id === id ? { ...u, permissions: newPerms } : u),
         }));
+        // If editing own permissions, sync localStorage so hasPermission() picks it up immediately
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          try {
+            const me = JSON.parse(stored);
+            if (me._id === id || me.id === id) {
+              localStorage.setItem("user", JSON.stringify({ ...me, permissions: newPerms }));
+              window.dispatchEvent(new CustomEvent("user-updated", { detail: { ...me, permissions: newPerms } }));
+            }
+          } catch {}
+        }
         return updated;
       },
 
@@ -60,6 +71,14 @@ export const useUserStore = create(
         set((s) => ({
           users: s.users.map((u) => u._id === id ? { ...u, permissions: newPerms } : u),
         }));
+        // Sync localStorage if editing own account
+        try {
+          const me = JSON.parse(localStorage.getItem("user") || "{}");
+          if (me._id === id || me.id === id) {
+            localStorage.setItem("user", JSON.stringify({ ...me, permissions: newPerms }));
+            window.dispatchEvent(new CustomEvent("user-updated", { detail: { ...me, permissions: newPerms } }));
+          }
+        } catch {}
         return newPerms;
       },
 
@@ -70,6 +89,14 @@ export const useUserStore = create(
         set((s) => ({
           users: s.users.map((u) => u._id === id ? { ...u, permissions: newPerms } : u),
         }));
+        // Sync localStorage if editing own account
+        try {
+          const me = JSON.parse(localStorage.getItem("user") || "{}");
+          if (me._id === id || me.id === id) {
+            localStorage.setItem("user", JSON.stringify({ ...me, permissions: newPerms }));
+            window.dispatchEvent(new CustomEvent("user-updated", { detail: { ...me, permissions: newPerms } }));
+          }
+        } catch {}
         return newPerms;
       },
 
