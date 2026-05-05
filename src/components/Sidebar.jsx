@@ -45,6 +45,7 @@ const Sidebar = () => {
 
   const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
   const [showMobileInstallTip, setShowMobileInstallTip] = useState(false);
+  // Show install button whenever app is NOT running as installed PWA
   const showInstallBtn = !isInstalled;
 
   const visible = currentUser ? MENU_GROUPS.filter((g) => actions.hasPermission(g.permission)) : [];

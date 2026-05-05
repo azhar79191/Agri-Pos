@@ -22,11 +22,11 @@ const Header = () => {
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
-  const { canInstall, isInstalled, isIOS, dismissed, install, dismiss } = usePWAInstall();
+  const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
   const [showInstallModal, setShowInstallModal] = useState(false);
 
-  // Show install button in header if: native prompt available OR not installed and not dismissed
-  const showInstallBtn = !isInstalled && !dismissed;
+  // Show install button whenever app is NOT running as installed PWA
+  const showInstallBtn = !isInstalled;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -187,7 +187,7 @@ const Header = () => {
                       <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                     </div>
                     <span className="font-medium">Install App</span>
-                    <span className="ml-auto text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">PWA</span>
+                    <span className="ml-auto text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">FREE</span>
                   </button>
                 )}
 
@@ -284,10 +284,10 @@ const Header = () => {
           {/* Footer */}
           <div className="px-5 pb-5 flex gap-2">
             <button
-              onClick={() => { dismiss(); setShowInstallModal(false); }}
+              onClick={() => setShowInstallModal(false)}
               className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
-              Don't show again
+              Maybe later
             </button>
             <button
               onClick={() => setShowInstallModal(false)}

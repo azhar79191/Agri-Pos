@@ -13,11 +13,8 @@ export default defineConfig({
         enabled: true,
         type: 'module',
       },
-      // Use generateSW — most reliable for triggering beforeinstallprompt
       strategies: 'generateSW',
-      // Point to the existing manifest
-      manifestFilename: 'site.webmanifest',
-      // Don't auto-inject a <link rel="manifest"> — index.html already has it
+      // Let the plugin inject its own manifest (fixes duplicate manifest conflict)
       injectRegister: 'auto',
       manifest: {
         name: 'AgriNest - Agriculture Dealers Platform',
@@ -34,19 +31,14 @@ export default defineConfig({
         icons: [
           { src: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
           { src: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {
-        // Cache the app shell
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        // Network-first for navigation (SPA)
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//],
-        // Don't cache API calls
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/agri-pos-api\.vercel\.app\//,
