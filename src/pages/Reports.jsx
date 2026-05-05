@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Download, TrendingUp, Package, AlertTriangle, DollarSign, ShoppingCart, BarChart3, PieChart as PieIcon, ChevronDown } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { useApp } from "../context/AppContext";
 import { useReports } from "../hooks/useReports";
+import { useReportData } from "../hooks/useReportData";
 import Badge from "../components/ui/Badge";
 import ModernButton from "../components/ui/ModernButton";
 import { formatCurrency, getStockStatus, getStockColor } from "../utils/helpers";
+import { CHART_COLORS } from "../constants/invoices";
 
-const COLORS = ["#2563eb", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"];
+const selectCls = "appearance-none pl-3.5 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer";
 
-const CustomTooltip = ({ active, payload, label, currency }) => {
+/** Recharts custom tooltip */
+const ChartTooltip = ({ active, payload, label, currency }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-premium-lg px-3.5 py-2.5">
@@ -22,68 +22,54 @@ const CustomTooltip = ({ active, payload, label, currency }) => {
   );
 };
 
+const REPORT_TABS = [
+  { id: "daily",     label: "Sales Report", icon: BarChart3 },
+  { id: "products",  label: "Top Products", icon: TrendingUp },
+  { id: "inventory", label: "Inventory",    icon: Package },
+];
+
 const Reports = () => {
   const { state, actions } = useApp();
-  const { settings } = state;
-  const { fetchSalesReport, fetchTopProducts, fetchInventory, fetchPaymentDistribution, fetchExport, loading } = useReports();
+  const { settings }       = state;
+  const { fetchExport }    = useReports();
+  const {
+    loading,
+    summary, dailySalesData, paymentMethodData, topProducts, inventoryData,
+    getDateParams, loadSalesReport, loadPaymentDistribution, loadTopProducts, loadInventory,
+  } = useReportData();
 
   const [reportType, setReportType] = useState("daily");
-  const [dateRange, setDateRange] = useState("7");
-  const [summary, setSummary] = useState({ totalSales: 0, totalTransactions: 0, avgOrderValue: 0, totalItems: 0 });
-  const [dailySalesData, setDailySalesData] = useState([]);
-  const [paymentMethodData, setPaymentMethodData] = useState([]);
-  const [topProducts, setTopProducts] = useState([]);
-  const [inventoryData, setInventoryData] = useState({ products: [], lowStock: [], outOfStock: 0 });
-
-  const getDateParams = () => {
-    const end = new Date().toISOString().split("T")[0];
-    const start = new Date();
-    start.setDate(start.getDate() - parseInt(dateRange));
-    return { startDate: start.toISOString().split("T")[0], endDate: end };
-  };
+  const [dateRange, setDateRange]   = useState("7");
 
   useEffect(() => {
-    const params = getDateParams();
+    const params = getDateParams(dateRange);
     if (reportType === "daily") {
-      fetchSalesReport(params).then(data => {
-        if (!data) return;
-        const s = data.summary || {};
-        setSummary({ totalSales: s.totalSales || 0, totalTransactions: s.invoiceCount || 0, avgOrderValue: s.avgOrderValue || 0, totalItems: s.itemCount || 0 });
-        setDailySalesData((data.salesData || []).map(d => ({
-          date: new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
-          sales: d.totalSales || 0,
-        })));
-      }).catch(() => {});
-      fetchPaymentDistribution(params).then(data => {
-        if (!data) return;
-        setPaymentMethodData((data.distribution || []).map(d => ({ name: d._id, value: d.total })));
-      }).catch(() => {});
+      loadSalesReport(params).catch(() => {});
+      loadPaymentDistribution(params).catch(() => {});
     }
-    if (reportType === "products") {
-      fetchTopProducts(params).then(data => { if (data) setTopProducts(data.topProducts || data); }).catch(() => {});
-    }
-    if (reportType === "inventory") {
-      fetchInventory().then(data => {
-        if (!data) return;
-        setInventoryData({ products: data.products || [], lowStock: (data.products || []).filter(p => p.status === "Low Stock"), outOfStock: data.summary?.outOfStockCount || 0 });
-      }).catch(() => {});
-    }
+    if (reportType === "products")  loadTopProducts(params).catch(() => {});
+    if (reportType === "inventory") loadInventory().catch(() => {});
   }, [reportType, dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExport = async () => {
     try {
-      await fetchExport({ ...getDateParams(), type: reportType });
+      await fetchExport({ ...getDateParams(dateRange), type: reportType });
       actions.showToast({ message: "Report exported successfully", type: "success" });
     } catch { actions.showToast({ message: "Export failed", type: "error" }); }
   };
 
-  const reportTabs = [
-    { id: "daily", label: "Sales Report", icon: BarChart3 },
-    { id: "products", label: "Top Products", icon: TrendingUp },
-    { id: "inventory", label: "Inventory", icon: Package },
+  const SUMMARY_STATS = [
+    { label: "Total Sales",      value: formatCurrency(summary.totalSales, settings.currency),      icon: DollarSign, cls: "text-blue-600 dark:text-blue-400",   bg: "bg-blue-50 dark:bg-blue-900/15" },
+    { label: "Transactions",     value: summary.totalTransactions,                                   icon: ShoppingCart,cls: "text-blue-600 dark:text-blue-400",  bg: "bg-blue-100 dark:bg-blue-900/30" },
+    { label: "Avg Order Value",  value: formatCurrency(summary.avgOrderValue, settings.currency),   icon: TrendingUp, cls: "text-purple-600 dark:text-purple-400",bg: "bg-purple-100 dark:bg-purple-900/30" },
+    { label: "Items Sold",       value: summary.totalItems,                                          icon: Package,    cls: "text-amber-600 dark:text-amber-400",  bg: "bg-amber-100 dark:bg-amber-900/30" },
   ];
 
-  const selectCls = "appearance-none pl-3.5 pr-8 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer";
+  const INVENTORY_STATS = [
+    { label: "Total Products", value: inventoryData.products?.length || 0, icon: Package,        cls: "text-blue-600 dark:text-blue-400",   bg: "bg-blue-100 dark:bg-blue-900/30" },
+    { label: "Low Stock",      value: inventoryData.lowStock?.length || 0, icon: AlertTriangle,  cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
+    { label: "Out of Stock",   value: inventoryData.outOfStock || 0,       icon: Package,        cls: "text-red-600 dark:text-red-400",     bg: "bg-red-100 dark:bg-red-900/30" },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -101,22 +87,18 @@ const Reports = () => {
         <ModernButton variant="outline" onClick={handleExport} icon={Download} loading={loading}>Export Report</ModernButton>
       </div>
 
-      {/* Report type tabs + date range */}
+      {/* Tabs + date range */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-          {reportTabs.map(({ id, label, icon: Icon }) => (
+          {REPORT_TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setReportType(id)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
-                reportType === id
-                  ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}>
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${reportType === id ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"}`}>
               <Icon className="w-4 h-4" />{label}
             </button>
           ))}
         </div>
         <div className="relative ml-auto">
-          <select value={dateRange} onChange={e => setDateRange(e.target.value)} className={selectCls}>
+          <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className={selectCls}>
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
@@ -128,12 +110,7 @@ const Reports = () => {
       {/* Summary stats */}
       {reportType !== "inventory" && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Total Sales", value: formatCurrency(summary.totalSales, settings.currency), icon: DollarSign, color: "blue", cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/15" },
-            { label: "Transactions", value: summary.totalTransactions, icon: ShoppingCart, color: "blue", cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
-            { label: "Avg Order Value", value: formatCurrency(summary.avgOrderValue, settings.currency), icon: TrendingUp, color: "purple", cls: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
-            { label: "Items Sold", value: summary.totalItems, icon: Package, color: "amber", cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
-          ].map(({ label, value, icon: Icon, cls, bg }, i) => (
+          {SUMMARY_STATS.map(({ label, value, icon: Icon, cls, bg }, i) => (
             <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
@@ -149,7 +126,7 @@ const Reports = () => {
         </div>
       )}
 
-      {/* Daily Sales Charts */}
+      {/* Daily sales charts */}
       {reportType === "daily" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
@@ -162,8 +139,8 @@ const Reports = () => {
                 <BarChart data={dailySalesData} barSize={28}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
                   <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${settings.currency}${v}`} />
-                  <Tooltip content={<CustomTooltip currency={settings.currency} />} cursor={{ fill: "rgba(37,99,235,0.06)" }} />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${settings.currency}${v}`} />
+                  <Tooltip content={<ChartTooltip currency={settings.currency} />} cursor={{ fill: "rgba(37,99,235,0.06)" }} />
                   <Bar dataKey="sales" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
                   <defs>
                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -175,7 +152,6 @@ const Reports = () => {
               </ResponsiveContainer>
             </div>
           </div>
-
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
             <div className="flex items-center gap-2 mb-5">
               <PieIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -185,10 +161,10 @@ const Reports = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={paymentMethodData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
-                    {paymentMethodData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
+                    {paymentMethodData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip formatter={v => formatCurrency(v, settings.currency)} contentStyle={{ borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                  <Legend iconType="circle" iconSize={8} formatter={v => <span className="text-xs text-slate-600 dark:text-slate-400">{v}</span>} />
+                  <Tooltip formatter={(v) => formatCurrency(v, settings.currency)} contentStyle={{ borderRadius: "12px", border: "1px solid rgba(226,232,240,0.8)", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
+                  <Legend iconType="circle" iconSize={8} formatter={(v) => <span className="text-xs text-slate-600 dark:text-slate-400">{v}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -196,7 +172,7 @@ const Reports = () => {
         </div>
       )}
 
-      {/* Top Products */}
+      {/* Top products */}
       {reportType === "products" && (
         <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
@@ -206,11 +182,7 @@ const Reports = () => {
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
-                <tr>
-                  {["#", "Product Name", "Qty Sold", "Revenue"].map(h => (
-                    <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
-                  ))}
-                </tr>
+                <tr>{["#", "Product Name", "Qty Sold", "Revenue"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {topProducts.map((p, i) => (
@@ -223,9 +195,7 @@ const Reports = () => {
                     <td className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.totalRevenue, settings.currency)}</td>
                   </tr>
                 ))}
-                {topProducts.length === 0 && (
-                  <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">No sales data for selected period</td></tr>
-                )}
+                {topProducts.length === 0 && <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">No sales data for selected period</td></tr>}
               </tbody>
             </table>
           </div>
@@ -236,11 +206,7 @@ const Reports = () => {
       {reportType === "inventory" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { label: "Total Products", value: inventoryData.products?.length || 0, icon: Package, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
-              { label: "Low Stock", value: inventoryData.lowStock?.length || 0, icon: AlertTriangle, cls: "text-amber-600 dark:text-amber-400", bg: "bg-amber-100 dark:bg-amber-900/30" },
-              { label: "Out of Stock", value: inventoryData.outOfStock || 0, icon: Package, cls: "text-red-600 dark:text-red-400", bg: "bg-red-100 dark:bg-red-900/30" },
-            ].map(({ label, value, icon: Icon, cls, bg }, i) => (
+            {INVENTORY_STATS.map(({ label, value, icon: Icon, cls, bg }, i) => (
               <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
@@ -254,7 +220,6 @@ const Reports = () => {
               </div>
             ))}
           </div>
-
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm">Low Stock Products</h3>
@@ -263,11 +228,7 @@ const Reports = () => {
             <div className="overflow-x-auto">
               <table className="w-full table-premium">
                 <thead>
-                  <tr>
-                    {["Product Name", "Category", "Stock Level", "Price"].map(h => (
-                      <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
-                    ))}
-                  </tr>
+                  <tr>{["Product Name", "Category", "Stock Level", "Price"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {(inventoryData.lowStock || []).map((p, i) => (
@@ -282,9 +243,7 @@ const Reports = () => {
                       <td className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.price, settings.currency)}</td>
                     </tr>
                   ))}
-                  {(inventoryData.lowStock || []).length === 0 && (
-                    <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">All inventory levels are good!</td></tr>
-                  )}
+                  {(inventoryData.lowStock || []).length === 0 && <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">All inventory levels are good!</td></tr>}
                 </tbody>
               </table>
             </div>

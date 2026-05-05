@@ -589,6 +589,18 @@ textarea:focus {
   background: #334155;
 }
 
+/* ── Crisp image rendering for avatars and logos ── */
+img {
+  -webkit-font-smoothing: antialiased;
+}
+.avatar-img,
+[class*="rounded-lg"] img,
+[class*="rounded-full"] img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
 /* ── Print ── */
 @media print {
   body * { visibility: hidden; }

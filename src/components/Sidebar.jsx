@@ -1,128 +1,57 @@
 import React, { useState } from "react";
-import {
-  LayoutDashboard, Package, Users, ShoppingCart, FileText,
-  BarChart3, Settings, Menu, X, ChevronLeft, ChevronRight,
-  LogOut, Shield, Building2, Layers, Sprout, ChevronDown,
-  Calendar, Zap, PackagePlus, ShoppingBag, ClipboardCheck,
-  RotateCcw, Bug, Beaker, Printer, CreditCard, Wallet,
-  History, Award, UserCheck, TrendingUp, DollarSign, PieChart
-} from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
+import { MENU_GROUPS } from "../constants/menuGroups";
+import ShopLogo from "./ui/ShopLogo";
 
-const menuGroups = [
-  {
-    id: "dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard",
-    children: [
-      { id: "dashboard", label: "Overview", icon: LayoutDashboard },
-      { id: "dashboard/analytics", label: "Analytics", icon: BarChart3 },
-      { id: "dashboard/forecasting", label: "Forecasting", icon: TrendingUp },
-    ]
-  },
-  {
-    id: "sales", label: "Sales", icon: ShoppingCart, permission: "pos",
-    children: [
-      { id: "pos", label: "POS Billing", icon: ShoppingCart },
-      { id: "invoices", label: "Invoices", icon: FileText },
-      { id: "sales/credit", label: "Credit Sales", icon: CreditCard },
-    ]
-  },
-  {
-    id: "inventory", label: "Inventory", icon: Package, permission: "products",
-    children: [
-      { id: "products", label: "Products", icon: Package },
-      { id: "stock", label: "Stock Levels", icon: Layers },
-      { id: "inventory/batch-expiry", label: "Batch & Expiry", icon: Calendar },
-      { id: "inventory/bundles", label: "Bundles", icon: PackagePlus },
-      { id: "inventory/dead-stock", label: "Smart Alerts", icon: Zap },
-    ]
-  },
-  {
-    id: "purchases", label: "Purchases", icon: ShoppingBag, permission: "stock",
-    children: [
-      { id: "purchases/orders", label: "Purchase Orders", icon: ShoppingBag },
-      { id: "purchases/grn", label: "Goods Receiving", icon: ClipboardCheck },
-      { id: "purchases/returns", label: "Returns", icon: RotateCcw },
-      { id: "purchases/suppliers", label: "Suppliers", icon: Building2 },
-    ]
-  },
-  {
-    id: "customers-group", label: "Customers", icon: Users, permission: "customers",
-    children: [
-      { id: "customers", label: "All Customers", icon: Users },
-      { id: "customers/dues", label: "Customer Dues", icon: Wallet },
-      { id: "customers/history", label: "Purchase History", icon: History },
-      { id: "customers/loyalty", label: "Loyalty Program", icon: Award },
-    ]
-  },
-  {
-    id: "recommendations", label: "Crop Advisory", icon: Bug, permission: "products",
-    children: [
-      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis", icon: Bug },
-      { id: "recommendations/dosage", label: "Dosage Calculator", icon: Beaker },
-      { id: "recommendations/calendar", label: "Crop Calendar", icon: Calendar },
-      { id: "recommendations/print", label: "Print Advisory", icon: Printer },
-    ]
-  },
-  {
-    id: "reports-group", label: "Reports", icon: BarChart3, permission: "reports",
-    children: [
-      { id: "reports", label: "Sales Report", icon: BarChart3 },
-      { id: "reports/profit", label: "Profit Analysis", icon: DollarSign },
-      { id: "reports/margin", label: "Margin Analysis", icon: PieChart },
-      { id: "reports/inventory", label: "Inventory Report", icon: Package },
-    ]
-  },
-  {
-    id: "staff", label: "Staff Hub", icon: Shield, permission: "users",
-    single: true,
-    children: [
-      { id: "staff", label: "Staff Hub", icon: Shield },
-    ]
-  },
-  {
-    id: "settings-group", label: "Settings", icon: Settings, permission: "settings",
-    children: [
-      { id: "shops", label: "My Shop", icon: Building2 },
-      { id: "settings", label: "App Settings", icon: Settings },
-    ]
-  },
-];
+/** Icon background colors per group — matches the reference design */
+const GROUP_ICON_COLORS = {
+  dashboard:        { bg: "bg-blue-100",   icon: "text-blue-600" },
+  sales:            { bg: "bg-emerald-100",icon: "text-emerald-600" },
+  inventory:        { bg: "bg-orange-100", icon: "text-orange-600" },
+  purchases:        { bg: "bg-violet-100", icon: "text-violet-600" },
+  "customers-group":{ bg: "bg-cyan-100",   icon: "text-cyan-600" },
+  recommendations:  { bg: "bg-green-100",  icon: "text-green-600" },
+  "reports-group":  { bg: "bg-purple-100", icon: "text-purple-600" },
+  staff:            { bg: "bg-indigo-100", icon: "text-indigo-600" },
+  "settings-group": { bg: "bg-slate-100",  icon: "text-slate-600" },
+};
+
+/** Category section labels shown above groups */
+const GROUP_SECTION_LABELS = {
+  sales:            "OPERATIONS",
+  purchases:        "SUPPLY CHAIN",
+  "customers-group":"CUSTOMERS",
+  recommendations:  "ADVISORY",
+  "reports-group":  "REPORTS",
+  staff:            "ADMINISTRATION",
+};
 
 const Sidebar = () => {
   const { state, actions } = useApp();
-  const { currentUser, sidebarCollapsed } = state;
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { currentUser, settings } = state;
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [openGroups, setOpenGroups] = useState(() => {
-    const path = location.pathname.replace("/", "");
-    const found = menuGroups.find(g => g.children?.some(c => c.id === path || path.startsWith(c.id)));
+  const [openGroups, setOpenGroups]     = useState(() => {
+    const path  = location.pathname.replace("/", "");
+    const found = MENU_GROUPS.find((g) => g.children?.some((c) => c.id === path || path.startsWith(c.id)));
     return found ? { [found.id]: true } : { dashboard: true };
   });
 
-  const visible = currentUser
-    ? menuGroups.filter(g => actions.hasPermission(g.permission))
-    : [];
+  const visible = currentUser ? MENU_GROUPS.filter((g) => actions.hasPermission(g.permission)) : [];
 
   const go = (id) => { navigate(`/${id}`); setIsMobileOpen(false); };
 
-  const toggleGroup = (groupId) => {
-    if (sidebarCollapsed) return;
-    setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
-  };
+  const toggleGroup = (groupId) => setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
 
-  const isChildActive = (childId) => {
-    const path = location.pathname.replace(/^\//, "");
-    return path === childId;
-  };
+  const isChildActive = (childId) => location.pathname.replace(/^\//, "") === childId;
+  const isGroupActive = (group)   => group.children?.some((c) => isChildActive(c.id));
 
-  const isGroupActive = (group) => {
-    return group.children?.some(c => isChildActive(c.id));
-  };
-
-  const logout = () => {
+  const handleLogout = () => {
     actions.showToast({
       message: "Are you sure you want to logout?",
       type: "warning", position: "center", isConfirm: true,
@@ -132,205 +61,170 @@ const Sidebar = () => {
 
   const rawRole = typeof currentUser?.role === "object" ? currentUser.role?.name : currentUser?.role;
   const userRole = rawRole ? roles[(rawRole || "").toLowerCase()] : null;
-  const initial = currentUser?.name?.[0]?.toUpperCase() || "U";
 
-  const Avatar = ({ size = "w-9 h-9" }) =>
-    currentUser?.avatar ? (
-      <img src={currentUser.avatar} alt={currentUser.name}
-        className={`${size} rounded-lg object-cover`} loading="eager" decoding="sync" />
-    ) : (
-      <div className={`${size} rounded-lg flex items-center justify-center text-white font-semibold text-xs`}
-        style={{ background: "#3b82f6" }}>{initial}</div>
-    );
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/60">
 
-  const LogoBlock = () => (
-    <div className="w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden bg-white">
-      {state.settings?.shopLogo ? (
-        <img src={state.settings.shopLogo} alt={state.settings.shopName}
-          className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #2563eb, #0ea5e9)" }}>
-          <Sprout className="w-4 h-4 text-white" />
+      {/* Logo / Brand */}
+      <div className="h-14 flex items-center gap-3 px-4 flex-shrink-0 border-b border-slate-100 dark:border-slate-800">
+        <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-8 h-8" />
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-slate-900 dark:text-white text-sm truncate leading-none">
+            {settings?.shopName || "AgroCare POS"}
+          </p>
+          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Agri Management</p>
         </div>
-      )}
+        <button
+          onClick={() => setIsMobileOpen(false)}
+          className="lg:hidden p-1 rounded-md text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-2 mt-5 px-2">
+        {visible.map((group, idx) => {
+          const GIcon      = group.icon;
+          const groupActive = isGroupActive(group);
+          const isOpen     = openGroups[group.id];
+          const colors     = GROUP_ICON_COLORS[group.id] || { bg: "bg-slate-100", icon: "text-slate-600" };
+          const sectionLabel = GROUP_SECTION_LABELS[group.id];
+
+          return (
+            <div key={group.id}>
+              {/* Section label */}
+              {sectionLabel && (
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 pt-4 pb-1.5">
+                  {sectionLabel}
+                </p>
+              )}
+
+              {/* Single-item group — flat nav item */}
+              {group.single ? (() => {
+                const childId = group.children[0].id;
+                const active  = isChildActive(childId) || location.pathname.startsWith(`/${childId}`);
+                return (
+                  <button
+                    key={group.id}
+                    onClick={() => go(childId)}
+                    className={[
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative",
+                      active
+                        ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-violet-600" />}
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? "bg-violet-100 dark:bg-violet-900/40" : colors.bg + " dark:bg-slate-800"}`}>
+                      <GIcon className={`w-4 h-4 ${active ? "text-violet-600 dark:text-violet-400" : colors.icon}`} />
+                    </span>
+                    <span className="flex-1 text-left">{group.label}</span>
+                  </button>
+                );
+              })() : (
+                /* Group with children */
+                <div className="space-y-0.5">
+                  <button
+                    onClick={() => toggleGroup(group.id)}
+                    className={[
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative",
+                      groupActive
+                        ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400"
+                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    {groupActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-violet-600" />}
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${groupActive ? "bg-violet-100 dark:bg-violet-900/40" : colors.bg + " dark:bg-slate-800"}`}>
+                      <GIcon className={`w-4 h-4 ${groupActive ? "text-violet-600 dark:text-violet-400" : colors.icon}`} />
+                    </span>
+                    <span className="flex-1 text-left">{group.label}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 flex-shrink-0 ${isOpen ? "rotate-180" : ""} ${groupActive ? "text-violet-500" : "text-slate-400"}`} />
+                  </button>
+
+                  {/* Children */}
+                  <div className={`overflow-hidden transition-all duration-200 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                    <div className="ml-5 pl-4 border-l border-slate-100 dark:border-slate-800 space-y-0.5 py-0.5">
+                      {group.children.map((child) => {
+                        const CIcon  = child.icon;
+                        const active = isChildActive(child.id);
+                        return (
+                          <button
+                            key={child.id}
+                            onClick={() => go(child.id)}
+                            className={[
+                              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all duration-150",
+                              active
+                                ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400"
+                                : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-800 dark:hover:text-white",
+                            ].join(" ")}
+                          >
+                            <CIcon className={`w-3.5 h-3.5 flex-shrink-0 ${active ? "text-violet-600 dark:text-violet-400" : "text-slate-400"}`} />
+                            <span className="whitespace-nowrap">{child.label}</span>
+                            {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Divider + Logout */}
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-150 group"
+          >
+            <span className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 flex items-center justify-center flex-shrink-0 transition-colors">
+              <LogOut className="w-4 h-4 text-slate-500 group-hover:text-red-500 transition-colors" />
+            </span>
+            Sign Out
+          </button>
+        </div>
+      </nav>
+
+      {/* Footer */}
+      <div className="px-4 py-2.5 flex-shrink-0 border-t border-slate-100 dark:border-slate-800">
+        <p className="text-[10px] text-center text-slate-400 uppercase tracking-wider">
+          v3.0 · {settings?.shopName || "AgroCare"}
+        </p>
+      </div>
     </div>
   );
 
   return (
     <>
       {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3"
-        style={{ background: "#1e293b", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-md overflow-hidden flex-shrink-0 bg-white">
-            {state.settings?.shopLogo ? (
-              <img src={state.settings.shopLogo} alt={state.settings.shopName} className="w-full h-full object-contain p-0.5" loading="eager" decoding="sync" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #2563eb, #0ea5e9)" }}>
-                <Sprout className="w-3.5 h-3.5 text-white" />
-              </div>
-            )}
-          </div>
-          <div>
-            <span className="font-semibold text-white text-sm tracking-tight leading-none block">{state.settings?.shopName || "AgroCare"}</span>
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider">POS</span>
-          </div>
+          <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
+          <span className="font-bold text-slate-900 dark:text-white text-sm">{settings?.shopName || "AgroCare"}</span>
         </div>
-        <button onClick={() => setIsMobileOpen(v => !v)} className="p-2 rounded-md text-slate-400 hover:text-white transition-colors">
-          {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        <button onClick={() => setIsMobileOpen((v) => !v)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Overlay */}
+      {/* Mobile overlay */}
       {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
       )}
 
-      {/* Sidebar */}
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:flex-shrink-0 h-screen sticky top-0">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile sidebar drawer */}
       <aside className={[
-        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 h-screen flex flex-col transition-all duration-200",
-        isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-        sidebarCollapsed ? "lg:w-[64px]" : "lg:w-60", "w-60"
-      ].join(" ")}
-        style={{ background: "#1e293b" }}>
-
-        {/* Header / Logo */}
-        <div className="h-14 flex items-center justify-between px-3 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <LogoBlock />
-            <div className={["overflow-hidden transition-all duration-200", sidebarCollapsed ? "lg:w-0 lg:opacity-0" : "w-auto opacity-100"].join(" ")}>
-              <p className="font-semibold text-white text-sm whitespace-nowrap tracking-tight leading-none">{state.settings?.shopName || "AgroCare POS"}</p>
-              <p className="text-[10px] whitespace-nowrap mt-0.5 text-slate-500 uppercase tracking-wider">Agri Management</p>
-            </div>
-          </div>
-          <button onClick={actions.toggleSidebar} className="hidden lg:flex p-1 rounded-md text-slate-500 hover:text-slate-300 transition-colors flex-shrink-0">
-            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        </div>
-
-        {/* User card */}
-        <div className={["px-3 py-2.5 flex-shrink-0", sidebarCollapsed ? "lg:px-2" : ""].join(" ")} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          {sidebarCollapsed ? (
-            <div className="hidden lg:flex justify-center"><Avatar size="w-8 h-8" /></div>
-          ) : (
-            <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg"
-              style={{ background: "rgba(255,255,255,0.04)" }}>
-              <Avatar size="w-8 h-8" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate leading-none">{currentUser?.name}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5 truncate">{userRole?.label || "User"}</p>
-              </div>
-              <div className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-400" />
-            </div>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-          {!sidebarCollapsed && (
-            <p className="text-[10px] font-semibold uppercase tracking-widest px-2.5 pb-1.5 pt-1 text-slate-500">Navigation</p>
-          )}
-
-          {visible.map((group) => {
-            const GIcon = group.icon;
-            const groupActive = isGroupActive(group);
-            const isOpen = openGroups[group.id];
-
-            // Single-item group — render as a flat button, no dropdown
-            if (group.single) {
-              const childId = group.children[0].id;
-              const active = isChildActive(childId) || location.pathname.startsWith(`/${childId}`);
-              if (sidebarCollapsed) {
-                return (
-                  <button key={group.id} onClick={() => go(childId)} title={group.label}
-                    className="w-full flex items-center justify-center p-2 rounded-md text-sm transition-colors duration-150"
-                    style={active ? { background: "rgba(37,99,235,0.15)", color: "white" } : { color: "rgba(255,255,255,0.4)" }}>
-                    <GIcon style={{ width: "18px", height: "18px", color: active ? "#60a5fa" : undefined }} />
-                  </button>
-                );
-              }
-              return (
-                <button key={group.id} onClick={() => go(childId)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-150"
-                  style={active ? { background: "rgba(37,99,235,0.1)", color: "rgba(255,255,255,0.9)" } : { color: "rgba(255,255,255,0.45)" }}>
-                  <GIcon className="flex-shrink-0" style={{ width: "16px", height: "16px", color: active ? "#60a5fa" : undefined }} />
-                  <span className="flex-1 text-left whitespace-nowrap">{group.label}</span>
-                </button>
-              );
-            }
-
-            if (sidebarCollapsed) {
-              return (
-                <button key={group.id} onClick={() => go(group.children[0].id)} title={group.label}
-                  className="w-full flex items-center justify-center p-2 rounded-md text-sm transition-colors duration-150"
-                  style={groupActive ? {
-                    background: "rgba(37,99,235,0.15)", color: "white"
-                  } : { color: "rgba(255,255,255,0.4)" }}>
-                  <GIcon style={{ width: "18px", height: "18px", color: groupActive ? "#60a5fa" : undefined }} />
-                </button>
-              );
-            }
-
-            return (
-              <div key={group.id} className="space-y-0.5">
-                {/* Group header */}
-                <button onClick={() => toggleGroup(group.id)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-150 group"
-                  style={groupActive ? {
-                    background: "rgba(37,99,235,0.1)", color: "rgba(255,255,255,0.9)"
-                  } : { color: "rgba(255,255,255,0.45)" }}>
-                  <GIcon className="flex-shrink-0" style={{ width: "16px", height: "16px", color: groupActive ? "#60a5fa" : undefined }} />
-                  <span className="flex-1 text-left whitespace-nowrap">{group.label}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}
-                    style={{ color: "rgba(255,255,255,0.25)" }} />
-                </button>
-
-                {/* Children */}
-                <div className={`overflow-hidden transition-all duration-150 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
-                  <div className="pl-4 space-y-0.5 py-0.5">
-                    {group.children.map((child) => {
-                      const CIcon = child.icon;
-                      const active = isChildActive(child.id);
-                      return (
-                        <button key={child.id} onClick={() => go(child.id)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors duration-150 relative"
-                          style={active ? {
-                            background: "rgba(37,99,235,0.15)", color: "white"
-                          } : { color: "rgba(255,255,255,0.35)" }}>
-                          {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded-r bg-blue-400" />}
-                          <CIcon className="flex-shrink-0" style={{ width: "14px", height: "14px", color: active ? "#60a5fa" : undefined }} />
-                          <span className="whitespace-nowrap">{child.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          <div className="my-2 mx-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
-
-          <button onClick={logout} title={sidebarCollapsed ? "Logout" : ""}
-            className={[
-              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors duration-150 group",
-              "text-slate-500 hover:text-red-400 hover:bg-red-500/10",
-              sidebarCollapsed && "lg:justify-center lg:px-2"
-            ].join(" ")}>
-            <LogOut className="w-4 h-4 flex-shrink-0 text-slate-600 group-hover:text-red-400 transition-colors" />
-            <span className={["whitespace-nowrap transition-all duration-200", sidebarCollapsed ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : "opacity-100"].join(" ")}>Sign Out</span>
-          </button>
-        </nav>
-
-        {/* Footer */}
-        {!sidebarCollapsed && (
-          <div className="px-3 py-2.5 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-[10px] text-center text-slate-600 uppercase tracking-wider">
-              v3.0 · {state.settings?.shopName || "AgroCare"}
-            </p>
-          </div>
-        )}
+        "lg:hidden fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-200",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full",
+      ].join(" ")}>
+        <SidebarContent />
       </aside>
     </>
   );

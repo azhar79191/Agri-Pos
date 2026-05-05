@@ -4,20 +4,25 @@ import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { getProfitReport } from "../../api/reportsApi";
 
-const ProfitReports = () => {
-  const { state } = useApp();
-  const { settings } = state;
-  const [data, setData] = useState({ rows: [], summary: { totalRevenue: 0, totalCost: 0, totalProfit: 0, avgMargin: 0 } });
+const useProfitReport = () => {
+  const [data, setData]       = useState({ rows: [], summary: { totalRevenue: 0, totalCost: 0, totalProfit: 0, avgMargin: 0 } });
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    getProfitReport()
-      .then(res => setData(res.data.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    getProfitReport().then((res) => setData(res.data.data)).catch(() => {}).finally(() => setLoading(false));
   }, []);
+  return { ...data, loading };
+};
 
-  const { rows, summary } = data;
+const ProfitReports = () => {
+  const { state }    = useApp();
+  const { settings } = state;
+  const { rows, summary, loading } = useProfitReport();
+
+  const STATS = [
+    { l: "Total Revenue", v: formatCurrency(summary.totalRevenue, settings.currency), c: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-100 dark:bg-blue-900/30" },
+    { l: "Total Profit",  v: formatCurrency(summary.totalProfit, settings.currency),  c: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-blue-900/20" },
+    { l: "Avg Margin",    v: `${summary.avgMargin}%`,                                  c: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -27,11 +32,7 @@ const ProfitReports = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {[
-          { l: "Total Revenue", v: formatCurrency(summary.totalRevenue, settings.currency), c: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-900/30" },
-          { l: "Total Profit", v: formatCurrency(summary.totalProfit, settings.currency), c: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-100 dark:bg-blue-900/20" },
-          { l: "Avg Margin", v: `${summary.avgMargin}%`, c: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-900/30" },
-        ].map(({ l, v, c, bg }) => (
+        {STATS.map(({ l, v, c, bg }) => (
           <div key={l} className="stat-card-premium">
             <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}><DollarSign className={`w-5 h-5 ${c}`} /></div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{l}</p>
@@ -45,7 +46,7 @@ const ProfitReports = () => {
           <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
         ) : (
           <table className="w-full table-premium">
-            <thead><tr>{["Invoice", "Customer", "Revenue", "Cost", "Profit", "Margin", "Date"].map(h => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
+            <thead><tr>{["Invoice", "Customer", "Revenue", "Cost", "Profit", "Margin", "Date"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((r, i) => (
                 <tr key={i} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
@@ -61,11 +62,10 @@ const ProfitReports = () => {
             </tbody>
           </table>
         )}
-        {!loading && rows.length === 0 && (
-          <div className="text-center py-16 text-slate-400 text-sm">No profit data available for this period.</div>
-        )}
+        {!loading && rows.length === 0 && <div className="text-center py-16 text-slate-400 text-sm">No profit data available for this period.</div>}
       </div>
     </div>
   );
 };
+
 export default ProfitReports;

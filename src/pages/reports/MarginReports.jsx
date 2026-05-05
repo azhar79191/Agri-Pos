@@ -4,18 +4,19 @@ import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { getMarginReport } from "../../api/reportsApi";
 
-const MarginReports = () => {
-  const { state } = useApp();
-  const { settings } = state;
+const useMarginReport = () => {
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading]       = useState(true);
   useEffect(() => {
-    getMarginReport()
-      .then(res => setCategories(res.data.data.categories))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    getMarginReport().then((res) => setCategories(res.data.data.categories)).catch(() => {}).finally(() => setLoading(false));
   }, []);
+  return { categories, loading };
+};
+
+const MarginReports = () => {
+  const { state }    = useApp();
+  const { settings } = state;
+  const { categories, loading } = useMarginReport();
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -30,7 +31,7 @@ const MarginReports = () => {
         <div className="text-center py-16 text-slate-400 text-sm">No margin data available. Make some sales first.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map(c => (
+          {categories.map((c) => (
             <div key={c.category} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg transition-all">
               <div className="flex items-center justify-between mb-3">
                 <p className="font-bold text-slate-900 dark:text-white">{c.category}</p>
@@ -43,7 +44,11 @@ const MarginReports = () => {
                 <div><p className="text-xs text-slate-400">Revenue</p><p className="font-bold text-slate-900 dark:text-white">{formatCurrency(c.revenue, settings.currency)}</p></div>
                 <div><p className="text-xs text-slate-400">Profit</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(c.profit, settings.currency)}</p></div>
               </div>
-              {c.margin < 20 && <div className="mt-3 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center gap-2 text-xs text-red-600 dark:text-red-400"><TrendingDown className="w-3 h-3" />Low margin — consider price adjustment</div>}
+              {c.margin < 20 && (
+                <div className="mt-3 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+                  <TrendingDown className="w-3 h-3" />Low margin — consider price adjustment
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -51,4 +56,5 @@ const MarginReports = () => {
     </div>
   );
 };
+
 export default MarginReports;

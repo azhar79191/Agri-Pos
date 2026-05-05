@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
-import { Sprout, Eye, EyeOff, Lock, Mail, ArrowRight, User, Phone, Loader2, Sparkles, Shield, BarChart3, Package } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sprout, Loader2, Package, BarChart3, Shield, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
 import { getSetupStatus, registerUser } from "../api/authApi";
-import { InputField } from "../components/auth/InputField";
 import { ErrorBanner } from "../components/auth/ErrorBanner";
+import LoginForm from "../components/auth/LoginForm";
+import SetupForm from "../components/auth/SetupForm";
 
-const features = [
-  { icon: Package, title: "Smart Inventory", desc: "Real-time stock tracking & alerts" },
-  { icon: BarChart3, title: "Deep Analytics", desc: "Insights that drive decisions" },
-  { icon: Shield, title: "Role-Based Access", desc: "Secure multi-user management" },
+const FEATURES = [
+  { icon: Package,  title: "Smart Inventory",    desc: "Real-time stock tracking & alerts" },
+  { icon: BarChart3,title: "Deep Analytics",     desc: "Insights that drive decisions" },
+  { icon: Shield,   title: "Role-Based Access",  desc: "Secure multi-user management" },
 ];
 
-const LoginBrandingPanel = ({ mode }) => (
+/** Left-side branding panel — hidden on mobile */
+const BrandingPanel = ({ mode }) => (
   <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative overflow-hidden flex-col justify-between p-12" style={{ background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)" }}>
     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full translate-x-1/4 -translate-y-1/4 blur-3xl" />
     <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/8 rounded-full -translate-x-1/3 translate-y-1/3 blur-3xl" />
@@ -38,12 +40,14 @@ const LoginBrandingPanel = ({ mode }) => (
           {mode === "setup" ? "Welcome.\nLet's get started." : "Manage your\nagri business."}
         </h1>
         <p className="text-slate-400 text-base leading-relaxed max-w-sm">
-          {mode === "setup" ? "Set up your admin account to unlock the full power of AgroCare POS." : "A complete point-of-sale solution built for modern pesticide and agri shops."}
+          {mode === "setup"
+            ? "Set up your admin account to unlock the full power of AgroCare POS."
+            : "A complete point-of-sale solution built for modern pesticide and agri shops."}
         </p>
       </div>
 
       <div className="space-y-3">
-        {features.map(({ icon: Icon, title, desc }) => (
+        {FEATURES.map(({ icon: Icon, title, desc }) => (
           <div key={title} className="flex items-center gap-4 p-4 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
             <div className="w-10 h-10 rounded-lg bg-blue-500/15 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
               <Icon className="w-5 h-5 text-blue-400" />
@@ -57,54 +61,30 @@ const LoginBrandingPanel = ({ mode }) => (
       </div>
     </div>
 
-    <div className="relative z-10">
-      <p className="text-xs text-slate-600">© {new Date().getFullYear()} AgriNest POS · All rights reserved</p>
-    </div>
-  </div>
-);
-
-const LoginInputField = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra }) => (
-  <div>
-    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>
-    <div className="relative">
-      {Icon && <Icon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />}
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        className={`w-full ${Icon ? "pl-3" : "pl-3"} pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm`}
-      />
-      {extra}
-    </div>
+    <p className="relative z-10 text-xs text-slate-600">© {new Date().getFullYear()} AgriNest POS · All rights reserved</p>
   </div>
 );
 
 const Login = () => {
   const { login, loading } = useAuth();
-  const { actions } = useApp();
-  const navigate = useNavigate();
+  const { actions }        = useApp();
+  const navigate           = useNavigate();
 
-  const [mode, setMode] = useState("checking");
-  const [showPwd, setShowPwd] = useState(false);
-  const [error, setError] = useState("");
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-  const [setupForm, setSetupForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
-  const [setupLoading, setSetupLoading] = useState(false);
+  const [mode, setMode]           = useState("checking");
+  const [error, setError]         = useState("");
+  const [setupEmail, setSetupEmail] = useState("");
 
   useEffect(() => {
     if (window.location.pathname === "/register") { navigate("/register"); return; }
     getSetupStatus()
       .then((r) => setMode(r.data.data.setupRequired ? "setup" : "login"))
       .catch(() => setMode("login"));
-  }, []);
+  }, []); // eslint-disable-line
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async ({ email, password }) => {
     setError("");
     try {
-      const user = await login({ email: loginForm.email, password: loginForm.password });
+      const user = await login({ email, password });
       actions.login(user.email, null, user);
       navigate("/dashboard");
     } catch (err) {
@@ -112,21 +92,17 @@ const Login = () => {
     }
   };
 
-  const handleSetup = async (e) => {
-    e.preventDefault();
+  const handleSetup = async ({ name, email, phone, password, confirmPassword }) => {
     setError("");
-    if (setupForm.password !== setupForm.confirmPassword) { setError("Passwords do not match"); return; }
-    if (setupForm.password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    setSetupLoading(true);
+    if (password !== confirmPassword) { setError("Passwords do not match"); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     try {
-      await registerUser({ name: setupForm.name, email: setupForm.email, phone: setupForm.phone, password: setupForm.password, role: "admin" });
+      await registerUser({ name, email, phone, password, role: "admin" });
       actions.showToast({ message: "Admin account created! Please log in.", type: "success" });
+      setSetupEmail(email);
       setMode("login");
-      setLoginForm({ email: setupForm.email, password: "" });
     } catch (err) {
       setError(err.response?.data?.message || "Setup failed");
-    } finally {
-      setSetupLoading(false);
     }
   };
 
@@ -146,10 +122,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
-      <LoginBrandingPanel mode={mode} />
+      <BrandingPanel mode={mode} />
 
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white dark:bg-slate-950">
         <div className="w-full max-w-[420px]">
+          {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
               <Sprout className="w-5 h-5 text-white" />
@@ -168,53 +145,8 @@ const Login = () => {
 
           <ErrorBanner error={error} />
 
-          {mode === "setup" && (
-            <form onSubmit={handleSetup} className="space-y-4">
-              <LoginInputField label="Full Name" icon={User} value={setupForm.name} onChange={(e) => setSetupForm((p) => ({ ...p, name: e.target.value }))} placeholder="Admin Name" required />
-              <LoginInputField label="Email Address" type="email" icon={Mail} value={setupForm.email} onChange={(e) => setSetupForm((p) => ({ ...p, email: e.target.value }))} placeholder="admin@yourshop.com" required />
-              <LoginInputField label="Phone (optional)" type="tel" icon={Phone} value={setupForm.phone} onChange={(e) => setSetupForm((p) => ({ ...p, phone: e.target.value }))} placeholder="+92 300 0000000" />
-              <LoginInputField
-                label="Password"
-                type={showPwd ? "text" : "password"}
-                icon={Lock}
-                value={setupForm.password}
-                onChange={(e) => setSetupForm((p) => ({ ...p, password: e.target.value }))}
-                placeholder="Min 6 characters"
-                required
-                extra={
-                  <button type="button" onClick={() => setShowPwd((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                }
-              />
-              <LoginInputField label="Confirm Password" type="password" icon={Lock} value={setupForm.confirmPassword} onChange={(e) => setSetupForm((p) => ({ ...p, confirmPassword: e.target.value }))} placeholder="Repeat password" required />
-              <button type="submit" disabled={setupLoading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
-                {setupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </form>
-          )}
-
-          {mode === "login" && (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <LoginInputField label="Email Address" type="email" icon={Mail} value={loginForm.email} onChange={(e) => setLoginForm((p) => ({ ...p, email: e.target.value }))} placeholder="Enter your email" required />
-              <LoginInputField
-                label="Password"
-                type={showPwd ? "text" : "password"}
-                value={loginForm.password}
-                onChange={(e) => setLoginForm((p) => ({ ...p, password: e.target.value }))}
-                placeholder="Enter your password"
-                required
-                extra={
-                  <button type="button" onClick={() => setShowPwd((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                }
-              />
-              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </form>
-          )}
+          {mode === "setup" && <SetupForm onSubmit={handleSetup} loading={false} />}
+          {mode === "login" && <LoginForm initialEmail={setupEmail} onSubmit={handleLogin} loading={loading} />}
 
           <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
