@@ -210,6 +210,20 @@ const AppContent = () => {
   useEffect(() => {
     if (!isAuthenticated || role === 'superadmin') { setShopStatus('ok'); return; }
     if (!currentUser?.shop) { setShopStatus('ok'); return; }
+
+    if (currentUser.shop.planStatus === 'suspended') {
+      setShopStatus('SHOP_SUSPENDED');
+      return;
+    }
+    if (currentUser.shop.isApproved === false) {
+      setShopStatus('SHOP_PENDING_APPROVAL');
+      return;
+    }
+    if (currentUser.shop.planStatus === 'expired') {
+      setShopStatus('PLAN_EXPIRED');
+      return;
+    }
+
     // Probe any protected endpoint to check shop status
     API.get('/products?limit=1')
       .then(() => setShopStatus('ok'))

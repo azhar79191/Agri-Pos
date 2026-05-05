@@ -35,7 +35,7 @@ const ShopLogo = ({ logo, name, size = "w-8 h-8" }) => {
           }}
           loading="eager"
           decoding="sync"
-          fetchpriority="high"
+          fetchPriority="high"
         />
       ) : (
         <div

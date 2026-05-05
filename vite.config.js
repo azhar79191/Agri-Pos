@@ -1,9 +1,64 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      // Enable in dev so beforeinstallprompt fires during local testing
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
+      // Use generateSW — most reliable for triggering beforeinstallprompt
+      strategies: 'generateSW',
+      // Point to the existing manifest
+      manifestFilename: 'site.webmanifest',
+      // Don't auto-inject a <link rel="manifest"> — index.html already has it
+      injectRegister: 'auto',
+      manifest: {
+        name: 'AgriNest - Agriculture Dealers Platform',
+        short_name: 'AgriNest',
+        description: 'Leading platform for agriculture dealers, suppliers, and distributors.',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#071209',
+        theme_color: '#10b981',
+        orientation: 'any',
+        scope: '/',
+        lang: 'en-PK',
+        categories: ['business', 'productivity', 'shopping'],
+        icons: [
+          { src: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+          { src: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        // Cache the app shell
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+        // Network-first for navigation (SPA)
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
+        // Don't cache API calls
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/agri-pos-api\.vercel\.app\//,
+            handler: 'NetworkOnly',
+          },
+        ],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+      },
+    }),
+  ],
 
   server: {
     host: true,
@@ -32,45 +87,35 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core
           if (id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/react-router-dom/') ||
               id.includes('node_modules/scheduler/')) {
             return 'vendor-react';
           }
-          // Charts — Dashboard & Reports only
           if (id.includes('node_modules/recharts') ||
               id.includes('node_modules/d3-') ||
               id.includes('node_modules/victory-vendor')) {
             return 'vendor-charts';
           }
-          // Framer Motion — POS & CartPanel only
           if (id.includes('node_modules/framer-motion')) return 'vendor-motion';
-          // Icons — tree-shaken, small
           if (id.includes('node_modules/lucide-react')) return 'vendor-icons';
-          // PDF — lazy-loaded, only on export
           if (id.includes('node_modules/jspdf') ||
               id.includes('node_modules/jspdf-autotable')) {
             return 'vendor-pdf';
           }
-          // Excel — lazy-loaded, only on export
           if (id.includes('node_modules/exceljs') ||
               id.includes('node_modules/archiver') ||
               id.includes('node_modules/jszip')) {
             return 'vendor-excel';
           }
-          // Socket.io — NotificationCenter only
           if (id.includes('node_modules/socket.io-client') ||
               id.includes('node_modules/engine.io-client') ||
               id.includes('node_modules/@socket.io')) {
             return 'vendor-socket';
           }
-          // Axios
           if (id.includes('node_modules/axios')) return 'vendor-axios';
-          // Zustand
           if (id.includes('node_modules/zustand')) return 'vendor-state';
-          // Barcode scanner
           if (id.includes('node_modules/@zxing')) return 'vendor-barcode';
         },
         entryFileNames: 'assets/[name]-[hash].js',

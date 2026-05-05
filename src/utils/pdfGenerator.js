@@ -90,7 +90,7 @@ const buildDoc = async (invoice, settings) => {
   };
 
   addRow('Subtotal:', `${currency} ${(invoice.subtotal || 0).toFixed(2)}`);
-  addRow(`Tax (${invoice.taxRate || 0}%):`, `${currency} ${(invoice.taxAmount || 0).toFixed(2)}`);
+  addRow(`Tax (${invoice.taxRate || 0}%):`, `${currency} ${(invoice.taxAmount || invoice.tax || 0).toFixed(2)}`);
   if (invoice.discount > 0) addRow('Discount:', `- ${currency} ${invoice.discount.toFixed(2)}`);
 
   const divY = doc.lastAutoTable.finalY + offset;
@@ -99,7 +99,7 @@ const buildDoc = async (invoice, settings) => {
   doc.line(pageW - 70, divY, pageW - 14, divY);
   offset += 4;
 
-  addRow('TOTAL:', `${currency} ${(invoice.total || 0).toFixed(2)}`, true, [16, 120, 80]);
+  addRow('TOTAL:', `${currency} ${(invoice.grandTotal || invoice.total || 0).toFixed(2)}`, true, [16, 120, 80]);
   if (invoice.amountPaid > 0) addRow('Amount Paid:', `${currency} ${invoice.amountPaid.toFixed(2)}`);
   if (invoice.changeAmount > 0) addRow('Change:', `${currency} ${invoice.changeAmount.toFixed(2)}`);
   if (invoice.creditAmount > 0) addRow('Credit:', `${currency} ${invoice.creditAmount.toFixed(2)}`, false, [220, 100, 0]);
