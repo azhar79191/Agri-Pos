@@ -13,15 +13,32 @@ API.interceptors.request.use((req) => {
 API.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
-      // Only redirect if we actually have a token (avoid redirect loops)
+    const status = error.response?.status;
+    const code   = error.response?.data?.code;
+
+    // 401 — token expired / invalid → force logout
+    if (status === 401) {
       const token = localStorage.getItem("token");
       if (token) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/";
+        window.location.href = "/login";
       }
+      return Promise.reject(error);
     }
+
+    // 403 with a shop-status code → notify the app to re-check shop status
+    // This fires when the backend rejects a request because the shop was
+    // suspended / plan expired while the user was already logged in.
+    if (
+      status === 403 &&
+      (code === "SHOP_SUSPENDED" ||
+        code === "SHOP_PENDING_APPROVAL" ||
+        code === "PLAN_EXPIRED")
+    ) {
+      window.dispatchEvent(new CustomEvent("shop-status-changed", { detail: { code } }));
+    }
+
     return Promise.reject(error);
   }
 );

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, Component, useState, useEffect } from "react";
+import React, { Suspense, lazy, Component, useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import Sidebar from "./components/Sidebar";
@@ -206,36 +206,74 @@ const AppContent = () => {
 
   const role = getRoleName(currentUser);
 
-  // Check shop approval status on mount and when user changes
-  useEffect(() => {
-    if (!isAuthenticated || role === 'superadmin') { setShopStatus('ok'); return; }
-    if (!currentUser?.shop) { setShopStatus('ok'); return; }
+  // ── Derive shop status from the user object ──
+  const deriveShopStatus = useCallback((user) => {
+    if (!user?.shop) return 'ok';
+    if (user.shop.planStatus === 'suspended')    return 'SHOP_SUSPENDED';
+    if (user.shop.isApproved === false)          return 'SHOP_PENDING_APPROVAL';
+    if (user.shop.planStatus === 'expired')      return 'PLAN_EXPIRED';
+    return null; // unknown — need to probe
+  }, []);
 
-    if (currentUser.shop.planStatus === 'suspended') {
-      setShopStatus('SHOP_SUSPENDED');
-      return;
-    }
-    if (currentUser.shop.isApproved === false) {
-      setShopStatus('SHOP_PENDING_APPROVAL');
-      return;
-    }
-    if (currentUser.shop.planStatus === 'expired') {
-      setShopStatus('PLAN_EXPIRED');
-      return;
-    }
-
-    // Probe any protected endpoint to check shop status
-    API.get('/products?limit=1')
-      .then(() => setShopStatus('ok'))
+  // ── Probe the backend to get the real shop status ──
+  const probeShopStatus = useCallback(() => {
+    API.get('/auth/profile')
+      .then(res => {
+        const fresh = res.data?.data?.user ?? res.data?.user ?? res.data?.data;
+        if (!fresh) { setShopStatus('ok'); return; }
+        // Sync fresh user into localStorage so next reload is correct
+        localStorage.setItem("user", JSON.stringify(fresh));
+        window.dispatchEvent(new CustomEvent("user-updated", { detail: fresh }));
+        const derived = deriveShopStatus(fresh);
+        setShopStatus(derived ?? 'ok');
+      })
       .catch(err => {
         const code = err.response?.data?.code;
         if (code === 'SHOP_PENDING_APPROVAL' || code === 'SHOP_SUSPENDED' || code === 'PLAN_EXPIRED') {
           setShopStatus(code);
         } else {
-          setShopStatus('ok'); // network error or other — don't block
+          setShopStatus('ok'); // network error — don't block
         }
       });
+  }, [deriveShopStatus]);
+
+  // ── Initial check on mount / user change ──
+  useEffect(() => {
+    if (!isAuthenticated || role === 'superadmin') { setShopStatus('ok'); return; }
+
+    const derived = deriveShopStatus(currentUser);
+    if (derived) {
+      // We already know the status from the cached user object
+      setShopStatus(derived);
+    } else {
+      // Need to probe the backend
+      probeShopStatus();
+    }
   }, [isAuthenticated, currentUser?._id]); // eslint-disable-line
+
+  // ── Real-time: listen for 403 shop-status events from the axios interceptor ──
+  // This fires the moment any API call returns SHOP_SUSPENDED while the user is active.
+  useEffect(() => {
+    if (!isAuthenticated || role === 'superadmin') return;
+
+    const handler = (e) => {
+      const code = e.detail?.code;
+      if (code) setShopStatus(code);
+    };
+
+    window.addEventListener("shop-status-changed", handler);
+    return () => window.removeEventListener("shop-status-changed", handler);
+  }, [isAuthenticated, role]);
+
+  // ── Periodic poll every 60 s while the user is active ──
+  // Catches suspension even when the user is idle (not making API calls).
+  useEffect(() => {
+    if (!isAuthenticated || role === 'superadmin') return;
+    if (shopStatus && shopStatus !== 'ok') return; // already blocked — no need to poll
+
+    const id = setInterval(probeShopStatus, 60_000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, role, shopStatus, probeShopStatus]);
 
   // Demo mode — public route, no auth needed
   if (window.location.pathname === '/demo') return <DemoPOS />;
