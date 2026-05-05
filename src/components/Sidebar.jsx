@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X, Download, Share } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
 import { MENU_GROUPS } from "../constants/menuGroups";
 import ShopLogo from "./ui/ShopLogo";
+import usePWAInstall from "../hooks/usePWAInstall";
 
 /** Icon background colors per group — matches the reference design */
 const GROUP_ICON_COLORS = {
@@ -41,6 +42,10 @@ const Sidebar = () => {
     const found = MENU_GROUPS.find((g) => g.children?.some((c) => c.id === path || path.startsWith(c.id)));
     return found ? { [found.id]: true } : { dashboard: true };
   });
+
+  const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
+  const [showMobileInstallTip, setShowMobileInstallTip] = useState(false);
+  const showInstallBtn = !isInstalled;
 
   const visible = currentUser ? MENU_GROUPS.filter((g) => actions.hasPermission(g.permission)) : [];
 
@@ -204,9 +209,22 @@ const Sidebar = () => {
           <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
           <span className="font-bold text-slate-900 dark:text-white text-sm">{settings?.shopName || "AgriNest"}</span>
         </div>
-        <button onClick={() => setIsMobileOpen((v) => !v)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <Menu className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* PWA install button — shown before the hamburger menu */}
+          {showInstallBtn && (
+            <button
+              onClick={() => canInstall ? install() : setShowMobileInstallTip(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs font-bold transition-colors"
+              title="Install AgriNest App"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Install</span>
+            </button>
+          )}
+          <button onClick={() => setIsMobileOpen((v) => !v)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Mobile overlay */}
@@ -226,6 +244,60 @@ const Sidebar = () => {
       ].join(" ")}>
         <SidebarContent />
       </aside>
+
+      {/* Mobile install tip modal — for iOS / non-Chrome */}
+      {showMobileInstallTip && (
+        <div
+          className="lg:hidden fixed inset-0 z-[60] flex items-end justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowMobileInstallTip(false)}
+        >
+          <div
+            className="w-full bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl border-t border-slate-200 dark:border-slate-700 p-5 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle bar */}
+            <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-600 mx-auto mb-4" />
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Download className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Install AgriNest</p>
+                <p className="text-xs text-slate-400">Add to your home screen</p>
+              </div>
+            </div>
+
+            {isIOS ? (
+              <ol className="space-y-3">
+                {[
+                  <><Share className="inline w-4 h-4 text-blue-500 mx-0.5 -mt-0.5" /> Tap the <strong>Share</strong> button at the bottom of Safari</>,
+                  <>Scroll and tap <strong>"Add to Home Screen"</strong></>,
+                  <>Tap <strong>"Add"</strong> to confirm</>,
+                ].map((step, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Tap the browser menu <strong>(⋮)</strong> and select <strong>"Add to Home Screen"</strong> or <strong>"Install AgriNest"</strong>.
+              </p>
+            )}
+
+            <button
+              onClick={() => setShowMobileInstallTip(false)}
+              className="mt-5 w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };
