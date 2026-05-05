@@ -92,7 +92,7 @@ export default function RegisterShop() {
             <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
               <Sprout className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">AgroCare POS</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">AgriNest POS</span>
           </div>
 
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">

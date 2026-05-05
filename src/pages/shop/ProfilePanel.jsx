@@ -48,7 +48,7 @@ const ProfilePanel = ({ form, setForm, logoPreview, setLogoPreview, saving, save
           <div className="flex-1 space-y-3 w-full">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Shop Name <span className="text-red-500">*</span></label>
-              <input value={form.name} onChange={e => f("name", e.target.value)} placeholder="e.g. AgroCare Pesticides" className={inp} />
+              <input value={form.name} onChange={e => f("name", e.target.value)} placeholder="e.g. AgriNest Pesticides" className={inp} />
             </div>
             <p className="text-xs text-slate-400">PNG or JPG, max 2MB. Displayed on receipts and the sidebar.</p>
           </div>

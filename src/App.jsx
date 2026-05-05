@@ -9,6 +9,7 @@ import ConfirmToast from "./components/ui/ConfirmToast";
 // Eager — tiny, needed immediately
 import Login from "./pages/Login";
 import RegisterShop from "./pages/RegisterShop";
+import Landing from "./pages/Landing";
 
 // Lazy — code-split heavy pages
 const Dashboard         = lazy(() => import("./pages/Dashboard"));
@@ -189,9 +190,10 @@ const AppContent = () => {
   if (!isAuthenticated) {
     return (
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/register" element={<RegisterShop />} />
         <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }

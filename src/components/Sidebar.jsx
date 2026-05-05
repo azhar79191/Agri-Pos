@@ -70,7 +70,7 @@ const Sidebar = () => {
         <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-8 h-8" />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-slate-900 dark:text-white text-sm truncate leading-none">
-            {settings?.shopName || "AgroCare POS"}
+            {settings?.shopName || "AgriNest POS"}
           </p>
           <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Agri Management</p>
         </div>
@@ -190,7 +190,7 @@ const Sidebar = () => {
       {/* Footer */}
       <div className="px-4 py-2.5 flex-shrink-0 border-t border-slate-100 dark:border-slate-800">
         <p className="text-[10px] text-center text-slate-400 uppercase tracking-wider">
-          v3.0 · {settings?.shopName || "AgroCare"}
+          v3.0 · {settings?.shopName || "AgriNest"}
         </p>
       </div>
     </div>
@@ -202,7 +202,7 @@ const Sidebar = () => {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2.5">
           <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
-          <span className="font-bold text-slate-900 dark:text-white text-sm">{settings?.shopName || "AgroCare"}</span>
+          <span className="font-bold text-slate-900 dark:text-white text-sm">{settings?.shopName || "AgriNest"}</span>
         </div>
         <button onClick={() => setIsMobileOpen((v) => !v)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
           <Menu className="w-5 h-5" />

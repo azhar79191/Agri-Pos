@@ -41,7 +41,7 @@ const BrandingPanel = ({ mode }) => (
         </h1>
         <p className="text-slate-400 text-base leading-relaxed max-w-sm">
           {mode === "setup"
-            ? "Set up your admin account to unlock the full power of AgroCare POS."
+            ? "Set up your admin account to unlock the full power of AgriNest POS."
             : "A complete point-of-sale solution built for modern pesticide and agri shops."}
         </p>
       </div>

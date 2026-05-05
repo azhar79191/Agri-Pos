@@ -16,7 +16,7 @@ const Row = ({ icon: Icon, label, value }) => (
 const AboutPanel = () => {
   const { state } = useApp();
   return (
-    <SettingsCard title="About AgroCare POS" desc="System information and version details">
+    <SettingsCard title="About AgriNest POS" desc="System information and version details">
       <div className="space-y-5">
         {/* Logo block */}
         <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-100 dark:border-blue-900/20">
@@ -24,7 +24,7 @@ const AboutPanel = () => {
             <Sprout className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-base font-bold text-slate-900 dark:text-white">AgroCare POS</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">AgriNest POS</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Agricultural Point of Sale System</p>
             <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-0.5">v3.0.0</p>
           </div>

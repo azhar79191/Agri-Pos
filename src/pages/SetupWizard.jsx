@@ -103,7 +103,7 @@ const SetupWizard = () => {
           <div className="p-3 bg-blue-600 rounded-lg shadow-sm">
             <Sprout className="w-7 h-7 text-white" />
           </div>
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">AgroCare POS</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">AgriNest POS</span>
         </div>
 
         {/* Step indicators */}
@@ -165,7 +165,7 @@ const SetupWizard = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shop Name <span className="text-red-500">*</span></label>
                     <input value={shopForm.name} onChange={e => setShopForm(p => ({ ...p, name: e.target.value }))}
-                      placeholder="e.g. AgroCare Pesticides"
+                      placeholder="e.g. AgriNest Pesticides"
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                   </div>
                   <div>

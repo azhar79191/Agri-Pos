@@ -3,7 +3,7 @@ import { InputField } from "../auth/InputField";
 
 export const ShopStep = ({ form, onChange, logoPreview, onLogoChange, onBack, onNext, isLoggedIn, currentUser }) => {
   const fields = [
-    { label: "Shop Name *", key: "name", type: "text", icon: Building2, placeholder: "e.g. AgroCare Pesticides" },
+    { label: "Shop Name *", key: "name", type: "text", icon: Building2, placeholder: "e.g. AgriNest Pesticides" },
     { label: "Phone", key: "phone", type: "tel", icon: Phone, placeholder: "+92 300 0000000" },
     { label: "Email", key: "email", type: "email", icon: Mail, placeholder: "shop@example.com" },
     { label: "Address", key: "address", type: "text", icon: Building2, placeholder: "Shop address" },

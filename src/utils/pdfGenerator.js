@@ -16,7 +16,7 @@ const buildDoc = async (invoice, settings) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(settings?.shopName || 'AgroCare POS', 14, 16);
+  doc.text(settings?.shopName || 'AgriNest POS', 14, 16);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   if (settings?.address) doc.text(settings.address, 14, 23);

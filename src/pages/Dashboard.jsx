@@ -172,7 +172,7 @@ const Dashboard = () => {
           <div className="w-14 h-14 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center mx-auto mb-4">
             <Zap className="w-7 h-7 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Welcome to AgroCare POS!</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Welcome to AgriNest POS!</h3>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-5">
             Your shop is set up and ready. Start by adding your products, then make your first sale.
           </p>
