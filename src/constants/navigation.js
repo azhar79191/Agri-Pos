@@ -26,6 +26,7 @@ export const PAGE_TITLES = {
   "reports/profit":           "Profit Analysis",
   "reports/margin":           "Margin Analysis",
   "reports/inventory":        "Inventory Report",
+  "reports/aging":            "Invoice Aging Report",
   "users":                    "User Management",
   "staff/sales-reps":         "Sales Representatives",
   "staff/audit-logs":         "Audit Logs",

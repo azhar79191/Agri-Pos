@@ -106,7 +106,14 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
         date:          getTodayDate(),
         time:          getCurrentTime(),
         customerName:  invoiceRecord.customerName || customer?.name || "Walk-in Customer",
-        items:         invoiceRecord.items || cart.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price, total: i.price * i.quantity })),
+        items:         (invoiceRecord.items || []).length > 0
+          ? invoiceRecord.items.map((i) => ({
+              name:     i.productName || i.name,
+              quantity: i.quantity,
+              price:    i.unitPrice ?? i.price ?? 0,
+              total:    i.total ?? ((i.unitPrice ?? i.price ?? 0) * i.quantity),
+            }))
+          : cart.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price, total: i.price * i.quantity })),
         subtotal:      invoiceRecord.subtotal || cartCalculations.subtotal,
         tax:           invoiceRecord.taxAmount || cartCalculations.tax,
         discount:      invoiceRecord.discount || discountAmount,

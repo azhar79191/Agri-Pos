@@ -13,6 +13,8 @@ import { exportCustomers } from "../utils/excelExport";
 import CustomerRow from "../components/customers/CustomerRow";
 import CustomerStatsCards from "../components/customers/CustomerStatsCards";
 import { useCustomerForm } from "../hooks/useCustomerForm";
+import BulkActionBar from "../components/ui/BulkActionBar";
+import { deleteCustomer } from "../api/customersApi";
 
 const LIMIT = 15;
 
@@ -33,6 +35,11 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage]             = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  const [selected, setSelected]     = useState(new Set());
+
+  const toggleSelect = (id) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const selectAll    = () => setSelected(new Set(filteredCustomers.map((c) => c._id)));
+  const clearSelect  = () => setSelected(new Set());
 
   useEffect(() => {
     fetchCustomers({ page, limit: LIMIT }).then((res) => {
@@ -80,7 +87,7 @@ const Customers = () => {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -95,7 +102,10 @@ const Customers = () => {
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
-                <tr>{["Customer", "Address", "Wallet", "Owes (Credit)", "Actions"].map((h) => <th key={h}>{h}</th>)}</tr>
+                <tr>
+                  <th className="w-10"><input type="checkbox" checked={selected.size === filteredCustomers.length && filteredCustomers.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
+                  {["Customer", "Address", "Wallet", "Owes (Credit)", "Actions"].map((h) => <th key={h}>{h}</th>)}
+                </tr>
               </thead>
               <tbody>
                 {filteredCustomers.map((customer) => (
@@ -106,6 +116,8 @@ const Customers = () => {
                     onDelete={setDeleteConfirm}
                     onViewStatement={(c) => navigate(`/customers/${c._id}/statement`)}
                     currency={settings.currency}
+                    selected={selected.has(customer._id)}
+                    onSelect={() => toggleSelect(customer._id)}
                   />
                 ))}
               </tbody>
@@ -155,6 +167,19 @@ const Customers = () => {
         message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         confirmVariant="danger"
+      />
+
+      <BulkActionBar
+        selectedIds={selected}
+        totalCount={filteredCustomers.length}
+        onSelectAll={selectAll}
+        onClearAll={clearSelect}
+        onExport={() => exportCustomers(filteredCustomers.filter((c) => selected.has(c._id)), settings.currency)}
+        onDelete={async () => {
+          await Promise.all([...selected].map((id) => deleteCustomer(id).catch(() => {})));
+          clearSelect();
+          fetchCustomers({ page, limit: LIMIT });
+        }}
       />
     </div>
   );

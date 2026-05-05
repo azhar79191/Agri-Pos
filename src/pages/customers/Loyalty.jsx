@@ -10,12 +10,14 @@ import { getLoyaltyMembers } from "../../api/loyaltyApi";
 import { useLoyaltyRedeem } from "../../hooks/useLoyaltyRedeem";
 import { TIER_CONFIG, TIER_THRESHOLDS, getTierProgress } from "../../constants/loyalty";
 
+import { isAdminOrManager } from "../../utils/roleUtils";
+
 const LIMIT = 12;
 
 const Loyalty = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const isAdmin      = state.currentUser?.role === "admin" || state.currentUser?.role === "manager";
+  const isAdmin      = isAdminOrManager(state.currentUser);
 
   const { data: members, loading, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
     usePaginatedApi(getLoyaltyMembers, { search: "", tier: "" }, LIMIT);

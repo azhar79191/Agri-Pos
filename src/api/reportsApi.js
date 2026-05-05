@@ -8,8 +8,8 @@ export const getPaymentDistribution = (params) => API.get("/reports/payment-dist
 export const getCustomerReport = (params) => API.get("/reports/customers", { params });
 export const getProfitReport = (params) => API.get("/reports/profit", { params });
 export const getMarginReport = (params) => API.get("/reports/margin", { params });
-export const getAnalytics = () => API.get("/reports/analytics");
-export const getForecasting = () => API.get("/reports/forecasting");
+export const getAnalytics = (params) => API.get("/reports/analytics", { params });
+export const getForecasting = (params) => API.get("/reports/forecasting", { params });
 export const getCustomerPurchaseHistory = () => API.get("/reports/purchase-history");
 export const getCreditSalesReport = () => API.get("/reports/credit-sales");
 export const exportReport = (params) => API.get("/reports/export", { params });

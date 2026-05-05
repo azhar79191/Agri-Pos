@@ -217,7 +217,7 @@ export function AppProvider({ children }) {
       }
       dispatch({
         type: A.ADD_TO_CART,
-        payload: { productId: product._id || product.id, name: product.name, price: product.price, quantity, unit: product.unit, barcode: product.barcode },
+        payload: { productId: product._id || product.id, name: product.name, price: product.price, quantity, unit: product.unit, barcode: product.barcode, image: product.image || "" },
       });
       return true;
     },

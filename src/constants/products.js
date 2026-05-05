@@ -51,7 +51,7 @@ export const CATEGORY_COLORS = {
 
 export const EMPTY_PRODUCT_FORM = {
   name: "", category: "", brand: "", price: "", costPrice: "", stock: "",
-  unit: "", subUnit: "", expiryDate: "", description: "", barcode: "", minStockLevel: "5",
+  unit: "", subUnit: "", expiryDate: "", description: "", barcode: "", minStockLevel: "5", image: "",
 };
 
 /** Generates a SKU from product name and category */

@@ -1,4 +1,5 @@
 // Lazy-loaded PDF generator — jsPDF only loads when first PDF is requested
+import { normalizeInvoiceItems } from './normalizeInvoiceItems';
 
 const buildDoc = async (invoice, settings) => {
   const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
@@ -59,14 +60,14 @@ const buildDoc = async (invoice, settings) => {
   autoTable(doc, {
     startY: 82,
     head: [['#', 'Product', 'SKU', 'Qty', 'Unit', 'Unit Price', 'Total']],
-    body: (invoice.items || []).map((item, i) => [
+    body: normalizeInvoiceItems(invoice.items).map((item, i) => [
       i + 1,
-      item.productName || item.name || '—',
+      item.name,
       item.sku || '—',
       item.quantity,
       item.unit || 'pcs',
-      `${currency} ${(item.unitPrice || item.price || 0).toFixed(2)}`,
-      `${currency} ${(item.total || 0).toFixed(2)}`,
+      `${currency} ${item.price.toFixed(2)}`,
+      `${currency} ${item.total.toFixed(2)}`,
     ]),
     headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },

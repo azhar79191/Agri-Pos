@@ -15,6 +15,7 @@ import QuickActionButton from "../components/dashboard/QuickActionButton";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SalesChart from "../components/dashboard/SalesChart";
 import CategoryChart from "../components/dashboard/CategoryChart";
+import OnboardingChecklist from "../components/dashboard/OnboardingChecklist";
 
 const Dashboard = () => {
   const { state, actions } = useApp();
@@ -93,13 +94,13 @@ const Dashboard = () => {
 
   const columns = [
     {
-      key: "invoiceNumber", title: "Invoice",
+      key: "invoiceNumber", title: "Invoice", sortable: true,
       render: v => (
         <span className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/15 px-2 py-1 rounded">{v}</span>
       ),
     },
     {
-      key: "createdAt", title: "Date",
+      key: "createdAt", title: "Date", sortable: true,
       render: v => (
         <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <Clock className="w-3 h-3" />{formatDate(v?.split("T")[0])}
@@ -118,7 +119,7 @@ const Dashboard = () => {
       ),
     },
     {
-      key: "total", title: "Amount",
+      key: "total", title: "Amount", sortable: true,
       render: v => <span className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(v, settings.currency)}</span>,
     },
     {
@@ -168,19 +169,7 @@ const Dashboard = () => {
       </div>
 
       {!loading && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
-        <div className="card-base p-8 text-center animate-fade-up">
-          <div className="w-14 h-14 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center mx-auto mb-4">
-            <Zap className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Welcome to AgriNest POS!</h3>
-          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-5">
-            Your shop is set up and ready. Start by adding your products, then make your first sale.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {canProducts && <QuickActionButton icon={Package} label="Add Products" sub="Build your inventory" color="blue" onClick={() => navigate("/products")} />}
-            {canPOS && <QuickActionButton icon={ShoppingCart} label="Make a Sale" sub="Open POS" color="emerald" onClick={() => navigate("/pos")} />}
-          </div>
-        </div>
+        <OnboardingChecklist dashboardData={dashboardData} />
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

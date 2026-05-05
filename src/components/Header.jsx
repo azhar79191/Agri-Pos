@@ -6,6 +6,7 @@ import { roles } from "../data/users";
 import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
 import UserAvatar from "./ui/UserAvatar";
 import NotificationCenter from "./NotificationCenter";
+import GlobalSearch from "./GlobalSearch";
 
 /** Maps role color key → Tailwind badge classes */
 const getRoleColorClass = (color) => {
@@ -73,6 +74,11 @@ const Header = () => {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Center — Global Search */}
+      <div className="flex-1 flex justify-center px-6">
+        <GlobalSearch />
       </div>
 
       {/* Right — actions */}

@@ -3,7 +3,7 @@ import {
   BarChart3, Settings, Building2, Layers, Bug, ChevronDown,
   Calendar, Zap, PackagePlus, ShoppingBag, ClipboardCheck,
   RotateCcw, Beaker, Printer, CreditCard, Wallet,
-  History, Award, Shield, TrendingUp, DollarSign, PieChart,
+  History, Award, Shield, TrendingUp, DollarSign, PieChart, Clock,
 } from "lucide-react";
 
 /**
@@ -73,6 +73,7 @@ export const MENU_GROUPS = [
       { id: "reports/profit",    label: "Profit Analysis",  icon: DollarSign },
       { id: "reports/margin",    label: "Margin Analysis",  icon: PieChart },
       { id: "reports/inventory", label: "Inventory Report", icon: Package },
+      { id: "reports/aging",     label: "Invoice Aging",    icon: Clock },
     ],
   },
   {

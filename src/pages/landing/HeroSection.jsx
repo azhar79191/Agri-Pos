@@ -43,6 +43,9 @@ export default function HeroSection() {
             <button onClick={() => navigate("/login")} className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:scale-[1.03]" style={{ background: "rgba(255,255,255,0.05)", color: "white", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", backdropFilter: "blur(10px)" }}>
               Sign In <Lock className="w-4 h-4" />
             </button>
+            <button onClick={() => navigate("/demo")} className="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:scale-[1.03]" style={{ background: "rgba(16,185,129,0.1)", color: "#34d399", border: "1px solid rgba(16,185,129,0.2)", cursor: "pointer", backdropFilter: "blur(10px)" }}>
+              ⚡ Try Demo
+            </button>
           </div>
         </div>
 

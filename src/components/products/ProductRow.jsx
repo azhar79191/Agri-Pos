@@ -11,15 +11,21 @@ const categoryColors = {
   Other: "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
 };
 
-const ProductRow = ({ product, onEdit, onDelete, currency }) => {
+const ProductRow = ({ product, onEdit, onDelete, currency, selected, onSelect }) => {
   const stockStatus = product.stock <= 0 ? "out" : product.stock <= (product.minStockLevel || 5) ? "low" : "good";
 
   return (
     <tr className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors">
       <td className="px-4 py-3">
+        <input type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
+      </td>
+      <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
-            <Leaf className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-700 bg-blue-50 dark:bg-blue-900/15">
+            {product.image
+              ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center"><Leaf className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
+            }
           </div>
           <div>
             <p className="font-medium text-slate-900 dark:text-white text-sm">{product.name}</p>

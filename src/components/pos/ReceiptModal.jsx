@@ -1,8 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt, Printer, Download, X, CheckCircle, Clock } from "lucide-react";
+import { Receipt, Printer, Download, X, CheckCircle, Clock, MessageCircle } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import { downloadInvoicePDF } from "../../utils/pdfGenerator";
+import { shareReceiptOnWhatsApp } from "../../utils/whatsappShare";
+import { normalizeInvoiceItems } from "../../utils/normalizeInvoiceItems";
 
 const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName }) => (
   <AnimatePresence>
@@ -107,7 +109,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
                   </tr>
                 </thead>
                 <tbody>
-                  {transaction.items?.map((item, i) => (
+                  {normalizeInvoiceItems(transaction.items).map((item, i) => (
                     <tr key={i} className="border-b border-gray-100">
                       <td className="py-1.5 text-gray-800">{item.name}</td>
                       <td className="text-center text-gray-600">{item.quantity}</td>
@@ -140,18 +142,24 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
           {/* Footer actions */}
           <div className="flex gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
             <motion.button whileTap={{ scale: 0.96 }} onClick={onClose}
-              className="flex-1 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              className="py-2.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               Close
             </motion.button>
             <motion.button whileTap={{ scale: 0.96 }} onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
               <Printer className="w-4 h-4" />Print
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+              onClick={() => shareReceiptOnWhatsApp(transaction, settings, transaction.customerPhone)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-sm transition-all"
+            >
+              <MessageCircle className="w-4 h-4" />WhatsApp
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
               onClick={() => downloadInvoicePDF(transaction, settings)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-all"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-all"
             >
               <Download className="w-4 h-4" />PDF
             </motion.button>

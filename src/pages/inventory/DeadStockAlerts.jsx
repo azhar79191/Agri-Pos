@@ -1,8 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Package, TrendingUp, TrendingDown, AlertTriangle, Archive, Zap, BarChart2, Loader2 } from "lucide-react";
+import { Package, TrendingUp, TrendingDown, AlertTriangle, Archive, Zap, BarChart2, Loader2, ShoppingBag, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
+import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/helpers";
 import { getInventoryReport } from "../../api/reportsApi";
+import { getSuppliers } from "../../api/suppliersApi";
+import { createPurchaseOrder } from "../../api/purchaseOrdersApi";
 import EmptyState from "../../components/ui/EmptyState";
 
 const getVelocity = (product) => {
@@ -20,18 +23,44 @@ const velocityConfig = {
 };
 
 const DeadStockAlerts = () => {
-  const { state } = useApp();
+  const { state, actions } = useApp();
   const { settings } = state;
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [reordering, setReordering] = useState(null);
+  const [reorderedIds, setReorderedIds] = useState(new Set());
 
   useEffect(() => {
     getInventoryReport()
       .then(res => setProducts(res.data.data.products || []))
       .catch(() => {})
       .finally(() => setLoading(false));
+    getSuppliers({ limit: 100 })
+      .then(res => setSuppliers(res.data.data.suppliers || []))
+      .catch(() => {});
   }, []);
+
+  const handleReorder = async (item) => {
+    setReordering(item._id);
+    try {
+      const supplier = suppliers[0]; // use first supplier as default
+      await createPurchaseOrder({
+        supplier: supplier?._id,
+        items: [{ product: item._id, productName: item.name, quantity: (item.minStockLevel || 5) * 3, unitPrice: item.costPrice || item.price || 0 }],
+        notes: `Auto-generated reorder for low stock: ${item.name}`,
+        status: "draft",
+      });
+      setReorderedIds(prev => new Set([...prev, item._id]));
+      actions.showToast({ message: `Draft PO created for ${item.name}`, type: "success" });
+    } catch {
+      actions.showToast({ message: "Failed to create PO — try manually", type: "error" });
+    } finally {
+      setReordering(null);
+    }
+  };
 
   const enriched = useMemo(() => products.map(p => ({ ...p, velocity: getVelocity(p) })), [products]);
   const filtered = useMemo(() => filter === "all" ? enriched : enriched.filter(d => d.velocity === filter), [enriched, filter]);
@@ -90,6 +119,28 @@ const DeadStockAlerts = () => {
                       <div><p className="text-xs text-slate-400">Sale Price</p><p className="font-bold text-slate-900 dark:text-white">{formatCurrency(item.price, settings.currency)}</p></div>
                       <div><p className="text-xs text-slate-400">Stock Value</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(item.stockValue || 0, settings.currency)}</p></div>
                     </div>
+                    {/* Reorder button — only for low/dead stock */}
+                    {(item.velocity === "fast" || item.velocity === "dead") && (
+                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        {reorderedIds.has(item._id) ? (
+                          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle className="w-3.5 h-3.5" /> Draft PO created
+                            <button onClick={() => navigate("/purchases/orders")} className="ml-auto text-blue-600 dark:text-blue-400 hover:underline">View PO →</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleReorder(item)}
+                            disabled={reordering === item._id}
+                            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 transition-all shadow-sm"
+                          >
+                            {reordering === item._id
+                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              : <ShoppingBag className="w-3.5 h-3.5" />}
+                            {reordering === item._id ? "Creating PO..." : "Reorder Now → Draft PO"}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}

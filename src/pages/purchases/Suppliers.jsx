@@ -10,6 +10,8 @@ import { getSuppliers } from "../../api/suppliersApi";
 import ModernModal from "../../components/ui/ModernModal";
 import { useSupplierForm } from "../../hooks/useSupplierForm";
 
+import { isAdminOrManager } from "../../utils/roleUtils";
+
 const LIMIT = 12;
 
 const FIELDS = [
@@ -23,7 +25,7 @@ const FIELDS = [
 const Suppliers = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const isAdmin      = state.currentUser?.role === "admin" || state.currentUser?.role === "manager";
+  const isAdmin      = isAdminOrManager(state.currentUser);
 
   const { data: suppliers, loading, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
     usePaginatedApi(getSuppliers, { search: "" }, LIMIT);

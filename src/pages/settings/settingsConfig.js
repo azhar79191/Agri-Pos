@@ -1,6 +1,6 @@
 import {
   Palette, AlertTriangle,
-  Tag, Grid3X3, Building2, Bell, Info, Database
+  Tag, Grid3X3, Building2, Bell, Info, Database, Keyboard
 } from "lucide-react";
 
 export const SETTINGS_NAV = [
@@ -24,6 +24,7 @@ export const SETTINGS_NAV = [
       { id: "alerts",        label: "Stock Alerts",        icon: AlertTriangle, desc: "Low stock thresholds" },
       { id: "notifications", label: "Notifications",       icon: Bell,          desc: "Alert preferences" },
       { id: "data",          label: "Data & Export",       icon: Database,      desc: "Export & cache management" },
+      { id: "shortcuts",     label: "Keyboard Shortcuts",  icon: Keyboard,      desc: "All app shortcuts" },
       { id: "about",         label: "About",               icon: Info,          desc: "Version & info" },
     ],
   },

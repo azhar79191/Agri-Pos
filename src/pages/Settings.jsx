@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SettingsNav from "./settings/SettingsNav";
 import ThemePanel from "./settings/ThemePanel";
 import ShopPanel from "./settings/ShopPanel";
@@ -7,6 +7,7 @@ import AlertsPanel from "./settings/AlertsPanel";
 import AboutPanel from "./settings/AboutPanel";
 import NotificationsPanel from "./settings/NotificationsPanel";
 import DataPanel from "./settings/DataPanel";
+import KeyboardShortcutsPanel from "./settings/KeyboardShortcutsPanel";
 import { addBrand, deleteBrand, addCategory, deleteCategory } from "../api/shopApi";
 import { SETTINGS_NAV } from "./settings/settingsConfig";
 
@@ -38,6 +39,7 @@ const PANELS = {
   alerts:        <AlertsPanel />,
   notifications: <NotificationsPanel />,
   data:          <DataPanel />,
+  shortcuts:     <KeyboardShortcutsPanel />,
   about:         <AboutPanel />,
 };
 
@@ -47,6 +49,13 @@ const ALL_ITEMS = SETTINGS_NAV.flatMap(g => g.items);
 const Settings = () => {
   const [active, setActive] = useState("theme");
   const current = ALL_ITEMS.find(i => i.id === active);
+
+  // "?" shortcut from anywhere opens this panel directly
+  useEffect(() => {
+    const handler = () => setActive("shortcuts");
+    window.addEventListener("agrinest:open-shortcuts", handler);
+    return () => window.removeEventListener("agrinest:open-shortcuts", handler);
+  }, []);
 
   return (
     <div className="animate-fade-up space-y-0">

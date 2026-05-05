@@ -3,20 +3,24 @@ import { DollarSign, Loader2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { getProfitReport } from "../../api/reportsApi";
+import DateRangePicker from "../../components/ui/DateRangePicker";
 
-const useProfitReport = () => {
+const useProfitReport = (dateRange) => {
   const [data, setData]       = useState({ rows: [], summary: { totalRevenue: 0, totalCost: 0, totalProfit: 0, avgMargin: 0 } });
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    getProfitReport().then((res) => setData(res.data.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    const params = dateRange?.start && dateRange?.end ? { startDate: dateRange.start, endDate: dateRange.end } : {};
+    getProfitReport(params).then((res) => setData(res.data.data)).catch(() => {}).finally(() => setLoading(false));
+  }, [dateRange?.start, dateRange?.end]); // eslint-disable-line
   return { ...data, loading };
 };
 
 const ProfitReports = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const { rows, summary, loading } = useProfitReport();
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const { rows, summary, loading } = useProfitReport(dateRange);
 
   const STATS = [
     { l: "Total Revenue", v: formatCurrency(summary.totalRevenue, settings.currency), c: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-100 dark:bg-blue-900/30" },
@@ -30,6 +34,7 @@ const ProfitReports = () => {
         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5 text-white" /></div>
         <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Profit Reports</h1><p className="text-sm text-slate-500 dark:text-slate-400">Revenue, cost, and profit analysis</p></div>
       </div>
+      <DateRangePicker value={dateRange} onChange={setDateRange} />
 
       <div className="grid grid-cols-3 gap-4">
         {STATS.map(({ l, v, c, bg }) => (

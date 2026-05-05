@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { BarChart3, TrendingUp, Users, ShoppingCart, DollarSign, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { useAnalytics } from "../../hooks/useAnalytics";
+import DateRangePicker from "../../components/ui/DateRangePicker";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#f97316"];
 
@@ -17,7 +18,8 @@ const STATS = (data, currency) => [
 const Analytics = () => {
   const { state }  = useApp();
   const { settings } = state;
-  const data       = useAnalytics();
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const data       = useAnalytics(dateRange);
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -30,6 +32,7 @@ const Analytics = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">Deep-dive into your business performance</p>
         </div>
       </div>
+      <DateRangePicker value={dateRange} onChange={setDateRange} />
 
       {data.loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-slate-400">

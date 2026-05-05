@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Package, Search, ChevronDown, Clock, Star, Zap, ShoppingBag, Filter, PackagePlus, Tag, Percent } from "lucide-react";
 import { formatCurrency, isOutOfStock, isLowStock } from "../../utils/helpers";
+import usePOSFavorites from "../../hooks/usePOSFavorites";
+import { useApp } from "../../context/AppContext";
 
 const CAT_CFG = {
   Herbicides:   { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-400",   dot: "bg-green-500" },
@@ -14,7 +16,7 @@ const CAT_CFG = {
 const getCat = (cat) => CAT_CFG[cat] || CAT_CFG.Other;
 
 /* ── Product Card ── */
-const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuantity, currency }) => {
+const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuantity, currency, isFavorite, onToggleFavorite }) => {
   const productId = product._id || product.id;
   const availableStock = product.stock - cartQuantity;
   const outOfStock = isOutOfStock(availableStock);
@@ -43,19 +45,30 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
       <div className={`relative h-28 flex items-center justify-center ${cat.bg} overflow-hidden`}>
         <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/20" />
         <div className="absolute -bottom-3 -left-3 w-12 h-12 rounded-full bg-white/15" />
-        <div className="w-12 h-12 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur flex items-center justify-center shadow-sm z-10">
-          <Package className={`w-6 h-6 ${cat.text}`} />
-        </div>
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover absolute inset-0" />
+        ) : (
+          <div className="w-12 h-12 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur flex items-center justify-center shadow-sm z-10">
+            <Package className={`w-6 h-6 ${cat.text}`} />
+          </div>
+        )}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {inCart && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="px-1.5 py-0.5 rounded-lg bg-emerald-500 text-white text-[9px] font-bold">×{cartQuantity}</motion.span>}
           {lowStock && !outOfStock && <motion.span animate={{ opacity: [1, 0.6, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="px-1.5 py-0.5 rounded-lg bg-amber-500 text-white text-[9px] font-bold">LOW</motion.span>}
           {outOfStock && <span className="px-1.5 py-0.5 rounded-lg bg-red-500 text-white text-[9px] font-bold">OUT</span>}
         </div>
-        <div className="absolute top-2 right-2">
-          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[9px] font-bold bg-white/70 dark:bg-slate-900/70 backdrop-blur ${cat.text}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${cat.dot}`} />{product.category}
-          </span>
-        </div>
+        {/* Favorite pin button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(productId); }}
+          className={`absolute top-2 right-2 z-20 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+            isFavorite
+              ? "bg-amber-400 text-white shadow-md"
+              : "bg-white/70 dark:bg-slate-900/70 text-slate-400 hover:text-amber-400 hover:bg-white dark:hover:bg-slate-800"
+          }`}
+          title={isFavorite ? "Remove from favorites" : "Pin to favorites"}
+        >
+          <Star className={`w-3 h-3 ${isFavorite ? "fill-white" : ""}`} />
+        </button>
       </div>
       <div className="p-3 flex flex-col flex-1 gap-2">
         <div>
@@ -174,6 +187,11 @@ const ProductGrid = ({
 }) => {
   const [viewMode, setViewMode] = useState("grid");
   const [activeTab, setActiveTab] = useState("products"); // "products" | "bundles"
+  const { state } = useApp();
+  const userId = state?.currentUser?._id || state?.currentUser?.id;
+  const { favoriteIds, isFavorite, toggleFavorite } = usePOSFavorites(userId);
+
+  const favoriteProducts = products.filter((p) => favoriteIds.includes(p._id || p.id));
 
   return (
     <div className="space-y-4">
@@ -200,6 +218,43 @@ const ProductGrid = ({
       {/* ── PRODUCTS TAB ── */}
       {activeTab === "products" && (
         <>
+          {/* Favorites row */}
+          {favoriteProducts.length > 0 && !searchTerm && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <Star className="w-3.5 h-3.5 fill-amber-400" /> Favorites
+                  <span className="text-[10px] font-normal text-slate-400">({favoriteProducts.length}/{8})</span>
+                </span>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {favoriteProducts.map((p) => {
+                  const inCart = cart.find((i) => i.productId === (p._id || p.id));
+                  return (
+                    <button
+                      key={p._id || p.id}
+                      onClick={() => onAddToCart(p)}
+                      disabled={isOutOfStock(p.stock)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+                        isOutOfStock(p.stock)
+                          ? "opacity-40 cursor-not-allowed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-400"
+                          : inCart
+                          ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400"
+                          : "bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/20"
+                      }`}
+                    >
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
+                      <span className="truncate max-w-[100px]">{p.name}</span>
+                      <span className="font-bold text-slate-600 dark:text-slate-400">{formatCurrency(p.price, currency)}</span>
+                      {inCart && <span className="font-black text-emerald-600">×{inCart.quantity}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="border-b border-slate-100 dark:border-slate-800" />
+            </div>
+          )}
+
           {/* Recent quick-add */}
           {recentProducts.length > 0 && !searchTerm && (
             <div className="flex items-center gap-2 flex-wrap">
@@ -281,7 +336,8 @@ const ProductGrid = ({
                   return (
                     <ProductCard key={productId} product={product}
                       inCart={!!inCart} cartQuantity={inCart?.quantity || 0}
-                      onAddToCart={onAddToCart} onUpdateQuantity={onUpdateQuantity} currency={currency} />
+                      onAddToCart={onAddToCart} onUpdateQuantity={onUpdateQuantity} currency={currency}
+                      isFavorite={isFavorite(productId)} onToggleFavorite={toggleFavorite} />
                   );
                 })}
               </div>

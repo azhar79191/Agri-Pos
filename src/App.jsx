@@ -1,10 +1,17 @@
-import React, { Suspense, lazy, Component } from "react";
+import React, { Suspense, lazy, Component, useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import Toast from "./components/ui/Toast";
 import ConfirmToast from "./components/ui/ConfirmToast";
+import useKeyboardShortcuts from "./hooks/useKeyboardShortcuts";
+import OfflineBanner from "./components/OfflineBanner";
+import PWAInstallBanner from "./components/PWAInstallBanner";
+import ShopPendingApproval from "./pages/ShopPendingApproval";
+import DemoPOS from "./pages/DemoPOS";
+import { getRoleName } from "./utils/roleUtils";
+import API from "./api/axios";
 
 // Eager — tiny, needed immediately
 import Login from "./pages/Login";
@@ -51,10 +58,12 @@ const Loyalty           = lazy(() => import("./pages/customers/Loyalty"));
 const ProfitReports     = lazy(() => import("./pages/reports/ProfitReports"));
 const MarginReports     = lazy(() => import("./pages/reports/MarginReports"));
 const InventoryReports  = lazy(() => import("./pages/reports/InventoryReports"));
+const InvoiceAgingReport = lazy(() => import("./pages/reports/InvoiceAgingReport"));
 
 // New modules — Phase 4: Advanced
 const Analytics         = lazy(() => import("./pages/dashboard/Analytics"));
 const Forecasting       = lazy(() => import("./pages/dashboard/Forecasting"));
+const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -91,6 +100,7 @@ class ErrorBoundary extends Component {
 const AppLayout = () => {
   const { state, actions } = useApp();
   const { toast } = state;
+  useKeyboardShortcuts();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
@@ -151,6 +161,10 @@ const AppLayout = () => {
                   <Route path="/reports/profit" element={<ProfitReports />} />
                   <Route path="/reports/margin" element={<MarginReports />} />
                   <Route path="/reports/inventory" element={<InventoryReports />} />
+                  <Route path="/reports/aging" element={<InvoiceAgingReport />} />
+
+                  {/* Demo */}
+                  <Route path="/demo" element={<DemoPOS />} />
 
                   {/* Staff Hub — all staff routes */}
                   <Route path="/staff" element={<StaffHub />} />
@@ -179,6 +193,8 @@ const AppLayout = () => {
           onCancel={actions.hideToast}
         />
       )}
+      <OfflineBanner />
+      <PWAInstallBanner />
     </div>
   );
 };
@@ -186,6 +202,29 @@ const AppLayout = () => {
 const AppContent = () => {
   const { state } = useApp();
   const { isAuthenticated, currentUser } = state;
+  const [shopStatus, setShopStatus] = useState(null); // null | 'ok' | error code
+
+  const role = getRoleName(currentUser);
+
+  // Check shop approval status on mount and when user changes
+  useEffect(() => {
+    if (!isAuthenticated || role === 'superadmin') { setShopStatus('ok'); return; }
+    if (!currentUser?.shop) { setShopStatus('ok'); return; }
+    // Probe any protected endpoint to check shop status
+    API.get('/products?limit=1')
+      .then(() => setShopStatus('ok'))
+      .catch(err => {
+        const code = err.response?.data?.code;
+        if (code === 'SHOP_PENDING_APPROVAL' || code === 'SHOP_SUSPENDED' || code === 'PLAN_EXPIRED') {
+          setShopStatus(code);
+        } else {
+          setShopStatus('ok'); // network error or other — don't block
+        }
+      });
+  }, [isAuthenticated, currentUser?._id]); // eslint-disable-line
+
+  // Demo mode — public route, no auth needed
+  if (window.location.pathname === '/demo') return <DemoPOS />;
 
   if (!isAuthenticated) {
     return (
@@ -193,14 +232,38 @@ const AppContent = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<RegisterShop />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/demo" element={<DemoPOS />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
-  const needsSetup = currentUser?.role === "admin" && !currentUser?.shop;
-  if (needsSetup) {
-    return <RegisterShop />;
+  // Superadmin — dedicated dashboard, no shop sidebar
+  if (role === 'superadmin') {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="*" element={<SuperAdminDashboard />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  // Shop not yet approved / suspended / expired
+  if (shopStatus && shopStatus !== 'ok') {
+    return <ShopPendingApproval reason={shopStatus} />;
+  }
+
+  const needsSetup = role === 'admin' && !currentUser?.shop;
+  if (needsSetup) return <RegisterShop />;
+
+  // Still checking shop status — show loader
+  if (shopStatus === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="w-8 h-8 border-4 border-t-transparent border-emerald-500 rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return <AppLayout />;

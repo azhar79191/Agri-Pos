@@ -1,14 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { TrendingUp, Loader2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { useForecasting } from "../../hooks/useForecasting";
+import DateRangePicker from "../../components/ui/DateRangePicker";
 
 const Forecasting = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const data         = useForecasting();
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const data         = useForecasting(dateRange);
 
   const STATS = [
     { l: "Current Month",       v: formatCurrency(data.currentMonthActual, settings.currency), c: "text-emerald-600 dark:text-emerald-400" },
@@ -27,6 +29,7 @@ const Forecasting = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">Trend analysis and revenue projections</p>
         </div>
       </div>
+      <DateRangePicker value={dateRange} onChange={setDateRange} />
 
       {data.loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-slate-400">

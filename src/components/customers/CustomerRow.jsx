@@ -12,9 +12,12 @@ const avatarColors = [
 
 const getAvatarColor = (name = "") => avatarColors[name.charCodeAt(0) % avatarColors.length];
 
-const CustomerRow = ({ customer, onEdit, onDelete, onViewStatement, currency }) => {
+const CustomerRow = ({ customer, onEdit, onDelete, onViewStatement, currency, selected, onSelect }) => {
   return (
     <tr className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors">
+      <td className="px-4 py-3">
+        <input type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
+      </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className={`w-8 h-8 rounded-lg ${getAvatarColor(customer.name)} flex items-center justify-center flex-shrink-0`}>

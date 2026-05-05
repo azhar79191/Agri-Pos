@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import { useApp } from "../../context/AppContext";
+import CashNumpad from "./CashNumpad";
 
 const paymentMethods = [
   { id: "Cash",            icon: Banknote,   label: "Cash",   color: "emerald" },
@@ -127,9 +128,11 @@ const CartPanel = ({
                 transition={{ duration: 0.2 }}
                 layout
                 className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600 transition-colors group">
-                {/* Product icon */}
-                <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0">
-                  <Package className="w-4 h-4 text-slate-400" />
+                {/* Product icon/image */}
+                <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0 overflow-hidden">
+                  {item.image
+                    ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    : <Package className="w-4 h-4 text-slate-400" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">{item.name}</p>
@@ -227,27 +230,16 @@ const CartPanel = ({
               </div>
             </div>
 
-            {/* Cash input */}
+            {/* Cash numpad */}
             <AnimatePresence>
               {needsCashInput && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-2 overflow-hidden">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Cash Received</label>
-                    <input type="number" min={cartCalculations.payableAmount} value={cashReceived} onChange={onCashReceivedChange}
-                      placeholder={`Min ${formatCurrency(cartCalculations.payableAmount, currency)}`}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-semibold focus:ring-2 focus:ring-blue-500/30 outline-none transition-all" />
-                  </div>
-                  <AnimatePresence>
-                    {parseFloat(cashReceived) > 0 && (
-                      <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                        className="flex justify-between items-center p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/15 border border-emerald-200 dark:border-emerald-800">
-                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Change</span>
-                        <span className={`text-sm font-black ${change >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
-                          {formatCurrency(Math.max(change, 0), currency)}
-                        </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                  <CashNumpad
+                    payableAmount={cartCalculations.payableAmount}
+                    value={cashReceived}
+                    onChange={(val) => onCashReceivedChange({ target: { value: val } })}
+                    currency={currency}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
 import { Printer, Download, Mail, Phone, MapPin, Calendar, Clock, Hash, User, CreditCard } from "lucide-react";
 import { formatCurrency as formatCurrencyHelper } from "../utils/helpers";
+import { normalizeInvoiceItems } from "../utils/normalizeInvoiceItems";
 
 const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEmail }, ref) => {
   const formatCurrency = (amount) => {
@@ -194,32 +195,22 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
                 </tr>
               </thead>
               <tbody>
-                {(invoice.items || []).map((item, index) => {
-                  const itemName = item.name || item.product?.name || "Unknown Item";
-                  const itemQuantity = item.quantity || 0;
-                  const itemUnit = item.unit || item.product?.unit || "-";
-                  const itemPrice = item.price || item.product?.price || 0;
-                  const itemBarcode = item.barcode || item.product?.barcode;
-                  
-                  return (
-                    <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
-                      <td className="p-4">
-                        <div>
-                          <p className="font-medium text-gray-900">{itemName}</p>
-                          {itemBarcode && (
-                            <p className="text-sm text-gray-500">Barcode: {itemBarcode}</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 text-center font-medium">{itemQuantity}</td>
-                      <td className="p-4 text-center text-gray-600">{itemUnit}</td>
-                      <td className="p-4 text-right font-medium">{formatCurrency(itemPrice)}</td>
-                      <td className="p-4 text-right font-semibold text-emerald-600">
-                        {formatCurrency(itemQuantity * itemPrice)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {normalizeInvoiceItems(invoice.items).map((item, index) => (
+                  <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
+                    <td className="p-4">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                        {item.barcode && (
+                          <p className="text-sm text-gray-500">Barcode: {item.barcode}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 text-center font-medium">{item.quantity}</td>
+                    <td className="p-4 text-center text-gray-600">{item.unit || "—"}</td>
+                    <td className="p-4 text-right font-medium">{formatCurrency(item.price)}</td>
+                    <td className="p-4 text-right font-semibold text-emerald-600">{formatCurrency(item.total)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

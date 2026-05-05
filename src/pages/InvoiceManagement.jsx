@@ -14,6 +14,7 @@ import { exportInvoices } from "../utils/excelExport";
 import { CardSkeleton } from "../components/ui/Skeleton";
 import { ConfirmModal } from "../components/ui/ModernModal";
 import Pagination from "../components/ui/Pagination";
+import { isAdminOrManager } from "../utils/roleUtils";
 
 const LIMIT = 12;
 
@@ -22,7 +23,7 @@ const InvoiceManagement = () => {
   const { settings, currentUser } = state;
   const { invoices, loading, fetchInvoices } = useInvoices();
   const isOnline = useOnlineStatus();
-  const isAdmin  = currentUser?.role === "admin";
+  const isAdmin = isAdminOrManager(currentUser);
 
   const {
     refundTarget, setRefundTarget, refunding, handleRefund,

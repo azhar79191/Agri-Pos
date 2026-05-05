@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Plus, Download, Package } from "lucide-react";
+import { Plus, Download, Package, Tag } from "lucide-react";
 import { useProducts } from "../context/ProductsContext";
 import { useApp } from "../context/AppContext";
 import ModernButton from "../components/ui/ModernButton";
@@ -13,6 +13,9 @@ import ProductRow from "../components/products/ProductRow";
 import ProductStatsCards from "../components/products/ProductStatsCards";
 import ProductFilters from "../components/products/ProductFilters";
 import { useProductForm } from "../hooks/useProductForm";
+import BulkActionBar from "../components/ui/BulkActionBar";
+import { deleteProduct } from "../api/productApi";
+import BarcodeLabelPrinter from "../components/products/BarcodeLabelPrinter";
 import {
   DEFAULT_CATEGORIES, UNIT_OPTIONS, SUB_UNIT_OPTIONS, EMPTY_PRODUCT_FORM,
 } from "../constants/products";
@@ -34,6 +37,12 @@ const Products = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [page, setPage]                   = useState(1);
   const [pagination, setPagination]       = useState({ total: 0, pages: 1 });
+  const [selected, setSelected]           = useState(new Set());
+  const [showLabelPrinter, setShowLabelPrinter] = useState(false);
+
+  const toggleSelect = (id) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const selectAll    = () => setSelected(new Set(filteredProducts.map((p) => p._id || p.id)));
+  const clearSelect  = () => setSelected(new Set());
 
   useEffect(() => {
     fetchProducts({ page, limit: LIMIT }).then((res) => {
@@ -79,6 +88,7 @@ const Products = () => {
         </div>
         <div className="flex gap-2">
           <ModernButton variant="outline" onClick={() => exportProducts(products, state?.settings?.currency)} icon={Download} size="sm">Export</ModernButton>
+          <ModernButton variant="outline" onClick={() => setShowLabelPrinter(true)} icon={Tag} size="sm">Print Labels</ModernButton>
           <ModernButton onClick={openAdd} icon={Plus}>Add Product</ModernButton>
         </div>
       </div>
@@ -99,7 +109,10 @@ const Products = () => {
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
-                <tr>{["Product", "Category", "Brand", "Unit", "Price", "Stock", "Actions"].map((h) => <th key={h}>{h}</th>)}</tr>
+                <tr>
+                  <th className="w-10"><input type="checkbox" checked={selected.size === filteredProducts.length && filteredProducts.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
+                  {["Product", "Category", "Brand", "Unit", "Price", "Stock", "Actions"].map((h) => <th key={h}>{h}</th>)}
+                </tr>
               </thead>
               <tbody>
                 {filteredProducts.map((product) => (
@@ -109,6 +122,8 @@ const Products = () => {
                     onEdit={(p) => openEdit(p, shopBrands)}
                     onDelete={setDeleteConfirm}
                     currency="Rs."
+                    selected={selected.has(product._id || product.id)}
+                    onSelect={() => toggleSelect(product._id || product.id)}
                   />
                 ))}
               </tbody>
@@ -173,6 +188,35 @@ const Products = () => {
           </div>
           <Input label="Barcode" value={formData.barcode} onChange={(e) => setFormData({ ...formData, barcode: e.target.value })} placeholder="Barcode (optional)" />
           <Input label="Expiry Date" type="date" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} />
+          {/* Product Image */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Product Image (optional)</label>
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0 bg-slate-50 dark:bg-slate-800">
+                {formData.image
+                  ? <img src={formData.image} alt="preview" className="w-full h-full object-cover" />
+                  : <Package className="w-6 h-6 text-slate-300 dark:text-slate-600" />}
+              </div>
+              <div className="flex-1">
+                <input type="file" accept="image/*" id="product-img-upload" className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onloadend = () => setFormData((p) => ({ ...p, image: reader.result }));
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <label htmlFor="product-img-upload" className="cursor-pointer flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  Upload Image
+                </label>
+                {formData.image && (
+                  <button type="button" onClick={() => setFormData((p) => ({ ...p, image: "" }))} className="mt-1.5 text-xs text-red-500 hover:text-red-700 transition-colors">Remove</button>
+                )}
+                <p className="text-[10px] text-slate-400 mt-1">JPG, PNG — stored as base64</p>
+              </div>
+            </div>
+          </div>
         </form>
       </ModernModal>
 
@@ -183,6 +227,27 @@ const Products = () => {
         title="Delete Product"
         message={`Are you sure you want to delete "${deleteConfirm?.name}"?`}
       />
+
+      <BulkActionBar
+        selectedIds={selected}
+        totalCount={filteredProducts.length}
+        onSelectAll={selectAll}
+        onClearAll={clearSelect}
+        onExport={() => exportProducts(filteredProducts.filter((p) => selected.has(p._id || p.id)), state?.settings?.currency)}
+        onDelete={async () => {
+          await Promise.all([...selected].map((id) => deleteProduct(id).catch(() => {})));
+          clearSelect();
+          fetchProducts({ page, limit: LIMIT });
+        }}
+      />
+
+      {showLabelPrinter && (
+        <BarcodeLabelPrinter
+          products={filteredProducts}
+          settings={state?.settings}
+          onClose={() => setShowLabelPrinter(false)}
+        />
+      )}
     </div>
   );
 };
