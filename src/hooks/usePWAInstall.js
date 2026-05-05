@@ -1,41 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const DISMISSED_KEY = "agrinest_pwa_dismissed";
 
 const usePWAInstall = () => {
-  const [prompt, setPrompt]       = useState(null);
+  const [prompt, setPrompt]         = useState(null);
   const [showBanner, setShowBanner] = useState(false);
-  const [installed, setInstalled]  = useState(false);
+  const [isInstalled, setInstalled] = useState(
+    window.matchMedia("(display-mode: standalone)").matches
+  );
 
   useEffect(() => {
-    // Already dismissed or installed
-    if (localStorage.getItem(DISMISSED_KEY)) return;
-    if (window.matchMedia("(display-mode: standalone)").matches) { setInstalled(true); return; }
+    // Already running as installed PWA
+    if (window.matchMedia("(display-mode: standalone)").matches) return;
 
-    const handler = (e) => { e.preventDefault(); setPrompt(e); };
+    const handler = (e) => {
+      e.preventDefault();
+      setPrompt(e);
+      // Show banner immediately — no 30s delay
+      if (!localStorage.getItem(DISMISSED_KEY)) setShowBanner(true);
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => setInstalled(true));
+    window.addEventListener("appinstalled", () => {
+      setInstalled(true);
+      setShowBanner(false);
+      setPrompt(null);
+    });
 
-    // Show banner after 30 seconds
-    const timer = setTimeout(() => setShowBanner(true), 30000);
-    return () => { window.removeEventListener("beforeinstallprompt", handler); clearTimeout(timer); };
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const install = async () => {
-    if (!prompt) return;
+  const install = useCallback(async () => {
+    if (!prompt) return false;
     prompt.prompt();
     const { outcome } = await prompt.userChoice;
     if (outcome === "accepted") setInstalled(true);
     setShowBanner(false);
     setPrompt(null);
-  };
+    return outcome === "accepted";
+  }, [prompt]);
 
-  const dismiss = () => {
+  const dismiss = useCallback(() => {
     setShowBanner(false);
     localStorage.setItem(DISMISSED_KEY, "1");
-  };
+  }, []);
 
-  return { showBanner: showBanner && !!prompt && !installed, install, dismiss };
+  const resetDismiss = useCallback(() => {
+    localStorage.removeItem(DISMISSED_KEY);
+    if (prompt) setShowBanner(true);
+  }, [prompt]);
+
+  return {
+    prompt,                          // the raw event — null if not available
+    canInstall: !!prompt && !isInstalled,
+    isInstalled,
+    showBanner: showBanner && !!prompt && !isInstalled,
+    install,
+    dismiss,
+    resetDismiss,
+  };
 };
 
 export default usePWAInstall;

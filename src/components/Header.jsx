@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, Sun, Moon, LogOut, ChevronDown, Shield, User, Store } from "lucide-react";
+import { Bell, Sun, Moon, LogOut, ChevronDown, Shield, User, Store, Download } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
@@ -7,6 +7,7 @@ import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
 import UserAvatar from "./ui/UserAvatar";
 import NotificationCenter from "./NotificationCenter";
 import GlobalSearch from "./GlobalSearch";
+import usePWAInstall from "../hooks/usePWAInstall";
 
 /** Maps role color key → Tailwind badge classes */
 const getRoleColorClass = (color) => {
@@ -21,6 +22,7 @@ const Header = () => {
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const { canInstall, isInstalled, install } = usePWAInstall();
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -83,6 +85,17 @@ const Header = () => {
 
       {/* Right — actions */}
       <div className="flex items-center gap-1">
+
+        {/* PWA install icon — visible in header when installable */}
+        {canInstall && (
+          <button
+            onClick={install}
+            className="p-2 rounded-lg text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-150"
+            title="Install AgriNest App"
+          >
+            <Download className="w-[18px] h-[18px]" />
+          </button>
+        )}
 
         {/* Dark mode toggle */}
         <button
@@ -158,6 +171,30 @@ const Header = () => {
                   </div>
                   <span className="font-medium">Profile Settings</span>
                 </button>
+
+                {/* PWA Install button — only shown when installable */}
+                {canInstall && (
+                  <button
+                    onClick={() => { install(); setShowMenu(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors group"
+                  >
+                    <div className="w-7 h-7 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+                    </div>
+                    <span className="font-medium">Install App</span>
+                    <span className="ml-auto text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">PWA</span>
+                  </button>
+                )}
+
+                {isInstalled && (
+                  <div className="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-400">
+                    <div className="w-7 h-7 rounded-md bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                      <Download className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="font-medium">App Installed ✓</span>
+                  </div>
+                )}
+
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group"
