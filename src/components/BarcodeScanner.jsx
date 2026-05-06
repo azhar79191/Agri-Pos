@@ -68,6 +68,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const [flash, setFlash]     = useState(false);
   const [status, setStatus]   = useState("");
   const [frameCount, setFrameCount] = useState(0); // debug: frames processed
+  const [lastRaw, setLastRaw] = useState(""); // debug: last decoded raw value
 
   const videoRef  = useRef(null);
   const canvasRef = useRef(null);
@@ -99,9 +100,17 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     lastRef.current = code;
     setTimeout(() => { lastRef.current = ""; }, 4000);
 
-    const product = prodsRef.current.find(
-      p => p.barcode && p.barcode.trim() === code
-    );
+    // Show raw decoded value in UI so user can see what was actually read
+    setLastRaw(code);
+
+    // Flexible match: exact, case-insensitive, or trimmed
+    const product = prodsRef.current.find(p => {
+      if (!p.barcode) return false;
+      const pb = p.barcode.trim();
+      return pb === code ||
+             pb.toLowerCase() === code.toLowerCase() ||
+             pb.replace(/\s/g, "") === code.replace(/\s/g, "");
+    });
 
     setFlash(true);
     setTimeout(() => setFlash(false), 400);
@@ -272,6 +281,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const handleScanAgain = () => {
     setResult(null);
     setStatus("");
+    setLastRaw("");
     lastRef.current = "";
     frameRef.current = 0;
   };
@@ -288,6 +298,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     setManual("");
     setFlash(false);
     setStatus("");
+    setLastRaw("");
     onClose();
   };
 
@@ -364,9 +375,22 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
                   <>
                     <p className="font-bold text-red-700 dark:text-red-400">Product Not Found</p>
                     <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
-                      Barcode <span className="font-mono font-bold">{result.barcode}</span> is not registered in this shop.
-                      Check Products and make sure the barcode is assigned.
+                      Scanner read: <span className="font-mono font-bold">{result.barcode}</span>
                     </p>
+                    <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                      This barcode is not in your products. Go to Products → edit the product → set barcode to exactly: <span className="font-mono font-bold">{result.barcode}</span>
+                    </p>
+                    {/* Show registered barcodes for comparison */}
+                    {products.filter(p => p.barcode).length > 0 && (
+                      <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                        <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mb-1">Registered barcodes:</p>
+                        {products.filter(p => p.barcode).slice(0, 5).map(p => (
+                          <p key={p._id} className="text-[10px] font-mono text-red-700 dark:text-red-300">
+                            {p.barcode} → {p.name}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -469,9 +493,18 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
             )}
 
             {!camErr && (
-              <p className="text-xs text-center text-slate-400 dark:text-slate-500">
-                Hold barcode steady inside the frame — added to cart automatically
-              </p>
+              <div className="space-y-1.5">
+                <p className="text-xs text-center text-slate-400 dark:text-slate-500">
+                  Hold barcode steady inside the frame — added to cart automatically
+                </p>
+                {/* Debug: show last decoded value so user can verify it matches product barcode */}
+                {lastRaw && (
+                  <div className="flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <span className="text-xs text-amber-700 dark:text-amber-400 font-semibold">Last read:</span>
+                    <span className="text-xs font-mono font-bold text-amber-800 dark:text-amber-300">{lastRaw}</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
