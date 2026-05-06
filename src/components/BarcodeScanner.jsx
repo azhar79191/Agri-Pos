@@ -1,15 +1,12 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  MultiFormatReader, BinaryBitmap, HybridBinarizer,
-  RGBLuminanceSource, DecodeHintType, BarcodeFormat, NotFoundException,
-} from "@zxing/library";
-import {
   Scan, Camera, Keyboard, XCircle, CheckCircle,
-  RefreshCw, Package, ZapOff,
+  RefreshCw, Package, ZapOff, AlertCircle,
 } from "lucide-react";
 import ModernButton from "./ui/ModernButton";
 import ModernModal from "./ui/ModernModal";
 import { formatCurrency } from "../utils/helpers";
+import { getProductByBarcode } from "../api/productApi";
 
 /* ─── Beep via Web Audio API ─── */
 const beep = (success = true) => {
@@ -59,7 +56,7 @@ const ScanLine = () => (
 );
 
 /* ─── Main component ─── */
-const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
+const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) => {
   const [mode, setMode]       = useState("camera");
   const [manual, setManual]   = useState("");
   const [camErr, setCamErr]   = useState("");
@@ -67,20 +64,24 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const [result, setResult]   = useState(null);
   const [flash, setFlash]     = useState(false);
   const [status, setStatus]   = useState("");
-  const [frameCount, setFrameCount] = useState(0); // debug: frames processed
-  const [lastRaw, setLastRaw] = useState(""); // debug: last decoded raw value
+  const [detectorSupported, setDetectorSupported] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const videoRef  = useRef(null);
-  const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef    = useRef(null);
-  const readerRef = useRef(null);
   const lastRef   = useRef("");
   const inputRef  = useRef(null);
   const prodsRef  = useRef(products);
-  const frameRef  = useRef(0);
 
   useEffect(() => { prodsRef.current = products; }, [products]);
+
+  // Check if BarcodeDetector is supported
+  useEffect(() => {
+    if ("BarcodeDetector" in window) {
+      setDetectorSupported(true);
+    }
+  }, []);
 
   /* ── Stop camera + RAF loop ── */
   const stopAll = useCallback(() => {
@@ -94,28 +95,42 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   }, []);
 
   /* ── Process a decoded barcode string ── */
-  const processBarcode = useCallback((raw) => {
+  const processBarcode = useCallback(async (raw) => {
     const code = raw.trim();
     if (!code || code === lastRef.current) return;
     lastRef.current = code;
     setTimeout(() => { lastRef.current = ""; }, 4000);
 
-    // Show raw decoded value in UI so user can see what was actually read
-    setLastRaw(code);
-
-    // Flexible match: exact, case-insensitive, or trimmed
-    const product = prodsRef.current.find(p => {
-      if (!p.barcode) return false;
-      const pb = p.barcode.trim();
-      return pb === code ||
-             pb.toLowerCase() === code.toLowerCase() ||
-             pb.replace(/\s/g, "") === code.replace(/\s/g, "");
-    });
-
     setFlash(true);
     setTimeout(() => setFlash(false), 400);
-
     stopAll();
+
+    let product = null;
+
+    // Try API lookup first if enabled
+    if (useApi) {
+      try {
+        setLoading(true);
+        const response = await getProductByBarcode(code);
+        product = response.data.data.product;
+      } catch (err) {
+        console.warn("API barcode lookup failed:", err.message);
+        // Fall back to local search
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Fall back to local search if API disabled or failed
+    if (!product && prodsRef.current) {
+      product = prodsRef.current.find(p => {
+        if (!p.barcode) return false;
+        const pb = p.barcode.trim();
+        return pb === code ||
+               pb.toLowerCase() === code.toLowerCase() ||
+               pb.replace(/\s/g, "") === code.replace(/\s/g, "");
+      });
+    }
 
     if (product) {
       beep(true);
@@ -125,59 +140,40 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       beep(false);
       setResult({ barcode: code, product: null, added: false });
     }
-  }, [stopAll, onScan]);
+  }, [stopAll, onScan, useApi]);
 
-  /* ── Decode one frame from the video element ── */
-  const decodeFrame = useCallback(() => {
-    const video  = videoRef.current;
-    const canvas = canvasRef.current;
-
-    if (!video || !canvas) return;
-    if (video.readyState < 2 || video.paused || video.ended) {
-      rafRef.current = requestAnimationFrame(decodeFrame);
+  /* ── Decode using native BarcodeDetector API ── */
+  const detectBarcode = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2 || video.paused || video.ended) {
+      rafRef.current = requestAnimationFrame(detectBarcode);
       return;
     }
-
-    const w = video.videoWidth;
-    const h = video.videoHeight;
-    if (!w || !h) {
-      rafRef.current = requestAnimationFrame(decodeFrame);
-      return;
-    }
-
-    // Update frame counter every 30 frames for debug display
-    frameRef.current += 1;
-    if (frameRef.current % 30 === 0) {
-      setFrameCount(frameRef.current);
-    }
-
-    canvas.width  = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.drawImage(video, 0, 0, w, h);
 
     try {
-      const imageData = ctx.getImageData(0, 0, w, h);
-      // RGBLuminanceSource expects Uint8ClampedArray of RGBA + width + height
-      const src    = new RGBLuminanceSource(imageData.data, w, h);
-      const bmp    = new BinaryBitmap(new HybridBinarizer(src));
-      const decoded = readerRef.current.decode(bmp);
-      if (decoded) {
-        processBarcode(decoded.getText());
-        return; // stop loop
+      const barcodeDetector = new window.BarcodeDetector({
+        formats: [
+          "code_128", "code_39", "code_93",
+          "ean_13", "ean_8", "upc_a", "upc_e",
+          "qr_code", "data_matrix", "itf", "codabar"
+        ]
+      });
+
+      const barcodes = await barcodeDetector.detect(video);
+      
+      if (barcodes.length > 0) {
+        const barcode = barcodes[0];
+        processBarcode(barcode.rawValue);
+        return; // Stop scanning
       }
-    } catch (e) {
-      // NotFoundException is normal — no barcode in frame yet
-      if (!(e instanceof NotFoundException)) {
-        // Only log unexpected errors, not every missed frame
-        const msg = e?.message || "";
-        if (!msg.includes("No MultiFormat") && !msg.includes("No code")) {
-          console.warn("[BarcodeScanner]", msg);
-        }
+    } catch (err) {
+      // Detection failed, continue scanning
+      if (err.name !== "NotSupportedError") {
+        console.warn("[BarcodeDetector]", err.message);
       }
     }
 
-    rafRef.current = requestAnimationFrame(decodeFrame);
+    rafRef.current = requestAnimationFrame(detectBarcode);
   }, [processBarcode]);
 
   /* ── Start camera stream ── */
@@ -186,28 +182,11 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     setResult(null);
     setFlash(false);
     setStatus("Starting camera...");
-    frameRef.current = 0;
-    setFrameCount(0);
 
-    // Build MultiFormatReader with all common barcode formats
-    const hints = new Map();
-    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-      BarcodeFormat.CODE_128,
-      BarcodeFormat.CODE_39,
-      BarcodeFormat.CODE_93,
-      BarcodeFormat.EAN_13,
-      BarcodeFormat.EAN_8,
-      BarcodeFormat.UPC_A,
-      BarcodeFormat.UPC_E,
-      BarcodeFormat.QR_CODE,
-      BarcodeFormat.DATA_MATRIX,
-      BarcodeFormat.ITF,
-      BarcodeFormat.CODABAR,
-      BarcodeFormat.RSS_14,
-    ]);
-    hints.set(DecodeHintType.TRY_HARDER, true);
-    readerRef.current = new MultiFormatReader();
-    readerRef.current.setHints(hints);
+    if (!detectorSupported) {
+      setCamErr("BarcodeDetector API not supported in this browser. Use Android Chrome or Manual entry.");
+      return;
+    }
 
     try {
       // Request rear camera with good resolution
@@ -246,7 +225,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
 
       setScanning(true);
       setStatus("Point camera at barcode");
-      rafRef.current = requestAnimationFrame(decodeFrame);
+      rafRef.current = requestAnimationFrame(detectBarcode);
 
     } catch (err) {
       setScanning(false);
@@ -261,7 +240,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
         setCamErr(`Camera failed: ${err.message || name}. Try Manual entry.`);
       }
     }
-  }, [decodeFrame]);
+  }, [detectBarcode, detectorSupported]);
 
   /* ── Lifecycle ── */
   useEffect(() => {
@@ -281,9 +260,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
   const handleScanAgain = () => {
     setResult(null);
     setStatus("");
-    setLastRaw("");
     lastRef.current = "";
-    frameRef.current = 0;
   };
 
   const handleManualSubmit = (e) => {
@@ -298,7 +275,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
     setManual("");
     setFlash(false);
     setStatus("");
-    setLastRaw("");
     onClose();
   };
 
@@ -313,6 +289,19 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
       iconColor="emerald"
     >
       <div className="space-y-4">
+
+        {/* BarcodeDetector API Warning */}
+        {!detectorSupported && (
+          <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-amber-700 dark:text-amber-300">
+              <p className="font-semibold">Camera scanning not available</p>
+              <p className="mt-0.5">
+                BarcodeDetector API is only supported in Android Chrome. Use Manual entry or update your browser.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Mode toggle */}
         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -341,70 +330,69 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
               ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-900/15"
               : "border-red-400 bg-red-50 dark:bg-red-900/20"
           }`}>
-            <div className="flex items-start gap-3">
-              {result.product
-                ? <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0 mt-0.5" />
-                : <XCircle    className="w-6 h-6 text-red-500    flex-shrink-0 mt-0.5" />
-              }
-              <div className="flex-1 min-w-0">
-                <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1 tracking-wider">
-                  {result.barcode}
-                </p>
-                {result.product ? (
-                  <>
-                    <p className="font-bold text-gray-900 dark:text-white text-base leading-tight">
-                      {result.product.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-                        {formatCurrency(result.product.price, "Rs.")}
-                      </span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        (result.product.stock ?? 1) <= 0
-                          ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                          : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                      }`}>
-                        Stock: {result.product.stock ?? "?"} {result.product.unit}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Added to cart!
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-bold text-red-700 dark:text-red-400">Product Not Found</p>
-                    <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
-                      Scanner read: <span className="font-mono font-bold">{result.barcode}</span>
-                    </p>
-                    <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-                      This barcode is not in your products. Go to Products → edit the product → set barcode to exactly: <span className="font-mono font-bold">{result.barcode}</span>
-                    </p>
-                    {/* Show registered barcodes for comparison */}
-                    {products.filter(p => p.barcode).length > 0 && (
-                      <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                        <p className="text-[10px] font-bold text-red-600 dark:text-red-400 mb-1">Registered barcodes:</p>
-                        {products.filter(p => p.barcode).slice(0, 5).map(p => (
-                          <p key={p._id} className="text-[10px] font-mono text-red-700 dark:text-red-300">
-                            {p.barcode} → {p.name}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
+            {loading && (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Looking up barcode...</span>
               </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <ModernButton variant="outline" className="flex-1" icon={RefreshCw} onClick={handleScanAgain}>
-                Scan Again
-              </ModernButton>
-              {result.added && (
-                <ModernButton variant="primary" className="flex-1" icon={Package} onClick={handleClose}>
-                  Done
-                </ModernButton>
-              )}
-            </div>
+            )}
+            {!loading && (
+              <>
+                <div className="flex items-start gap-3">
+                  {result.product
+                    ? <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    : <XCircle    className="w-6 h-6 text-red-500    flex-shrink-0 mt-0.5" />
+                  }
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-xs text-gray-500 dark:text-gray-400 mb-1 tracking-wider">
+                      {result.barcode}
+                    </p>
+                    {result.product ? (
+                      <>
+                        <p className="font-bold text-gray-900 dark:text-white text-base leading-tight">
+                          {result.product.name}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                            {formatCurrency(result.product.price, "Rs.")}
+                          </span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            (result.product.stock ?? 1) <= 0
+                              ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                          }`}>
+                            Stock: {result.product.stock ?? "?"} {result.product.unit}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <CheckCircle className="w-3.5 h-3.5" /> Added to cart!
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-bold text-red-700 dark:text-red-400">Product Not Found</p>
+                        <p className="text-xs text-red-500 dark:text-red-400 mt-0.5">
+                          Scanner read: <span className="font-mono font-bold">{result.barcode}</span>
+                        </p>
+                        <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+                          This barcode is not in your products. Go to Products → edit the product → set barcode to exactly: <span className="font-mono font-bold">{result.barcode}</span>
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <ModernButton variant="outline" className="flex-1" icon={RefreshCw} onClick={handleScanAgain}>
+                    Scan Again
+                  </ModernButton>
+                  {result.added && (
+                    <ModernButton variant="primary" className="flex-1" icon={Package} onClick={handleClose}>
+                      Done
+                    </ModernButton>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -427,9 +415,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
               </div>
             ) : (
               <div className="relative rounded-xl overflow-hidden bg-black" style={{ aspectRatio: "4/3" }}>
-                {/* Hidden canvas — used for frame decoding */}
-                <canvas ref={canvasRef} style={{ display: "none" }} />
-
                 {/* Live video feed */}
                 <video
                   ref={videoRef}
@@ -480,31 +465,13 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products }) => {
                     </span>
                   )}
                 </div>
-
-                {/* Frame counter — debug indicator that decoding is running */}
-                {scanning && (
-                  <div className="absolute top-2 right-2 pointer-events-none">
-                    <span className="px-1.5 py-0.5 bg-black/50 text-emerald-400 text-[10px] font-mono rounded">
-                      {frameCount}f
-                    </span>
-                  </div>
-                )}
               </div>
             )}
 
             {!camErr && (
-              <div className="space-y-1.5">
-                <p className="text-xs text-center text-slate-400 dark:text-slate-500">
-                  Hold barcode steady inside the frame — added to cart automatically
-                </p>
-                {/* Debug: show last decoded value so user can verify it matches product barcode */}
-                {lastRaw && (
-                  <div className="flex items-center justify-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                    <span className="text-xs text-amber-700 dark:text-amber-400 font-semibold">Last read:</span>
-                    <span className="text-xs font-mono font-bold text-amber-800 dark:text-amber-300">{lastRaw}</span>
-                  </div>
-                )}
-              </div>
+              <p className="text-xs text-center text-slate-400 dark:text-slate-500">
+                Hold barcode steady inside the frame — added to cart automatically
+              </p>
             )}
           </div>
         )}

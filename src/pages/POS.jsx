@@ -215,7 +215,7 @@ const POS = () => {
       )}
 
       <HeldSalesModal isOpen={showHeld} onClose={() => setShowHeld(false)} onRecall={handleRecallSale} currency={settings.currency} />
-      <BarcodeScanner isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleBarcodeScan} products={products} />
+      <BarcodeScanner isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScan={handleBarcodeScan} products={products} useApi={true} />
       <ReceiptModal isOpen={showReceipt} onClose={() => setShowReceipt(false)} transaction={completedTransaction} settings={settings} currentUserName={currentUser?.name} />
     </div>
   );

@@ -16,6 +16,7 @@ import { useProductForm } from "../hooks/useProductForm";
 import BulkActionBar from "../components/ui/BulkActionBar";
 import { deleteProduct } from "../api/productApi";
 import BarcodeLabelPrinter from "../components/products/BarcodeLabelPrinter";
+import ProductBarcodeField from "../components/ProductBarcodeField";
 import {
   DEFAULT_CATEGORIES, UNIT_OPTIONS, SUB_UNIT_OPTIONS, EMPTY_PRODUCT_FORM,
 } from "../constants/products";
@@ -186,7 +187,12 @@ const Products = () => {
             <Input label="Stock Quantity" type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} placeholder="Stock" required />
             <Input label="Min Stock Level" type="number" value={formData.minStockLevel} onChange={(e) => setFormData({ ...formData, minStockLevel: e.target.value })} placeholder="5" />
           </div>
-          <Input label="Barcode" value={formData.barcode} onChange={(e) => setFormData({ ...formData, barcode: e.target.value })} placeholder="Barcode (optional)" />
+          <ProductBarcodeField
+            value={formData.barcode}
+            onChange={(val) => setFormData({ ...formData, barcode: val })}
+            productName={formData.name}
+            sku={formData.sku}
+          />
           <Input label="Expiry Date" type="date" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} />
           {/* Product Image */}
           <div>
