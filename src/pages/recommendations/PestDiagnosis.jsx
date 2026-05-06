@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
-import API from "../../api/axios";
+import { getCropAdvisory } from "../../api/cropAdvisoryApi";
 
 const CROP_LIST = ["Cotton", "Wheat", "Rice", "Sugarcane", "Maize", "Vegetables", "Tomato", "Potato", "Onion", "Mango", "Citrus"];
 
@@ -20,42 +20,34 @@ const QUICK_ISSUES = {
 };
 
 const askAI = async (crop, issue, symptoms) => {
-  const prompt = `You are an expert agricultural advisor for Pakistani farmers. A farmer has a problem with their ${crop} crop.
-
-Issue: ${issue}
-${symptoms ? `Symptoms described: ${symptoms}` : ''}
-
-Provide a concise, practical recommendation in this exact JSON format:
-{
-  "diagnosis": "Brief diagnosis (1-2 sentences)",
-  "severity": "Low|Medium|High|Critical",
-  "products": ["Product 1", "Product 2", "Product 3"],
-  "dosage": "Dosage per acre",
-  "applicationMethod": "How to apply",
-  "safetyInterval": "Days before harvest",
-  "alternatives": ["Alt 1", "Alt 2"],
-  "preventionTips": ["Tip 1", "Tip 2"],
-  "urgency": "Apply within X days/weeks"
-}
-
-Use common pesticide/fungicide/herbicide names available in Pakistan. Be specific and practical.`;
-
   try {
-    const res = await API.post('/ai/crop-advisory', { prompt, crop, issue, symptoms });
-    return res.data.data;
-  } catch {
-    // Fallback: return structured mock if AI endpoint not available
+    const response = await getCropAdvisory({
+      crop: crop.toLowerCase(),
+      issue: issue,
+      symptoms: symptoms || '',
+      fieldSize: 1,
+      location: '',
+      language: 'en'
+    });
+    
+    // Transform API response to match component expectations
+    const data = response.data;
+    
     return {
-      diagnosis: `${issue} detected on ${crop}. This is a common pest/disease that requires immediate attention.`,
-      severity: "Medium",
-      products: ["Imidacloprid 200SL", "Chlorpyrifos 40EC", "Cypermethrin 10EC"],
-      dosage: "200-300ml per acre",
-      applicationMethod: "Foliar spray in early morning or evening. Ensure complete coverage of leaves.",
-      safetyInterval: "14-21 days before harvest",
-      alternatives: ["Thiamethoxam 25WG", "Acetamiprid 20SP"],
-      preventionTips: ["Regular field monitoring", "Remove infected plant material", "Maintain proper plant spacing"],
-      urgency: "Apply within 3-5 days for best results",
+      diagnosis: data.diagnosis,
+      severity: data.severity,
+      products: data.products?.map(p => p.name) || [],
+      dosage: data.products?.[0]?.dosagePerAcre || 'Consult product label',
+      applicationMethod: data.applicationMethod || 'Follow product instructions',
+      safetyInterval: data.safetyInterval || '14 days',
+      alternatives: data.alternatives || [],
+      preventionTips: data.preventionTips || [],
+      urgency: data.urgency || 'Apply as soon as possible',
+      fullProducts: data.products || [], // Keep full product details
     };
+  } catch (error) {
+    console.error('AI Advisory Error:', error);
+    throw error; // Don't use fallback - show error to user
   }
 };
 
@@ -80,14 +72,21 @@ const PestDiagnosis = () => {
   const handleCropSelect = (crop) => { setSelectedCrop(crop); setSelectedIssue(null); setResult(null); setStep(2); };
   const handleIssueSelect = (issue) => { setSelectedIssue(issue); setStep(3); getRecommendation(issue); };
 
+  const [error, setError] = useState(null);
+
   const getRecommendation = async (issue) => {
     setLoading(true);
     setResult(null);
+    setError(null);
     try {
       const data = await askAI(selectedCrop, issue, symptoms);
       setResult(data);
-    } catch { setResult(null); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'Failed to get AI recommendation');
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const reset = () => { setStep(1); setSelectedCrop(null); setSelectedIssue(null); setResult(null); setSymptoms(""); };
@@ -199,6 +198,33 @@ const PestDiagnosis = () => {
                 <p className="text-sm text-slate-500 mt-1">Getting expert recommendations for {selectedIssue} in {selectedCrop}</p>
               </div>
               <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+            </div>
+          ) : error ? (
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <AlertTriangle className="w-7 h-7 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white mb-2">Failed to Get Recommendation</h3>
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-4">{error}</p>
+                  <div className="flex gap-3 justify-center">
+                    <button 
+                      onClick={() => getRecommendation(selectedIssue)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      Try Again
+                    </button>
+                    <button 
+                      onClick={() => { setStep(2); setError(null); }}
+                      className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      Back
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : result ? (
             <div className="space-y-4">
