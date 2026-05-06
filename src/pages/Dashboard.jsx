@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+﻿import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ShoppingCart, Package, AlertTriangle, Users, DollarSign,
   BarChart3, ArrowRight, Zap, Clock, CheckCircle2,
@@ -16,7 +16,6 @@ import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SalesChart from "../components/dashboard/SalesChart";
 import CategoryChart from "../components/dashboard/CategoryChart";
 import OnboardingChecklist from "../components/dashboard/OnboardingChecklist";
-import PWAInstallCard from "../components/dashboard/PWAInstallCard";
 
 const Dashboard = () => {
   const { state, actions } = useApp();
@@ -168,10 +167,6 @@ const Dashboard = () => {
         {canProducts && <QuickActionButton icon={Package}      label="Products"    sub="Manage inventory" color="slate"   onClick={() => navigate("/products")} delay={80} />}
         {canReports  && <QuickActionButton icon={BarChart3}    label="Reports"     sub="View analytics"   color="emerald" onClick={() => navigate("/reports")}  delay={160} />}
       </div>
-
-      {/* PWA install card — shown until installed or dismissed */}
-      <PWAInstallCard />
-
       {!loading && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
         <OnboardingChecklist dashboardData={dashboardData} />
       )}

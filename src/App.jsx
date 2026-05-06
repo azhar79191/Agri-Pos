@@ -3,11 +3,12 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import MobileNav from "./components/MobileNav";
+import MobileHeader from "./components/MobileHeader";
 import Toast from "./components/ui/Toast";
 import ConfirmToast from "./components/ui/ConfirmToast";
 import useKeyboardShortcuts from "./hooks/useKeyboardShortcuts";
 import OfflineBanner from "./components/OfflineBanner";
-import PWAInstallBanner from "./components/PWAInstallBanner";
 import ShopPendingApproval from "./pages/ShopPendingApproval";
 import DemoPOS from "./pages/DemoPOS";
 import { getRoleName } from "./utils/roleUtils";
@@ -104,16 +105,25 @@ const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
+      {/* Desktop sidebar — hidden on mobile */}
       <Sidebar />
+
       <div className="flex-1 flex flex-col min-w-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 mt-16 lg:mt-0">
+        {/* Desktop header — hidden on mobile */}
+        <div className="hidden lg:block">
+          <Header />
+        </div>
+
+        {/* Mobile header — shown only on mobile */}
+        <MobileHeader />
+
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 mt-14 lg:mt-0 pb-safe-nav lg:pb-6">
           <div className="max-w-7xl mx-auto page-enter">
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  {/* Existing routes — preserved as-is */}
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/customers" element={<Customers />} />
@@ -127,46 +137,28 @@ const AppLayout = () => {
                   <Route path="/profile" element={<ProfileSettings />} />
                   <Route path="/shops" element={<ShopManagement />} />
                   <Route path="/customers/:id/statement" element={<CustomerStatement />} />
-
-                  {/* Dashboard subpages */}
                   <Route path="/dashboard/analytics" element={<Analytics />} />
                   <Route path="/dashboard/forecasting" element={<Forecasting />} />
-
-                  {/* Inventory */}
                   <Route path="/inventory/batch-expiry" element={<BatchExpiry />} />
                   <Route path="/inventory/bundles" element={<Bundles />} />
                   <Route path="/inventory/dead-stock" element={<DeadStockAlerts />} />
-
-                  {/* Purchases */}
                   <Route path="/purchases/orders" element={<PurchaseOrders />} />
                   <Route path="/purchases/grn" element={<GoodsReceiving />} />
                   <Route path="/purchases/returns" element={<PurchaseReturns />} />
                   <Route path="/purchases/suppliers" element={<Suppliers />} />
-
-                  {/* Sales */}
                   <Route path="/sales/credit" element={<CreditSales />} />
-
-                  {/* Customers */}
                   <Route path="/customers/dues" element={<CustomerDues />} />
                   <Route path="/customers/history" element={<PurchaseHistory />} />
                   <Route path="/customers/loyalty" element={<Loyalty />} />
-
-                  {/* Recommendations */}
                   <Route path="/recommendations/diagnosis" element={<PestDiagnosis />} />
                   <Route path="/recommendations/dosage" element={<DosageSuggestions />} />
                   <Route path="/recommendations/calendar" element={<CropCalendar />} />
                   <Route path="/recommendations/print" element={<RecommendationPrint />} />
-
-                  {/* Reports */}
                   <Route path="/reports/profit" element={<ProfitReports />} />
                   <Route path="/reports/margin" element={<MarginReports />} />
                   <Route path="/reports/inventory" element={<InventoryReports />} />
                   <Route path="/reports/aging" element={<InvoiceAgingReport />} />
-
-                  {/* Demo */}
                   <Route path="/demo" element={<DemoPOS />} />
-
-                  {/* Staff Hub — all staff routes */}
                   <Route path="/staff" element={<StaffHub />} />
                   <Route path="/staff/sales-reps" element={<StaffHub />} />
                   <Route path="/staff/audit-logs" element={<StaffHub />} />
@@ -174,7 +166,6 @@ const AppLayout = () => {
                   <Route path="/staff/reps" element={<StaffHub />} />
                   <Route path="/staff/audit" element={<StaffHub />} />
                   <Route path="/staff/overview" element={<StaffHub />} />
-
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>
@@ -194,7 +185,9 @@ const AppLayout = () => {
         />
       )}
       <OfflineBanner />
-      <PWAInstallBanner />
+
+      {/* Mobile bottom navigation */}
+      <MobileNav />
     </div>
   );
 };
