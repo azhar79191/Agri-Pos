@@ -79,10 +79,15 @@ export function usePOSCart({ settings, customers }) {
   }, [actions]);
 
   const handleBarcodeScan = useCallback((product) => {
+    // Add to cart regardless of stock — show warning if out of stock but still add
     actions.addToCart(product, 1);
     saveRecentProduct(product);
     setRecentProducts(getRecentProducts());
-    actions.showToast({ message: `${product.name} added to cart`, type: "success" });
+    if (product.stock <= 0) {
+      actions.showToast({ message: `${product.name} added (out of stock — verify)`, type: "warning" });
+    } else {
+      actions.showToast({ message: `${product.name} added to cart`, type: "success" });
+    }
   }, [actions]);
 
   const handleQuickBarcode = useCallback((barcode, products) => {

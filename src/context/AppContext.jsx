@@ -208,10 +208,12 @@ export function AppProvider({ children }) {
     hasPermission: (permission) => hasPermission(stateRef.current.currentUser, permission),
 
     addToCart: (product, quantity = 1) => {
-      if (product.stock < quantity) {
-        // inline toast to avoid circular ref
+      // Always add to cart — backend validates stock on checkout
+      // Only block if stock is explicitly 0 AND product is not a bundle
+      const stock = product.stock ?? 999;
+      if (stock <= 0 && !product.name?.startsWith("[Bundle]")) {
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-        dispatch({ type: A.SHOW_TOAST, payload: { message: "Insufficient stock", type: "error", id: Date.now() } });
+        dispatch({ type: A.SHOW_TOAST, payload: { message: `${product.name} is out of stock`, type: "error", id: Date.now() } });
         toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
         return false;
       }
