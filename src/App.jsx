@@ -54,6 +54,9 @@ const StaffHub          = lazy(() => import("./pages/staff/StaffHub"));
 const PestDiagnosis     = lazy(() => import("./pages/recommendations/EnhancedPestDiagnosis"));
 const DosageSuggestions = lazy(() => import("./pages/recommendations/AdvancedDosageCalculator"));
 const CropCalendar      = lazy(() => import("./pages/recommendations/CropCalendar"));
+const WeatherAdvisory   = lazy(() => import("./pages/recommendations/WeatherAdvisory"));
+const AdvisoryHistory   = lazy(() => import("./pages/recommendations/AdvisoryHistory"));
+const AIStatistics      = lazy(() => import("./pages/recommendations/AIStatistics"));
 const RecommendationPrint = lazy(() => import("./pages/recommendations/RecommendationPrint"));
 const PurchaseHistory   = lazy(() => import("./pages/customers/PurchaseHistory"));
 const Loyalty           = lazy(() => import("./pages/customers/Loyalty"));
@@ -154,6 +157,9 @@ const AppLayout = () => {
                   <Route path="/recommendations/diagnosis" element={<PestDiagnosis />} />
                   <Route path="/recommendations/dosage" element={<DosageSuggestions />} />
                   <Route path="/recommendations/calendar" element={<CropCalendar />} />
+                  <Route path="/recommendations/weather" element={<WeatherAdvisory />} />
+                  <Route path="/recommendations/history" element={<AdvisoryHistory />} />
+                  <Route path="/recommendations/ai-stats" element={<AIStatistics />} />
                   <Route path="/recommendations/print" element={<RecommendationPrint />} />
                   <Route path="/reports/profit" element={<ProfitReports />} />
                   <Route path="/reports/margin" element={<MarginReports />} />

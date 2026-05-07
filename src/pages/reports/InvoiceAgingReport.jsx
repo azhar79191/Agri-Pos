@@ -115,7 +115,7 @@ const InvoiceAgingReport = () => {
             <EmptyState icon={DollarSign} title="No outstanding invoices" description="All credit sales have been paid — great job!" />
           ) : (
             bucketTotals.filter((b) => b.count > 0).map((b) => (
-              <div key={b.label} className={`rounded-xl border overflow-hidden ${b.border}`}>
+              <div key={b.label} className={`rounded-xl border overflow-x-auto sm:overflow-hidden ${b.border}`}>
                 {/* Bucket header */}
                 <div className={`flex items-center justify-between px-5 py-3 ${b.bg}`}>
                   <div className="flex items-center gap-2">

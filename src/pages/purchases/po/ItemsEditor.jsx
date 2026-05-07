@@ -68,7 +68,7 @@ const ItemsEditor = ({ items, setItems }) => {
     <div className="space-y-3">
       {/* Product search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}

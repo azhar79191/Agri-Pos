@@ -32,7 +32,6 @@ export const AdminStep = ({ form, onChange, showPassword, togglePassword, onNext
         <InputField
           label="Password"
           type={showPassword ? "text" : "password"}
-          icon={Lock}
           value={form.password}
           onChange={(e) => onChange("password", e.target.value)}
           placeholder="Min 6 characters"

@@ -38,14 +38,20 @@ export const detectPestFromImage = async (formData) => {
 
 /**
  * Get weather-based farming advisory
- * @param {string} location - Location for weather data
- * @param {string} crop - Crop name (optional)
+ * @param {Object} data - Weather advisory request data
+ * @param {string} data.location - Location for weather data
+ * @param {string} data.crop - Crop name (optional)
+ * @param {Object} data.weatherData - Weather data (optional)
+ * @param {number} data.weatherData.temp - Temperature in Celsius
+ * @param {number} data.weatherData.humidity - Humidity percentage
+ * @param {number} data.weatherData.rainfall - Rainfall in mm
+ * @param {number} data.weatherData.windSpeed - Wind speed in km/h
+ * @param {string} data.weatherData.forecast - Weather forecast description
  * @returns {Promise} Weather advisory with recommendations
  */
-export const getWeatherAdvisory = async (location, crop = null) => {
-  const params = { location };
-  if (crop) params.crop = crop;
-  const response = await API.get('/ai/weather-advisory', { params });
+export const getWeatherAdvisory = async (data) => {
+  // Backend uses POST /api/ai/weather-advisory (not GET)
+  const response = await API.post('/ai/weather-advisory', data);
   return response.data;
 };
 
@@ -60,7 +66,7 @@ export const getWeatherAdvisory = async (location, crop = null) => {
  * @returns {Promise} Dosage recommendations with products and schedule
  */
 export const calculateDosage = async (data) => {
-  const response = await API.post('/ai/dosage-calculator', data);
+  const response = await API.post('/ai/calculate-dosage', data);
   return response.data;
 };
 
@@ -190,7 +196,7 @@ export const getAdvisoryHistory = async (customerId, params = {}) => {
  * @returns {Promise} Paginated advisories list
  */
 export const getAllAdvisories = async (params) => {
-  const response = await API.get('/crop-advisory/all', { params });
+  const response = await API.get('/ai/history', { params });
   return response.data;
 };
 
@@ -223,7 +229,7 @@ export const updateAdvisoryStatus = async (id, data) => {
  * @returns {Promise} Deletion result
  */
 export const deleteAdvisory = async (id) => {
-  const response = await API.delete(`/crop-advisory/${id}`);
+  const response = await API.delete(`/ai/history/${id}`);
   return response.data;
 };
 

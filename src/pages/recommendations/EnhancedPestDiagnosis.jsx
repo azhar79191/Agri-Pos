@@ -33,8 +33,8 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         throw new Error(response.message || 'AI service unavailable');
       }
       
-      // Extract advisory data - handle nested structure
-      const advisory = response.data?.advisory || response.advisory || response.data || response;
+      // Extract detection data - handle nested structure (data.detection for images)
+      const advisory = response.data?.detection || response.detection || response.data?.advisory || response.advisory || response.data || response;
       
       console.log('Image Detection Advisory:', advisory);
       
@@ -729,6 +729,54 @@ const EnhancedPestDiagnosis = () => {
                 {result.urgency && (
                   <div className="flex items-center gap-2 mt-3 text-sm text-red-600 dark:text-red-400 font-semibold">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />{result.urgency}
+                  </div>
+                )}
+                
+                {/* Image Analysis Section */}
+                {result.imageAnalysis && typeof result.imageAnalysis === 'object' && (
+                  <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-300 text-sm mb-3 flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4" />
+                      Image Analysis Details
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      {result.imageAnalysis.symptoms && result.imageAnalysis.symptoms.length > 0 && (
+                        <div>
+                          <span className="font-medium text-blue-800 dark:text-blue-300">Symptoms Detected:</span>
+                          <ul className="ml-4 mt-1 space-y-1">
+                            {result.imageAnalysis.symptoms.map((symptom, idx) => (
+                              <li key={idx} className="text-blue-700 dark:text-blue-400 flex items-start gap-2">
+                                <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                                {symptom}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {result.imageAnalysis.affectedArea && (
+                        <p className="text-blue-700 dark:text-blue-400">
+                          <span className="font-medium text-blue-800 dark:text-blue-300">Affected Area:</span> {result.imageAnalysis.affectedArea}
+                        </p>
+                      )}
+                      {result.imageAnalysis.stage && (
+                        <p className="text-blue-700 dark:text-blue-400">
+                          <span className="font-medium text-blue-800 dark:text-blue-300">Disease Stage:</span> {result.imageAnalysis.stage}
+                        </p>
+                      )}
+                      {result.imageAnalysis.visualIndicators && result.imageAnalysis.visualIndicators.length > 0 && (
+                        <div>
+                          <span className="font-medium text-blue-800 dark:text-blue-300">Visual Indicators:</span>
+                          <ul className="ml-4 mt-1 space-y-1">
+                            {result.imageAnalysis.visualIndicators.map((indicator, idx) => (
+                              <li key={idx} className="text-blue-700 dark:text-blue-400 flex items-start gap-2">
+                                <span className="w-1 h-1 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                                {indicator}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

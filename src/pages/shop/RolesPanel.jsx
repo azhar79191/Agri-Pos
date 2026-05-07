@@ -56,12 +56,12 @@ const RolesPanel = () => (
     {/* Permission matrix */}
     <ShopCard title="Permission Matrix" desc="What each role can access in the system" noPad>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm overflow-x-auto ">
           <thead>
             <tr className="bg-slate-50 dark:bg-slate-800">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Permission</th>
+              <th className="text-left px-2 sm:px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Permission</th>
               {ROLES.map(r => (
-                <th key={r.name} className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <th key={r.name} className="text-center px-2 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   <span className={`px-2.5 py-1 rounded-full ${r.color}`}>{r.name}</span>
                 </th>
               ))}
@@ -70,9 +70,9 @@ const RolesPanel = () => (
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {PERMISSIONS.map(perm => (
               <tr key={perm.key} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                <td className="px-5 py-3 text-sm font-medium text-slate-700 dark:text-slate-300">{perm.label}</td>
+                <td className="px-2 sm:px-5 py-3 text-sm font-medium text-slate-700 dark:text-slate-300">{perm.label}</td>
                 {ROLES.map(role => (
-                  <td key={role.name} className="px-4 py-3 text-center">
+                  <td key={role.name} className="px-2 sm:px-4 py-3 text-center">
                     {role.perms.includes(perm.key)
                       ? <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/20"><Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /></div>
                       : <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800"><X className="w-3.5 h-3.5 text-slate-400" /></div>}

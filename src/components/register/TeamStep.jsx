@@ -20,7 +20,7 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
               </button>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
               value={m.name}
               onChange={(e) => onUpdate(i, "name", e.target.value)}
@@ -63,7 +63,7 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
       <Plus className="w-4 h-4" /> Add another member
     </button>
 
-    <div className="flex gap-3 mt-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
       <button
         onClick={onBack}
         className="flex items-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"

@@ -4,6 +4,7 @@ import {
   Calendar, Zap, PackagePlus, ShoppingBag, ClipboardCheck,
   RotateCcw, Beaker, Printer, CreditCard, Wallet,
   History, Award, Shield, TrendingUp, DollarSign, PieChart, Clock,
+  Cloud, Activity,
 } from "lucide-react";
 
 /**
@@ -62,6 +63,9 @@ export const MENU_GROUPS = [
     children: [
       { id: "recommendations/diagnosis", label: "AI Pest Diagnosis", icon: Bug },
       { id: "recommendations/dosage",    label: "Dosage Calculator", icon: Beaker },
+      { id: "recommendations/weather",   label: "Weather Advisory",  icon: Cloud },
+      { id: "recommendations/history",   label: "Advisory History",  icon: History },
+      { id: "recommendations/ai-stats",  label: "AI Statistics",     icon: Activity },
       { id: "recommendations/calendar",  label: "Crop Calendar",     icon: Calendar },
       { id: "recommendations/print",     label: "Print Advisory",    icon: Printer },
     ],

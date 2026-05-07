@@ -59,7 +59,7 @@ const TeamPanel = ({ shopId }) => {
           )
         }>
         {loading ? (
-          <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
+          <div className="flex  items-center justify-center py-10 gap-2 text-slate-400">
             <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading team...</span>
           </div>
         ) : (
@@ -77,7 +77,7 @@ const TeamPanel = ({ shopId }) => {
               const RIcon = rc.icon;
               const initial = u.name?.[0]?.toUpperCase() || "U";
               return (
-                <div key={u._id} className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+                <div key={u._id} className="flex flex-wrap sm:flex-row items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
                     <span className="text-white font-bold text-sm">{initial}</span>
                   </div>

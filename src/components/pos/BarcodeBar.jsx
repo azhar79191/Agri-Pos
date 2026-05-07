@@ -35,7 +35,7 @@ const BarcodeBar = ({ value, onChange, onSubmit, inputRef }) => {
               animate={{ color: focused ? "#10b981" : "#94a3b8" }}
               className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
             >
-              <Barcode className="w-5 h-5" />
+              <Barcode className="w-5 h-5 hidden sm:block" />
             </motion.div>
             <input
               ref={inputRef}
