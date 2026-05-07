@@ -4,7 +4,7 @@
   "description": "Premium point-of-sale solution for agricultural pesticide retailers. Manage inventory, sales, customers, and grow your agri business with AI-powered insights.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
+  "background_color": "#1e293b",
   "theme_color": "#3B82F6",
   "orientation": "portrait-primary",
   "scope": "/",
