@@ -19,13 +19,21 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       formData.append('symptoms', symptoms || '');
       if (location) formData.append('location', location);
       
+      console.log('🔍 Sending image detection request:', {
+        crop,
+        hasImage: !!imageFile,
+        imageSize: imageFile?.size,
+        symptoms: symptoms || 'none',
+        location: location || 'none'
+      });
+      
       const response = await detectPestFromImage(formData);
       
       // Safe logging - stringify to avoid circular reference errors
       try {
-        console.log('Image Detection Full Response:', JSON.stringify(response, null, 2));
+        console.log('✅ Image Detection Full Response:', JSON.stringify(response, null, 2));
       } catch (logError) {
-        console.log('Image Detection Response (could not stringify):', response);
+        console.log('✅ Image Detection Response (could not stringify):', response);
       }
       
       // Check if API returned an error
@@ -36,7 +44,7 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       // Extract detection data - handle nested structure (data.detection for images)
       const advisory = response.data?.detection || response.detection || response.data?.advisory || response.advisory || response.data || response;
       
-      console.log('Image Detection Advisory:', advisory);
+      console.log('📊 Image Detection Advisory:', advisory);
       
       // Transform response
       return {
@@ -61,20 +69,26 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       };
     } else {
       // Text-based advisory
-      const response = await getCropAdvisory({
+      const requestData = {
         crop: crop.toLowerCase(),
         issue: issue,
         symptoms: symptoms || '',
-        fieldSize: fieldSize || 1,
+        fieldSize: Number(fieldSize) || 1,
         location: location || '',
         language: 'en'
-      });
+      };
+      
+      console.log('🔍 Sending text advisory request:', requestData);
+      console.log('🔑 Token present:', !!localStorage.getItem('token'));
+      console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL);
+      
+      const response = await getCropAdvisory(requestData);
       
       // Safe logging - stringify to avoid circular reference errors
       try {
-        console.log('Text Advisory Full Response:', JSON.stringify(response, null, 2));
+        console.log('✅ Text Advisory Full Response:', JSON.stringify(response, null, 2));
       } catch (logError) {
-        console.log('Text Advisory Response (could not stringify):', response);
+        console.log('✅ Text Advisory Response (could not stringify):', response);
       }
       
       // Check if API returned an error
@@ -85,7 +99,7 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       // Extract advisory data - handle nested structure
       const advisory = response.data?.advisory || response.advisory || response.data || response;
       
-      console.log('Text Advisory Advisory:', advisory);
+      console.log('📊 Text Advisory Advisory:', advisory);
       
       return {
         diagnosis: advisory.diagnosis || 'No diagnosis available',
@@ -108,14 +122,38 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       };
     }
   } catch (error) {
-    console.error('AI Advisory Error:', error);
-    console.error('Error Response:', error.response?.data);
+    console.error('❌ AI Advisory Error:', error);
+    console.error('❌ Error Response Data:', error.response?.data);
+    console.error('❌ Error Response Status:', error.response?.status);
+    console.error('❌ Error Response Headers:', error.response?.headers);
+    console.error('❌ Full Error Object:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      } : 'No response'
+    });
     
-    // Extract error message
-    const errorMessage = error.message 
-      || error.response?.data?.message 
-      || error.response?.data?.error?.message
-      || 'Failed to get AI recommendation';
+    // Extract error message with better fallbacks
+    let errorMessage = 'Failed to get AI recommendation';
+    
+    if (error.response?.data) {
+      const data = error.response.data;
+      errorMessage = data.message 
+        || data.error?.message 
+        || data.error 
+        || errorMessage;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    // Add status code to error message if available
+    if (error.response?.status) {
+      errorMessage = `[${error.response.status}] ${errorMessage}`;
+    }
     
     throw new Error(errorMessage);
   }
@@ -165,8 +203,11 @@ const EnhancedPestDiagnosis = () => {
     try {
       const data = await askAI(selectedCrop, issue, symptoms, uploadedImage, fieldSize, location);
       setResult(data);
+      setError(null);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to get AI recommendation');
+      console.error('🔴 getRecommendation error:', err);
+      const errorMsg = err.message || err.response?.data?.message || 'Failed to get AI recommendation';
+      setError(errorMsg);
       setResult(null);
     } finally {
       setLoading(false);
@@ -600,7 +641,7 @@ const EnhancedPestDiagnosis = () => {
                 <MapPin className="w-4 h-4 text-emerald-500" />
                 Field Size (acres)
               </label>
-              <input type="number" value={fieldSize} onChange={e => setFieldSize(e.target.value)} min="0.1" step="0.5"
+              <input type="number" value={fieldSize} onChange={e => setFieldSize(Number(e.target.value) || 1)} min="0.1" step="0.5"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">

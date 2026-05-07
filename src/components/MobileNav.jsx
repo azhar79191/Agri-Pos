@@ -65,10 +65,11 @@ const MORE_SECTIONS = [
     label: "Crop Advisory",
     color: "green",
     items: [
-      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis",  icon: Bug,      path: "/recommendations/diagnosis", permission: "products" },
-      { id: "recommendations/dosage",    label: "Dosage Calculator",  icon: Beaker,   path: "/recommendations/dosage",    permission: "products" },
-      { id: "recommendations/calendar",  label: "Crop Calendar",      icon: Calendar, path: "/recommendations/calendar",  permission: "products" },
-      { id: "recommendations/print",     label: "Print Advisory",     icon: Printer,  path: "/recommendations/print",     permission: "products" },
+      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis",  icon: Bug,         path: "/recommendations/diagnosis",  permission: "products" },
+      { id: "recommendations/dosage",    label: "Dosage Calculator",  icon: Beaker,      path: "/recommendations/dosage",     permission: "products" },
+      { id: "recommendations/calendar",  label: "Crop Calendar",      icon: Calendar,    path: "/recommendations/calendar",   permission: "products" },
+      { id: "recommendations/print",     label: "Print Advisory",     icon: Printer,     path: "/recommendations/print",      permission: "products" },
+      { id: "recommendations/statistics",label: "AI Statistics",      icon: TrendingUp,  path: "/recommendations/statistics", permission: "reports"  },
     ],
   },
   {
@@ -151,7 +152,7 @@ const MobileNav = () => {
     actions.showToast({
       message: "Are you sure you want to logout?",
       type: "warning", position: "center", isConfirm: true,
-      onConfirm: () => { actions.logout(); navigate("/"); },
+      onConfirm: () => { actions.logout(); navigate("/login"); },
     });
   };
 

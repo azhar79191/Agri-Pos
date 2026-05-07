@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Shield, Store, Users, CheckCircle, XCircle, Clock,
   TrendingUp, Trash2, RefreshCw, Eye, EyeOff,
@@ -399,6 +400,7 @@ const SuspendModal = ({ shop, onClose, onSave }) => {
 /* ── Main dashboard ── */
 const SuperAdminDashboard = () => {
   const { actions } = useApp();
+  const navigate = useNavigate();
   const [stats, setStats]             = useState(null);
   const [shops, setShops]             = useState([]);
   const [loading, setLoading]         = useState(true);
@@ -458,7 +460,7 @@ const SuperAdminDashboard = () => {
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={() => actions.logout()} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors text-sm font-semibold">
+          <button onClick={() => { actions.logout(); navigate("/login"); }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors text-sm font-semibold">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>

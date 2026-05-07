@@ -2,17 +2,54 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 60000, // 60 seconds timeout for AI requests
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) req.headers.Authorization = `Bearer ${token}`;
+  
+  // Log request details for debugging
+  console.log('📤 Axios Request:', {
+    method: req.method?.toUpperCase(),
+    url: req.baseURL + req.url,
+    headers: {
+      ...req.headers,
+      Authorization: req.headers.Authorization ? `Bearer ${req.headers.Authorization.substring(7, 20)}...` : 'None'
+    },
+    data: req.data
+  });
+  
   return req;
 });
 
 API.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Log successful response
+    console.log('📥 Axios Response:', {
+      status: res.status,
+      statusText: res.statusText,
+      url: res.config.url,
+      data: res.data
+    });
+    return res;
+  },
   (error) => {
+    // Log error details
+    console.error('❌ Axios Error:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      responseData: error.response?.data,
+      isTimeout: error.code === 'ECONNABORTED',
+      isNetworkError: error.message === 'Network Error'
+    });
+    
     const status = error.response?.status;
     const code   = error.response?.data?.code;
 
