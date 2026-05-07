@@ -11,6 +11,7 @@ import useKeyboardShortcuts from "./hooks/useKeyboardShortcuts";
 import OfflineBanner from "./components/OfflineBanner";
 import ShopPendingApproval from "./pages/ShopPendingApproval";
 import DemoPOS from "./pages/DemoPOS";
+import SplashScreen from "./components/SplashScreen";
 import { getRoleName } from "./utils/roleUtils";
 import API from "./api/axios";
 
@@ -315,6 +316,33 @@ const AppContent = () => {
 };
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [appReady, setAppReady] = useState(false);
+
+  useEffect(() => {
+    // Check if splash was already shown in this session
+    const splashShown = sessionStorage.getItem('splashShown');
+    
+    if (splashShown) {
+      setShowSplash(false);
+      setAppReady(true);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('splashShown', 'true');
+    setShowSplash(false);
+    setAppReady(true);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
+  if (!appReady) {
+    return null;
+  }
+
   return (
     <AppProvider>
       <AppContent />
