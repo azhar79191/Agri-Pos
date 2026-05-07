@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Sprout, Sparkles, TrendingUp, Shield } from "lucide-react";
 
 /**
- * SplashScreen - Premium animated splash screen with three-color design
+ * SplashScreen - Premium animated splash screen with three-color horizontal design
  * Shows on app load with smooth animations
  */
 const SplashScreen = ({ onComplete }) => {
@@ -34,11 +34,11 @@ const SplashScreen = ({ onComplete }) => {
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
-      {/* Three-Color Background Panels */}
-      <div className="absolute inset-0 flex">
-        {/* Panel 1 - Blue */}
+      {/* Three-Color Horizontal Background Panels - Side by Side */}
+      <div className="absolute inset-0 flex flex-row">
+        {/* Panel 1 - Blue (Left - 1/3 width, full height) */}
         <div
-          className="flex-1 bg-gradient-to-br from-blue-600 to-blue-700 relative overflow-hidden"
+          className="w-1/3 h-full bg-gradient-to-br from-blue-600 to-blue-700 relative overflow-hidden"
           style={{
             animation: "slideInLeft 0.8s ease-out",
           }}
@@ -48,9 +48,9 @@ const SplashScreen = ({ onComplete }) => {
           <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "0.5s" }} />
         </div>
 
-        {/* Panel 2 - Purple */}
+        {/* Panel 2 - Purple (Center - 1/3 width, full height) */}
         <div
-          className="flex-1 bg-gradient-to-br from-purple-600 to-purple-700 relative overflow-hidden"
+          className="w-1/3 h-full bg-gradient-to-br from-purple-600 to-purple-700 relative overflow-hidden"
           style={{
             animation: "slideInUp 0.8s ease-out 0.2s both",
           }}
@@ -60,9 +60,9 @@ const SplashScreen = ({ onComplete }) => {
           <div className="absolute bottom-1/4 left-1/3 w-44 h-44 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "0.8s" }} />
         </div>
 
-        {/* Panel 3 - Cyan */}
+        {/* Panel 3 - Cyan (Right - 1/3 width, full height) */}
         <div
-          className="flex-1 bg-gradient-to-br from-cyan-600 to-cyan-700 relative overflow-hidden"
+          className="w-1/3 h-full bg-gradient-to-br from-cyan-600 to-cyan-700 relative overflow-hidden"
           style={{
             animation: "slideInRight 0.8s ease-out 0.4s both",
           }}

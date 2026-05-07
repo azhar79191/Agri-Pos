@@ -316,31 +316,19 @@ const AppContent = () => {
 };
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [appReady, setAppReady] = useState(false);
-
-  useEffect(() => {
+  const [showSplash, setShowSplash] = useState(() => {
     // Check if splash was already shown in this session
-    const splashShown = sessionStorage.getItem('splashShown');
-    
-    if (splashShown) {
-      setShowSplash(false);
-      setAppReady(true);
-    }
-  }, []);
+    const splashShown = sessionStorage.getItem('splashShown_v2');
+    return !splashShown;
+  });
 
   const handleSplashComplete = () => {
-    sessionStorage.setItem('splashShown', 'true');
+    sessionStorage.setItem('splashShown_v2', 'true');
     setShowSplash(false);
-    setAppReady(true);
   };
 
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;
-  }
-
-  if (!appReady) {
-    return null;
   }
 
   return (

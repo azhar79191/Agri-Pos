@@ -20,23 +20,31 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       if (location) formData.append('location', location);
       
       const response = await detectPestFromImage(formData);
-      const data = response.data;
+      // Extract advisory data - handle nested structure
+      const advisory = response.data?.data?.advisory || response.data?.advisory || response.data?.data || response.data;
+      
+      console.log('Image Detection Response:', advisory);
       
       // Transform response
       return {
-        diagnosis: data.diagnosis,
-        severity: data.severity,
-        detectedIssue: data.detectedIssue,
-        confidence: data.confidence,
-        products: data.products?.map(p => p.name) || [],
-        dosage: data.products?.[0]?.dosagePerAcre || 'Consult product label',
-        applicationMethod: data.applicationMethod || 'Follow product instructions',
-        safetyInterval: data.safetyInterval || '14 days',
-        alternatives: data.alternatives || [],
-        preventionTips: data.preventionTips || [],
-        urgency: data.urgency || 'Apply as soon as possible',
-        imageAnalysis: data.imageAnalysis,
-        fullProducts: data.products || [],
+        diagnosis: advisory.diagnosis || 'No diagnosis available',
+        severity: advisory.severity || 'Medium',
+        detectedIssue: advisory.detectedIssue || 'Detected Issue',
+        confidence: advisory.confidence || 0,
+        products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
+        dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
+        applicationMethod: advisory.applicationMethod || 'Follow product instructions',
+        safetyInterval: advisory.safetyInterval || '14-21 days',
+        alternatives: advisory.alternatives || [],
+        preventionTips: advisory.preventionTips || [],
+        urgency: advisory.urgency || 'Apply as soon as possible',
+        bestTimeToApply: advisory.bestTimeToApply || '',
+        safetyPrecautions: advisory.safetyPrecautions || [],
+        imageAnalysis: advisory.imageAnalysis || '',
+        fullProducts: advisory.products || [],
+        cached: advisory.cached || false,
+        responseTime: advisory.responseTime || 0,
+        source: advisory.source || 'ai',
       };
     } else {
       // Text-based advisory
@@ -49,23 +57,34 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         language: 'en'
       });
       
-      const data = response.data;
+      // Extract advisory data - handle nested structure
+      const advisory = response.data?.data?.advisory || response.data?.advisory || response.data?.data || response.data;
+      
+      console.log('Text Advisory Response:', advisory);
       
       return {
-        diagnosis: data.diagnosis,
-        severity: data.severity,
-        products: data.products?.map(p => p.name) || [],
-        dosage: data.products?.[0]?.dosagePerAcre || 'Consult product label',
-        applicationMethod: data.applicationMethod || 'Follow product instructions',
-        safetyInterval: data.safetyInterval || '14 days',
-        alternatives: data.alternatives || [],
-        preventionTips: data.preventionTips || [],
-        urgency: data.urgency || 'Apply as soon as possible',
-        fullProducts: data.products || [],
+        diagnosis: advisory.diagnosis || 'No diagnosis available',
+        severity: advisory.severity || 'Medium',
+        detectedIssue: advisory.detectedIssue || issue,
+        confidence: advisory.confidence || 0,
+        products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
+        dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
+        applicationMethod: advisory.applicationMethod || 'Follow product instructions',
+        safetyInterval: advisory.safetyInterval || '14-21 days',
+        alternatives: advisory.alternatives || [],
+        preventionTips: advisory.preventionTips || [],
+        urgency: advisory.urgency || 'Apply as soon as possible',
+        bestTimeToApply: advisory.bestTimeToApply || '',
+        safetyPrecautions: advisory.safetyPrecautions || [],
+        fullProducts: advisory.products || [],
+        cached: advisory.cached || false,
+        responseTime: advisory.responseTime || 0,
+        source: advisory.source || 'ai',
       };
     }
   } catch (error) {
     console.error('AI Advisory Error:', error);
+    console.error('Error Response:', error.response?.data);
     throw error; // Don't use fallback - show error to user
   }
 };
@@ -357,6 +376,19 @@ const EnhancedPestDiagnosis = () => {
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedIssue}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">Crop: {cropData?.name} • Field: {fieldSize} acre(s)</p>
+                    {result.confidence > 0 && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden max-w-[200px]">
+                          <div 
+                            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-500"
+                            style={{ width: `${result.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          {(result.confidence * 100).toFixed(0)}% confidence
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <SeverityBadge severity={result.severity} />
@@ -380,19 +412,42 @@ const EnhancedPestDiagnosis = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                     <FlaskConical className="w-4 h-4 text-emerald-500" />Recommended Products
                   </h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {(result.products || []).map(p => (
-                      <span key={p} className="px-3 py-1.5 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">{p}</span>
-                    ))}
-                  </div>
+                  
+                  {/* Display full product details if available */}
+                  {result.fullProducts && result.fullProducts.length > 0 && typeof result.fullProducts[0] === 'object' ? (
+                    <div className="space-y-3 mb-4">
+                      {result.fullProducts.map((product, idx) => (
+                        <div key={idx} className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                          <p className="font-bold text-emerald-900 dark:text-emerald-300 text-sm mb-1">{product.name}</p>
+                          {product.activeIngredient && (
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mb-1">
+                              Active: {product.activeIngredient}
+                            </p>
+                          )}
+                          {product.dosagePerAcre && (
+                            <p className="text-xs text-emerald-600 dark:text-emerald-500">
+                              Dosage: {product.dosagePerAcre}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(result.products || []).map((p, idx) => (
+                        <span key={idx} className="px-3 py-1.5 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">{p}</span>
+                      ))}
+                    </div>
+                  )}
+                  
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
                       <p className="text-xs text-slate-400 mb-1">Dosage</p>
                       <p className="font-bold text-slate-900 dark:text-white text-sm">{result.dosage}</p>
                     </div>
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
-                      <p className="text-xs text-slate-400 mb-1 flex items-center gap-1"><Clock className="w-3 h-3" />Safety</p>
-                      <p className="font-bold text-slate-900 dark:text-white text-sm">{result.safetyInterval}</p>
+                      <p className="text-xs text-slate-400 mb-1 flex items-center gap-1"><Clock className="w-3 h-3" />Safety Interval</p>
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">{result.safetyInterval} days</p>
                     </div>
                   </div>
                   {result.applicationMethod && (
@@ -401,7 +456,15 @@ const EnhancedPestDiagnosis = () => {
                       <p className="text-xs text-blue-600 dark:text-blue-300">{result.applicationMethod}</p>
                     </div>
                   )}
-                  {fieldSize > 0 && (
+                  {result.bestTimeToApply && (
+                    <div className="mt-3 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+                      <p className="text-xs font-semibold text-purple-700 dark:text-purple-400 mb-1 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />Best Time to Apply
+                      </p>
+                      <p className="text-xs text-purple-600 dark:text-purple-300">{result.bestTimeToApply}</p>
+                    </div>
+                  )}
+                  {fieldSize > 0 && result.fullProducts?.[0]?.dosagePerAcre && (
                     <div className="mt-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
                       <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1"><DollarSign className="w-3 h-3" />Estimated Cost</p>
                       <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">PKR {(fieldSize * 850).toFixed(0)}</p>
@@ -443,7 +506,10 @@ const EnhancedPestDiagnosis = () => {
                   <AlertTriangle className="w-4 h-4" />Safety Precautions
                 </h3>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {SAFETY_PRECAUTIONS.slice(0, 6).map((tip, i) => (
+                  {(result.safetyPrecautions && result.safetyPrecautions.length > 0 
+                    ? result.safetyPrecautions 
+                    : SAFETY_PRECAUTIONS.slice(0, 6)
+                  ).map((tip, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
                       <span className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
                       {tip}
@@ -463,6 +529,29 @@ const EnhancedPestDiagnosis = () => {
                   <Printer className="w-4 h-4" />Save & Print
                 </button>
               </div>
+
+              {/* AI Response Metadata */}
+              {(result.source || result.responseTime > 0 || result.cached) && (
+                <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
+                  {result.source && (
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Powered by {result.source}
+                    </span>
+                  )}
+                  {result.responseTime > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {(result.responseTime / 1000).toFixed(1)}s
+                    </span>
+                  )}
+                  {result.cached && (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium">
+                      Cached
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
