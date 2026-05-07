@@ -50,7 +50,18 @@ const POS = () => {
   useEffect(() => {
     fetchProducts();
     fetchCustomers();
-    getSalesReps({ status: "active", limit: 100 }).then((res) => setSalesReps(res.data.data.reps || [])).catch(() => {});
+    // Fetch sales reps with better error handling and data extraction
+    getSalesReps({ status: "active", limit: 100 })
+      .then((res) => {
+        console.log('Sales Reps Response:', res);
+        const reps = res.data?.data?.reps || res.data?.reps || res.data || [];
+        console.log('Extracted Sales Reps:', reps);
+        setSalesReps(reps);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch sales reps:', err);
+        setSalesReps([]);
+      });
     getBundles({ isActive: true, limit: 100 }).then((res) => setBundles(res.data.data.bundles || [])).catch(() => {});
   }, []); // eslint-disable-line
 
