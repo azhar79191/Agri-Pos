@@ -20,10 +20,18 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       if (location) formData.append('location', location);
       
       const response = await detectPestFromImage(formData);
-      // Extract advisory data - handle nested structure
-      const advisory = response.data?.data?.advisory || response.data?.advisory || response.data?.data || response.data;
       
-      console.log('Image Detection Response:', advisory);
+      console.log('Image Detection Full Response:', response);
+      
+      // Check if API returned an error
+      if (response.success === false) {
+        throw new Error(response.message || 'AI service unavailable');
+      }
+      
+      // Extract advisory data - handle nested structure
+      const advisory = response.data?.advisory || response.advisory || response.data || response;
+      
+      console.log('Image Detection Advisory:', advisory);
       
       // Transform response
       return {
@@ -57,10 +65,17 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         language: 'en'
       });
       
-      // Extract advisory data - handle nested structure
-      const advisory = response.data?.data?.advisory || response.data?.advisory || response.data?.data || response.data;
+      console.log('Text Advisory Full Response:', response);
       
-      console.log('Text Advisory Response:', advisory);
+      // Check if API returned an error
+      if (response.success === false) {
+        throw new Error(response.message || 'AI service unavailable');
+      }
+      
+      // Extract advisory data - handle nested structure
+      const advisory = response.data?.advisory || response.advisory || response.data || response;
+      
+      console.log('Text Advisory Advisory:', advisory);
       
       return {
         diagnosis: advisory.diagnosis || 'No diagnosis available',
@@ -85,7 +100,14 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
   } catch (error) {
     console.error('AI Advisory Error:', error);
     console.error('Error Response:', error.response?.data);
-    throw error; // Don't use fallback - show error to user
+    
+    // Extract error message
+    const errorMessage = error.message 
+      || error.response?.data?.message 
+      || error.response?.data?.error?.message
+      || 'Failed to get AI recommendation';
+    
+    throw new Error(errorMessage);
   }
 };
 
