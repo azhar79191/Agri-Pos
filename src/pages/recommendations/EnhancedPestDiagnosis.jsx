@@ -21,7 +21,12 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       
       const response = await detectPestFromImage(formData);
       
-      console.log('Image Detection Full Response:', response);
+      // Safe logging - stringify to avoid circular reference errors
+      try {
+        console.log('Image Detection Full Response:', JSON.stringify(response, null, 2));
+      } catch (logError) {
+        console.log('Image Detection Response (could not stringify):', response);
+      }
       
       // Check if API returned an error
       if (response.success === false) {
@@ -65,7 +70,12 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         language: 'en'
       });
       
-      console.log('Text Advisory Full Response:', response);
+      // Safe logging - stringify to avoid circular reference errors
+      try {
+        console.log('Text Advisory Full Response:', JSON.stringify(response, null, 2));
+      } catch (logError) {
+        console.log('Text Advisory Response (could not stringify):', response);
+      }
       
       // Check if API returned an error
       if (response.success === false) {
@@ -194,6 +204,300 @@ const EnhancedPestDiagnosis = () => {
     setImagePreview(null);
     setFieldSize(1);
     setLocation("");
+  };
+
+  const handlePrint = () => {
+    // Create a printable version of the advisory
+    const printWindow = window.open('', '_blank');
+    const cropData = CROPS.find(c => c.id === selectedCrop);
+    
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>AgriNest - Crop Advisory Report</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 40px; 
+              line-height: 1.6;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 3px solid #3B82F6;
+              padding-bottom: 20px;
+            }
+            .header h1 { 
+              color: #3B82F6; 
+              font-size: 28px;
+              margin-bottom: 5px;
+            }
+            .header p { 
+              color: #666; 
+              font-size: 14px;
+            }
+            .section {
+              margin-bottom: 25px;
+              page-break-inside: avoid;
+            }
+            .section-title {
+              font-size: 18px;
+              font-weight: bold;
+              color: #1e293b;
+              margin-bottom: 10px;
+              padding-bottom: 5px;
+              border-bottom: 2px solid #e2e8f0;
+            }
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 15px;
+              margin-bottom: 20px;
+            }
+            .info-item {
+              background: #f8fafc;
+              padding: 12px;
+              border-radius: 8px;
+              border-left: 3px solid #3B82F6;
+            }
+            .info-label {
+              font-size: 12px;
+              color: #64748b;
+              font-weight: 600;
+              text-transform: uppercase;
+              margin-bottom: 4px;
+            }
+            .info-value {
+              font-size: 16px;
+              color: #1e293b;
+              font-weight: 600;
+            }
+            .diagnosis-box {
+              background: #fef3c7;
+              border: 2px solid #f59e0b;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+            }
+            .product-card {
+              background: #f0fdf4;
+              border: 1px solid #86efac;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 10px;
+            }
+            .product-name {
+              font-size: 16px;
+              font-weight: bold;
+              color: #166534;
+              margin-bottom: 5px;
+            }
+            .product-detail {
+              font-size: 14px;
+              color: #15803d;
+              margin: 3px 0;
+            }
+            ul {
+              list-style: none;
+              padding-left: 0;
+            }
+            li {
+              padding: 8px 0;
+              padding-left: 25px;
+              position: relative;
+            }
+            li:before {
+              content: "✓";
+              position: absolute;
+              left: 0;
+              color: #10b981;
+              font-weight: bold;
+            }
+            .badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: bold;
+              margin-right: 8px;
+            }
+            .badge-medium { background: #fef3c7; color: #92400e; }
+            .badge-high { background: #fee2e2; color: #991b1b; }
+            .badge-low { background: #d1fae5; color: #065f46; }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #e2e8f0;
+              text-align: center;
+              font-size: 12px;
+              color: #64748b;
+            }
+            .confidence-bar {
+              background: #e2e8f0;
+              height: 20px;
+              border-radius: 10px;
+              overflow: hidden;
+              margin-top: 5px;
+            }
+            .confidence-fill {
+              background: linear-gradient(to right, #10b981, #059669);
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-size: 12px;
+              font-weight: bold;
+            }
+            @media print {
+              body { padding: 20px; }
+              .section { page-break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🌾 AgriNest Crop Advisory Report</h1>
+            <p>AI-Powered Pest & Disease Diagnosis</p>
+            <p style="margin-top: 10px;">Generated on ${new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Crop</div>
+              <div class="info-value">${cropData?.name || selectedCrop}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Issue Detected</div>
+              <div class="info-value">${selectedIssue}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Field Size</div>
+              <div class="info-value">${fieldSize} acre(s)</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Location</div>
+              <div class="info-value">${location || 'Not specified'}</div>
+            </div>
+          </div>
+
+          ${result.confidence > 0 ? `
+            <div class="section">
+              <div class="section-title">AI Confidence</div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: ${result.confidence * 100}%">
+                  ${(result.confidence * 100).toFixed(0)}% Confident
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="section">
+            <div class="section-title">Diagnosis</div>
+            <div class="diagnosis-box">
+              <span class="badge badge-${result.severity?.toLowerCase() || 'medium'}">${result.severity || 'Medium'} Severity</span>
+              <p style="margin-top: 10px;">${result.diagnosis}</p>
+            </div>
+            ${result.urgency ? `<p style="color: #dc2626; font-weight: bold;">⚠️ ${result.urgency}</p>` : ''}
+          </div>
+
+          <div class="section">
+            <div class="section-title">Recommended Products</div>
+            ${result.fullProducts && result.fullProducts.length > 0 ? 
+              result.fullProducts.map(product => `
+                <div class="product-card">
+                  <div class="product-name">${product.name || product}</div>
+                  ${product.activeIngredient ? `<div class="product-detail">Active Ingredient: ${product.activeIngredient}</div>` : ''}
+                  ${product.dosagePerAcre ? `<div class="product-detail">Dosage: ${product.dosagePerAcre}</div>` : ''}
+                </div>
+              `).join('') 
+              : 
+              result.products?.map(p => `<div class="product-card"><div class="product-name">${p}</div></div>`).join('')
+            }
+          </div>
+
+          ${result.applicationMethod ? `
+            <div class="section">
+              <div class="section-title">Application Method</div>
+              <p>${result.applicationMethod}</p>
+            </div>
+          ` : ''}
+
+          ${result.bestTimeToApply ? `
+            <div class="section">
+              <div class="section-title">Best Time to Apply</div>
+              <p>🕐 ${result.bestTimeToApply}</p>
+            </div>
+          ` : ''}
+
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Safety Interval</div>
+              <div class="info-value">${result.safetyInterval}</div>
+            </div>
+            ${fieldSize > 0 ? `
+              <div class="info-item">
+                <div class="info-label">Estimated Cost</div>
+                <div class="info-value">PKR ${(fieldSize * 850).toFixed(0)}</div>
+              </div>
+            ` : ''}
+          </div>
+
+          ${result.alternatives && result.alternatives.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Alternative Products</div>
+              <ul>
+                ${result.alternatives.map(alt => `<li>${alt}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${result.preventionTips && result.preventionTips.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Prevention Tips</div>
+              <ul>
+                ${result.preventionTips.map(tip => `<li>${tip}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${result.safetyPrecautions && result.safetyPrecautions.length > 0 ? `
+            <div class="section">
+              <div class="section-title">⚠️ Safety Precautions</div>
+              <ul>
+                ${result.safetyPrecautions.map(precaution => `<li>${precaution}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          <div class="footer">
+            <p><strong>AgriNest POS</strong> - Premium Pesticide Management System</p>
+            <p>Powered by ${result.source || 'AI'} ${result.responseTime ? `• Response Time: ${(result.responseTime / 1000).toFixed(1)}s` : ''}</p>
+            <p style="margin-top: 10px; font-size: 11px;">
+              This advisory is AI-generated and should be used as a guide. Always consult with a certified agronomist for critical decisions.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+    };
   };
 
   const handleImageUpload = (e) => {
@@ -547,7 +851,7 @@ const EnhancedPestDiagnosis = () => {
                 <button onClick={reset} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
                   <Sprout className="w-4 h-4" />New Diagnosis
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                   <Printer className="w-4 h-4" />Save & Print
                 </button>
               </div>
