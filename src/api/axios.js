@@ -8,6 +8,56 @@ const API = axios.create({
   },
 });
 
+// Create a separate instance for auth requests with shorter timeout
+export const AuthAPI = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  timeout: 30000, // 30 seconds timeout for auth requests
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+AuthAPI.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+  if (token) req.headers.Authorization = `Bearer ${token}`;
+  
+  console.log('🔐 Auth Request:', {
+    method: req.method?.toUpperCase(),
+    url: req.baseURL + req.url,
+    timeout: req.timeout + 'ms'
+  });
+  
+  return req;
+});
+
+AuthAPI.interceptors.response.use(
+  (res) => {
+    console.log('✅ Auth Response:', {
+      status: res.status,
+      url: res.config.url
+    });
+    return res;
+  },
+  (error) => {
+    console.error('❌ Auth Error:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      isTimeout: error.code === 'ECONNABORTED',
+      isNetworkError: error.message === 'Network Error'
+    });
+    
+    // Provide better error messages
+    if (error.code === 'ECONNABORTED') {
+      error.message = 'Request timeout. The server is taking too long to respond. Please try again.';
+    } else if (error.message === 'Network Error') {
+      error.message = 'Network error. Please check your internet connection and try again.';
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) req.headers.Authorization = `Bearer ${token}`;
