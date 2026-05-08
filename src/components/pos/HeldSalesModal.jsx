@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PauseCircle, PlayCircle, Trash2, X, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
+import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const STORAGE_KEY = "pos_held_sales";
 
@@ -29,6 +30,9 @@ export const removeHeldSale = (id) => {
 
 const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {
   const [held, setHeld] = useState([]);
+
+  // Lock body scroll when modal is open
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen) setHeld(getHeldSales());

@@ -1,18 +1,21 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const Modal = ({
   isOpen, onClose, title, children, footer = null,
   size = "md", showCloseButton = true,
   closeOnOverlayClick = true, closeOnEsc = true,
 }) => {
+  // Lock body scroll when modal is open
+  useBodyScrollLock(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => { if (e.key === "Escape" && closeOnEsc) onClose(); };
     document.addEventListener("keydown", handler);
-    document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", handler); document.body.style.overflow = ""; };
+    return () => { document.removeEventListener("keydown", handler); };
   }, [isOpen, closeOnEsc, onClose]);
 
   if (!isOpen) return null;

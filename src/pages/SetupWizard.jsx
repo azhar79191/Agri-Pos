@@ -6,6 +6,7 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { createShop } from "../api/shopApi";
 import { registerUser } from "../api/authApi";
+import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const STEPS = [
   { id: 1, label: "Shop Info",  icon: Building2 },
@@ -19,6 +20,9 @@ const SetupWizard = () => {
   const { actions } = useApp();
   const { refreshProfile } = useAuth();
   const navigate = useNavigate();
+
+  // Lock body scroll when wizard is open
+  useBodyScrollLock(true);
 
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);

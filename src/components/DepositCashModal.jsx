@@ -6,6 +6,7 @@ import { useCustomers } from "../context/CustomersContext";
 import { useApp } from "../context/AppContext";
 import { formatCurrency } from "../utils/helpers";
 import { depositCredit, walletDeposit } from "../api/customersApi";
+import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const TAB_DEPOSIT = "deposit"; // clears creditBalance first, excess → walletBalance
 const TAB_WALLET  = "wallet";  // adds directly to walletBalance
@@ -20,6 +21,9 @@ const DepositCashModal = ({ isOpen, onClose }) => {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Lock body scroll when modal is open
+  useBodyScrollLock(isOpen);
 
   const customer = customers.find(c => c._id === selectedCustomer);
   const dep = parseFloat(amount) || 0;

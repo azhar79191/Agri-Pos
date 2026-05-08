@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import ModernButton from "./ModernButton";
+import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const ModernModal = ({
   isOpen, onClose, title, subtitle, children, footer = null,
@@ -9,12 +10,14 @@ const ModernModal = ({
   closeOnOverlayClick = true, closeOnEsc = true,
   icon: Icon = null, iconColor = "blue",
 }) => {
+  // Lock body scroll when modal is open
+  useBodyScrollLock(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => { if (e.key === "Escape" && closeOnEsc) onClose(); };
     document.addEventListener("keydown", handler);
-    document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", handler); document.body.style.overflow = ""; };
+    return () => { document.removeEventListener("keydown", handler); };
   }, [isOpen, closeOnEsc, onClose]);
 
   if (!isOpen) return null;

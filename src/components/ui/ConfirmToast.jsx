@@ -1,5 +1,6 @@
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, Check, X } from "lucide-react";
+import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const ICONS = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info };
 
@@ -13,6 +14,9 @@ const STYLES = {
 const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
   const Icon = ICONS[type] || AlertTriangle;
   const style = STYLES[type] || STYLES.warning;
+
+  // Lock body scroll when confirm toast is open
+  useBodyScrollLock(true);
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 modal-backdrop animate-fade-in">

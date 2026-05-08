@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { UserPlus } from "lucide-react";
+import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 /**
  * QuickAddCustomerModal — lightweight modal for adding a customer directly from POS.
  */
-const QuickAddCustomerModal = ({ form, onChange, onSubmit, onClose, loading }) => (
+const QuickAddCustomerModal = ({ form, onChange, onSubmit, onClose, loading }) => {
+  // Lock body scroll when modal is open
+  useBodyScrollLock(true);
+
+  return (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
     <div
@@ -47,6 +52,7 @@ const QuickAddCustomerModal = ({ form, onChange, onSubmit, onClose, loading }) =
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default QuickAddCustomerModal;

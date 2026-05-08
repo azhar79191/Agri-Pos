@@ -15,6 +15,7 @@ import { CardSkeleton } from "../components/ui/Skeleton";
 import { ConfirmModal } from "../components/ui/ModernModal";
 import Pagination from "../components/ui/Pagination";
 import { isAdminOrManager } from "../utils/roleUtils";
+import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const LIMIT = 12;
 
@@ -37,6 +38,9 @@ const InvoiceManagement = () => {
   const [page, setPage]                 = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showModal, setShowModal]       = useState(false);
+
+  // Lock body scroll when invoice modal is open
+  useBodyScrollLock(showModal);
 
   useEffect(() => { fetchInvoices(); }, []); // eslint-disable-line
 
@@ -188,10 +192,10 @@ const InvoiceManagement = () => {
 
       {/* Invoice view modal */}
       {showModal && selectedInvoice && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 print:hidden" onClick={() => setShowModal(false)}>
+        <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:hidden" onClick={() => setShowModal(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-backdrop" />
           <div 
-            className="relative z-10 w-full max-w-6xl max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in" 
+            className=" z-10 w-full  max-w-6xl flex flex-col overflow-y-auto h-[80vh] rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in" 
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -216,7 +220,7 @@ const InvoiceManagement = () => {
             </div>
             
             {/* Modal Content - Scrollable */}
-            <div className="overflow-y-auto flex-1 modal-content-scroll">
+            <div className="flex-1">
               <Invoice 
                 invoice={selectedInvoice} 
                 settings={settings} 
