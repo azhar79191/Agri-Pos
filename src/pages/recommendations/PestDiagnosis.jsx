@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory } from "../../api/cropAdvisoryApi";
+import FeedbackForm from "../../components/FeedbackForm";
 
 const CROP_LIST = ["Cotton", "Wheat", "Rice", "Sugarcane", "Maize", "Vegetables", "Tomato", "Potato", "Onion", "Mango", "Citrus"];
 
@@ -33,7 +34,11 @@ const askAI = async (crop, issue, symptoms) => {
     // Transform API response to match component expectations
     const data = response.data;
     
+    // Extract advisory ID for feedback form
+    const advisoryId = response.data?.id || response.id || data.id || data._id;
+    
     return {
+      advisoryId: advisoryId,
       diagnosis: data.diagnosis,
       severity: data.severity,
       products: data.products?.map(p => p.name) || [],
@@ -319,6 +324,16 @@ const PestDiagnosis = () => {
                   <Sprout className="w-4 h-4" />New Diagnosis
                 </button>
               </div>
+
+              {/* Feedback Form */}
+              {result.advisoryId && (
+                <FeedbackForm 
+                  advisoryId={result.advisoryId}
+                  onSubmitSuccess={() => {
+                    console.log('Feedback submitted successfully');
+                  }}
+                />
+              )}
             </div>
           ) : (
             <EmptyState icon={Bug} title="Could not get recommendation" description="Please try again" actionLabel="Retry" onAction={() => getRecommendation(selectedIssue)} />

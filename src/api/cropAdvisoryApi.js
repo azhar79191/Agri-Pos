@@ -17,14 +17,14 @@ import API from './axios';
  */
 export const getCropAdvisory = async (data) => {
   try {
-    console.log('🌾 getCropAdvisory called with:', data);
+    console.log(' getCropAdvisory called with:', data);
     const response = await API.post('/ai/crop-advisory', data);
-    console.log('🌾 getCropAdvisory raw response:', response);
-    console.log('🌾 getCropAdvisory response.data:', response.data);
+    console.log(' getCropAdvisory raw response:', response);
+    console.log(' getCropAdvisory response.data:', response.data);
     return response.data;
   } catch (error) {
-    console.error('🌾 getCropAdvisory error:', error);
-    console.error('🌾 getCropAdvisory error.response:', error.response);
+    console.error(' getCropAdvisory error:', error);
+    console.error(' getCropAdvisory error.response:', error.response);
     throw error;
   }
 };
@@ -39,7 +39,7 @@ export const getCropAdvisory = async (data) => {
  * @returns {Promise} Detection result with pest name, confidence, recommendations
  */
 export const detectPestFromImage = async (formData) => {
-  const response = await API.post('/ai/pest-detection', formData, {
+  const response = await API.post('/ai/detect-pest', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
   return response.data;

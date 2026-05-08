@@ -28,6 +28,7 @@ const Sidebar = () => {
   const { currentUser, settings } = state;
   const navigate = useNavigate();
   const location = useLocation();
+  const navRef = React.useRef(null);
 
   const [openGroups, setOpenGroups] = useState(() => {
     const path = location.pathname.replace("/","");
@@ -36,7 +37,19 @@ const Sidebar = () => {
   });
 
   const visible = currentUser ? MENU_GROUPS.filter(g => actions.hasPermission(g.permission)) : [];
-  const go = id => navigate(`/${id}`);
+  
+  const go = id => {
+    // Store current scroll position before navigation
+    const currentScroll = navRef.current?.scrollTop || 0;
+    navigate(`/${id}`);
+    // Restore scroll position after navigation
+    requestAnimationFrame(() => {
+      if (navRef.current) {
+        navRef.current.scrollTop = currentScroll;
+      }
+    });
+  };
+  
   const toggle = id => setOpenGroups(p => ({...p,[id]:!p[id]}));
   const isActive = id => location.pathname.replace(/^\//,"") === id;
   const isGroupActive = g => g.children?.some(c => isActive(c.id));
@@ -55,7 +68,7 @@ const Sidebar = () => {
           <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Agri Management</p>
         </div>
       </div>
-      <nav className="flex-1 overflow-y-auto py-2 mt-5 px-2">
+      <nav className="flex-1 overflow-y-auto py-2 mt-5 px-2" ref={navRef}>
         {visible.map(group => {
           const G = group.icon;
           const ga = isGroupActive(group);

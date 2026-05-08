@@ -5,7 +5,7 @@ import {
   ShoppingBag, Bug, Shield, Building2, Layers, CreditCard,
   Wallet, Award, DollarSign, PieChart, Clock, Calendar,
   PackagePlus, Zap, ClipboardCheck, RotateCcw, Beaker,
-  Printer, History, TrendingUp, LogOut, User, Download,
+  Printer, History, TrendingUp, LogOut, User, Download, Cloud,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -67,9 +67,11 @@ const MORE_SECTIONS = [
     items: [
       { id: "recommendations/diagnosis", label: "AI Pest Diagnosis",  icon: Bug,         path: "/recommendations/diagnosis",  permission: "products" },
       { id: "recommendations/dosage",    label: "Dosage Calculator",  icon: Beaker,      path: "/recommendations/dosage",     permission: "products" },
+      { id: "recommendations/weather",   label: "Weather Advisory",   icon: Cloud,       path: "/recommendations/weather",    permission: "products" },
+      { id: "recommendations/history",   label: "Advisory History",   icon: History,     path: "/recommendations/history",    permission: "products" },
       { id: "recommendations/calendar",  label: "Crop Calendar",      icon: Calendar,    path: "/recommendations/calendar",   permission: "products" },
       { id: "recommendations/print",     label: "Print Advisory",     icon: Printer,     path: "/recommendations/print",      permission: "products" },
-      { id: "recommendations/statistics",label: "AI Statistics",      icon: TrendingUp,  path: "/recommendations/statistics", permission: "reports"  },
+      { id: "recommendations/ai-stats",  label: "AI Statistics",      icon: TrendingUp,  path: "/recommendations/ai-stats",   permission: "reports"  },
     ],
   },
   {
@@ -225,7 +227,7 @@ const MobileNav = () => {
       {/* ── More Sheet ── */}
       <div
         ref={sheetRef}
-        className={`lg:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out ${
+        className={`lg:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
           showMore ? "translate-y-0" : "translate-y-full"
         }`}
         style={{
@@ -233,42 +235,45 @@ const MobileNav = () => {
           paddingBottom: "calc(env(safe-area-inset-bottom) + 70px)",
         }}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-        </div>
+        {/* Sticky Header Section */}
+        <div className="flex-shrink-0 sticky top-0 bg-white dark:bg-slate-900 z-10 rounded-t-3xl">
+          {/* Handle */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+          </div>
 
-        {/* User profile strip */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="relative flex-shrink-0">
-            <UserAvatar user={currentUser} size="w-10 h-10" />
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{currentUser?.name}</p>
-            <p className="text-xs text-slate-400 truncate">{currentUser?.email}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* PWA install */}
-            {!isInstalled && (
+          {/* User profile strip */}
+          <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="relative flex-shrink-0">
+              <UserAvatar user={currentUser} size="w-10 h-10" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-900" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{currentUser?.name}</p>
+              <p className="text-xs text-slate-400 truncate">{currentUser?.email}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* PWA install */}
+              {!isInstalled && (
+                <button
+                  onClick={() => { canInstall ? install() : null; setShowMore(false); }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold"
+                >
+                  <Download className="w-3 h-3" /> Install
+                </button>
+              )}
               <button
-                onClick={() => { canInstall ? install() : null; setShowMore(false); }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold"
+                onClick={() => { go("/profile"); }}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
               >
-                <Download className="w-3 h-3" /> Install
+                <User className="w-4 h-4" />
               </button>
-            )}
-            <button
-              onClick={() => { go("/profile"); }}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-            >
-              <User className="w-4 h-4" />
-            </button>
+            </div>
           </div>
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto" style={{ maxHeight: "calc(82vh - 130px)" }}>
+        <div className="flex-1 overflow-y-auto">
           <div className="px-4 py-3 space-y-5">
             {MORE_SECTIONS.map((section) => {
               const visibleItems = section.items.filter(item => hasPermission(item.permission));

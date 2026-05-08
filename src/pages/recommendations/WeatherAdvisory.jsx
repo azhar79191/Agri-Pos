@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Cloud, MapPin, Thermometer, Droplets, Wind, Sun, CloudRain, AlertTriangle, Loader2, RefreshCw, Calendar, TrendingUp, Sprout, CheckCircle, XCircle } from "lucide-react";
 import { getWeatherAdvisory } from "../../api/cropAdvisoryApi";
 import { CROPS } from "../../data/cropAdvisory";
+import FeedbackForm from "../../components/FeedbackForm";
 
 const WeatherAdvisory = () => {
   const [location, setLocation] = useState("");
@@ -15,6 +16,7 @@ const WeatherAdvisory = () => {
   });
   const [loading, setLoading] = useState(false);
   const [advisory, setAdvisory] = useState(null);
+  const [advisoryId, setAdvisoryId] = useState(null);
   const [error, setError] = useState(null);
 
   const handleGetAdvisory = async () => {
@@ -54,6 +56,10 @@ const WeatherAdvisory = () => {
 
       const data = response.data || response;
       setAdvisory(data);
+      
+      // Extract advisory ID for feedback form
+      const id = response.data?.id || response.id || data.id || data._id;
+      setAdvisoryId(id);
     } catch (err) {
       console.error('Weather Advisory Error:', err);
       
@@ -344,6 +350,16 @@ const WeatherAdvisory = () => {
                 ))}
               </ul>
             </div>
+          )}
+
+          {/* Feedback Form */}
+          {advisoryId && (
+            <FeedbackForm 
+              advisoryId={advisoryId}
+              onSubmitSuccess={() => {
+                console.log('Weather advisory feedback submitted successfully');
+              }}
+            />
           )}
         </div>
       )}

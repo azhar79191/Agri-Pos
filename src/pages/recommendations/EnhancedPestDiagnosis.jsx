@@ -3,6 +3,7 @@ import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, Flas
 import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory, detectPestFromImage } from "../../api/cropAdvisoryApi";
 import { CROPS, PEST_DISEASE_DATABASE, PRODUCT_DATABASE, SAFETY_PRECAUTIONS } from "../../data/cropAdvisory";
+import FeedbackForm from "../../components/FeedbackForm";
 
 const QUICK_ISSUES = {};
 Object.keys(PEST_DISEASE_DATABASE).forEach(crop => {
@@ -46,8 +47,12 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       
       console.log('📊 Image Detection Advisory:', advisory);
       
+      // Extract advisory ID for feedback form
+      const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
+      
       // Transform response
       return {
+        advisoryId: advisoryId,
         diagnosis: advisory.diagnosis || 'No diagnosis available',
         severity: advisory.severity || 'Medium',
         detectedIssue: advisory.detectedIssue || 'Detected Issue',
@@ -101,7 +106,11 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       
       console.log('📊 Text Advisory Advisory:', advisory);
       
+      // Extract advisory ID for feedback form
+      const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
+      
       return {
+        advisoryId: advisoryId,
         diagnosis: advisory.diagnosis || 'No diagnosis available',
         severity: advisory.severity || 'Medium',
         detectedIssue: advisory.detectedIssue || issue,
@@ -944,6 +953,16 @@ const EnhancedPestDiagnosis = () => {
                   <Printer className="w-4 h-4" />Save & Print
                 </button>
               </div>
+
+              {/* Feedback Form */}
+              {result.advisoryId && (
+                <FeedbackForm 
+                  advisoryId={result.advisoryId}
+                  onSubmitSuccess={() => {
+                    console.log('Feedback submitted successfully');
+                  }}
+                />
+              )}
 
               {/* AI Response Metadata */}
               {(result.source || result.responseTime > 0 || result.cached) && (
