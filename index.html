@@ -35,9 +35,9 @@
     <meta name="twitter:image" content="/og-image.png" />
 
     <!-- ── Theme & PWA ── -->
-    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: dark)" />
-    <meta name="msapplication-TileColor" content="#7c3aed" />
+    <meta name="theme-color" content="#10b981" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#10b981" media="(prefers-color-scheme: dark)" />
+    <meta name="msapplication-TileColor" content="#10b981" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -48,7 +48,7 @@
     <!-- ── PWA Splash Screen Colors ── -->
     <style>
       html, body {
-        background: linear-gradient(to bottom, #2563eb 0%, #7c3aed 50%, #0891b2 100%);
+        background: #10b981;
         margin: 0;
         padding: 0;
         min-height: 100vh;
@@ -130,11 +130,11 @@
           if (dm === 'true') {
             document.documentElement.classList.add('dark');
           }
-          // Always use gradient background for seamless splash screen
-          document.documentElement.style.background = 'linear-gradient(to bottom, #2563eb 0%, #7c3aed 50%, #0891b2 100%)';
-          document.body.style.background = 'linear-gradient(to bottom, #2563eb 0%, #7c3aed 50%, #0891b2 100%)';
+          // Green background for PWA splash screen
+          document.documentElement.style.background = '#10b981';
+          document.body.style.background = '#10b981';
         } catch(e) {
-          document.documentElement.style.background = 'linear-gradient(to bottom, #2563eb 0%, #7c3aed 50%, #0891b2 100%)';
+          document.documentElement.style.background = '#10b981';
         }
       })();
     </script>

@@ -11,7 +11,6 @@ import useKeyboardShortcuts from "./hooks/useKeyboardShortcuts";
 import OfflineBanner from "./components/OfflineBanner";
 import ShopPendingApproval from "./pages/ShopPendingApproval";
 import DemoPOS from "./pages/DemoPOS";
-import SplashScreen from "./components/SplashScreen";
 import { getRoleName } from "./utils/roleUtils";
 import API from "./api/axios";
 
@@ -322,27 +321,7 @@ const AppContent = () => {
 };
 
 function App() {
-  const [showSplash, setShowSplash] = useState(() => {
-    // Check if splash was already shown in this session
-    const splashShown = sessionStorage.getItem('splashShown_v2');
-    
-    // Detect if device is mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      || window.innerWidth <= 768;
-    
-    // Only show splash on mobile devices and if not already shown
-    return isMobile && !splashShown;
-  });
-
-  const handleSplashComplete = () => {
-    sessionStorage.setItem('splashShown_v2', 'true');
-    setShowSplash(false);
-  };
-
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
-  }
-
+  // Splash screen disabled - using PWA native splash screen instead
   return (
     <AppProvider>
       <AppContent />
