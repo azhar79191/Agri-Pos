@@ -107,11 +107,11 @@ const AppLayout = () => {
   useKeyboardShortcuts();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex">
+    <div className="bg-slate-50 dark:bg-slate-950 flex h-screen overflow-hidden">
       {/* Desktop sidebar — hidden on mobile */}
       <Sidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Desktop header — hidden on mobile */}
         <div className="hidden lg:block">
           <Header />
