@@ -17,10 +17,10 @@ export default function CTASection() {
             Join hundreds of agri shop owners who trust AgriNest POS to run their business every day.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <button onClick={() => navigate("/register")} className="group flex items-center gap-2 px-10 py-4 rounded-2xl text-base font-bold transition-all duration-300 hover:scale-[1.03]" style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "white", border: "none", cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.35)" }}>
+            <button onClick={() => navigate("/register")} className="group flex items-center gap-1 sm:gap-2 px-3 sm:px-10 py-2 sm:py-4 rounded-lg sm:rounded-2xl text-base font-bold transition-all duration-300 hover:scale-[1.03]" style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "white", border: "none", cursor: "pointer", boxShadow: "0 8px 32px rgba(37,99,235,0.35)" }}>
               Get Started Free <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </button>
-            <button onClick={() => navigate("/login")} className="flex items-center gap-2 px-10 py-4 rounded-2xl text-base font-semibold transition-all duration-300 hover:scale-[1.03]" style={{ background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer" }}>
+            <button onClick={() => navigate("/login")} className="flex items-center gap-1 sm:gap-2 px-3 sm:px-10 py-2 sm:py-4 rounded-lg sm:rounded-2xl text-base font-semibold transition-all duration-300 hover:scale-[1.03]" style={{ background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer" }}>
               Sign In <TrendingUp className="w-5 h-5" />
             </button>
           </div>

@@ -82,7 +82,7 @@ export default function Landing() {
             </button>
             <button
               onClick={() => navigate("/register")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-105"
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium sm:font-semibold transition-all duration-300 hover:scale-105"
               style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "white", border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(37,99,235,0.25)" }}
             >
               Get Started <ArrowRight className="w-4 h-4" />

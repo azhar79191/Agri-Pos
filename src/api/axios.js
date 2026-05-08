@@ -21,32 +21,14 @@ AuthAPI.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) req.headers.Authorization = `Bearer ${token}`;
   
-  console.log('🔐 Auth Request:', {
-    method: req.method?.toUpperCase(),
-    url: req.baseURL + req.url,
-    timeout: req.timeout + 'ms'
-  });
-  
   return req;
 });
 
 AuthAPI.interceptors.response.use(
   (res) => {
-    console.log('✅ Auth Response:', {
-      status: res.status,
-      url: res.config.url
-    });
     return res;
   },
   (error) => {
-    console.error('❌ Auth Error:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      isTimeout: error.code === 'ECONNABORTED',
-      isNetworkError: error.message === 'Network Error'
-    });
-    
     // Provide better error messages
     if (error.code === 'ECONNABORTED') {
       error.message = 'Request timeout. The server is taking too long to respond. Please try again.';
@@ -62,44 +44,14 @@ API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) req.headers.Authorization = `Bearer ${token}`;
   
-  // Log request details for debugging
-  console.log('📤 Axios Request:', {
-    method: req.method?.toUpperCase(),
-    url: req.baseURL + req.url,
-    headers: {
-      ...req.headers,
-      Authorization: req.headers.Authorization ? `Bearer ${req.headers.Authorization.substring(7, 20)}...` : 'None'
-    },
-    data: req.data
-  });
-  
   return req;
 });
 
 API.interceptors.response.use(
   (res) => {
-    // Log successful response
-    console.log('📥 Axios Response:', {
-      status: res.status,
-      statusText: res.statusText,
-      url: res.config.url,
-      data: res.data
-    });
     return res;
   },
   (error) => {
-    // Log error details
-    console.error('❌ Axios Error:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      responseData: error.response?.data,
-      isTimeout: error.code === 'ECONNABORTED',
-      isNetworkError: error.message === 'Network Error'
-    });
-    
     const status = error.response?.status;
     const code   = error.response?.data?.code;
 
