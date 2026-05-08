@@ -55,8 +55,7 @@ const Header = () => {
       position: "center",
       isConfirm: true,
       onConfirm: () => {
-        actions.logout();
-        navigate("/login");
+        actions.logout(navigate);
       },
     });
   };

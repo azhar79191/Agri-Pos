@@ -460,7 +460,23 @@ const SuperAdminDashboard = () => {
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={() => { actions.logout(); navigate("/login"); }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors text-sm font-semibold">
+          <button onClick={() => { 
+            if (window.confirm("Are you sure you want to logout?")) {
+              // Clear all auth data
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              localStorage.removeItem("posUser");
+              sessionStorage.removeItem("posCart");
+              
+              // Call logout action
+              actions.logout(navigate);
+              
+              // Force navigation after a short delay
+              setTimeout(() => {
+                window.location.href = "/login";
+              }, 200);
+            }
+          }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors text-sm font-semibold">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>

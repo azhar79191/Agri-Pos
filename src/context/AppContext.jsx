@@ -62,7 +62,14 @@ function appReducer(state, action) {
         isAuthenticated: true,
       };
     case A.LOGOUT:
-      return { ...initialState, darkMode: state.darkMode };
+      return { 
+        ...initialState, 
+        currentUser: null,
+        isAuthenticated: false,
+        cart: [],
+        darkMode: state.darkMode,
+        themeColor: state.themeColor,
+      };
     case A.SET_PAGE:
       return { ...state, currentPage: action.payload };
     case A.TOGGLE_SIDEBAR:
@@ -192,7 +199,7 @@ export function AppProvider({ children }) {
       return true;
     },
 
-    logout: () => {
+    logout: (navigate) => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       sessionStorage.removeItem("posCart");
@@ -201,6 +208,10 @@ export function AppProvider({ children }) {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       dispatch({ type: A.SHOW_TOAST, payload: { message: "Logged out successfully", type: "info", id: Date.now() } });
       toastTimerRef.current = setTimeout(() => dispatch({ type: A.HIDE_TOAST }), 3000);
+      // Navigate to login if navigate function is provided
+      if (navigate && typeof navigate === 'function') {
+        setTimeout(() => navigate("/login"), 100);
+      }
     },
 
     setPage: (page) => dispatch({ type: A.SET_PAGE, payload: page }),

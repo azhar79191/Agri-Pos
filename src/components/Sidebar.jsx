@@ -56,7 +56,9 @@ const Sidebar = () => {
 
   const handleLogout = () => actions.showToast({
     message:"Are you sure you want to logout?",type:"warning",position:"center",isConfirm:true,
-    onConfirm:() => { actions.logout(); navigate("/login"); },
+    onConfirm:() => { 
+      actions.logout(navigate);
+    },
   });
 
   const Nav = () => (
