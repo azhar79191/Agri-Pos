@@ -1,3 +1,4 @@
+import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import React, { useState, useCallback, useEffect } from "react";
 import { RotateCcw, Plus, X, Loader2, CheckCircle, Clock, XCircle, Package, Eye, AlertCircle, Edit2, Trash2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -100,14 +101,17 @@ const PurchaseReturns = () => {
     if (!form.supplierId) { actions.showToast({ message: "Select a supplier", type: "error" }); return; }
     if (!form.reason.trim()) { actions.showToast({ message: "Reason is required", type: "error" }); return; }
     if (form.items.some(i => !i.product)) { actions.showToast({ message: "All items need a product selected", type: "error" }); return; }
+    if (form.items.some(item => !Number.isSafeInteger(Number(item.quantity)) || Number(item.quantity) < 1 || !Number.isFinite(Number(item.unitCost)) || Number(item.unitCost) < 0)) {
+      actions.showToast({ message: "Use positive whole quantities and non-negative costs", type: "error" }); return;
+    }
     setSaving(true);
     try {
       const items = form.items.map(i => ({ 
         product: i.product,
         productName: i.productName, 
-        quantity: parseInt(i.quantity) || 1, 
-        unitCost: parseFloat(i.unitCost) || 0, 
-        total: (parseInt(i.quantity) || 1) * (parseFloat(i.unitCost) || 0) 
+        quantity: Number(i.quantity),
+        unitCost: Number(i.unitCost),
+        total: Number(i.quantity) * Number(i.unitCost)
       }));
       
       if (editingReturn) {
@@ -120,7 +124,7 @@ const PurchaseReturns = () => {
       setShowModal(false);
       refresh();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Failed to save return", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Failed to save return", type: "error" });
     } finally { setSaving(false); }
   };
 
@@ -129,11 +133,8 @@ const PurchaseReturns = () => {
     
     if (status === "Approved") {
       const totalAmount = returnItem.total || returnItem.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0;
-      const confirmMsg = `Approving this return will:\n\n` +
-        `• Reduce stock for ${returnItem.items?.length || 0} item(s)\n` +
-        `• Deduct ${formatCurrency(totalAmount, settings.currency)} from supplier balance\n\n` +
-        `This action cannot be undone. Continue?`;
-      
+      const confirmMsg = `Approve this return for ${formatCurrency(totalAmount, settings.currency)}? Stock will be removed. The return first offsets the amount owed to the supplier; any remainder becomes supplier credit.`;
+
       if (!window.confirm(confirmMsg)) return;
     }
     
@@ -141,12 +142,12 @@ const PurchaseReturns = () => {
     try {
       await updateReturnStatus(id, status);
       const msg = status === "Approved" 
-        ? "Return approved. Stock reduced and amount deducted from supplier."
+        ? "Return approved. Stock and supplier balances updated."
         : `Return ${status.toLowerCase()}`;
       actions.showToast({ message: msg, type: "success" });
       refresh();
     } catch (err) {
-      const errMsg = err.response?.data?.message || "Failed to update status";
+      const errMsg = err.response?.data?.message || err.message || "Failed to update status";
       actions.showToast({ message: errMsg, type: "error" });
     } finally { setUpdatingId(null); }
   };
@@ -159,7 +160,7 @@ const PurchaseReturns = () => {
       actions.showToast({ message: "Return deleted successfully", type: "success" });
       refresh();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Failed to delete return", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Failed to delete return", type: "error" });
     } finally { setUpdatingId(null); }
   };
 
@@ -167,6 +168,7 @@ const PurchaseReturns = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
+      <PendingInventoryOperations pathPrefix="/purchase-returns" onRecovered={() => { actions.hideToast(); refresh(); }} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -363,6 +365,10 @@ const PurchaseReturns = () => {
       <ModernModal isOpen={showDetailsModal} onClose={() => setShowDetailsModal(false)} title="Return Details" size="lg">
         {selectedReturn && (
           <div className="space-y-4">
+            {selectedReturn.accountingVersion === 1 && <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+              <p>Outstanding offset: {formatCurrency(selectedReturn.payableOffset, settings.currency)}</p>
+              <p>Supplier credit created: {formatCurrency(selectedReturn.supplierCredit, settings.currency)}</p>
+            </div>}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Return Number</p>

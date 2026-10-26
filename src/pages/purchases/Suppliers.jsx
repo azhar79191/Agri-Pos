@@ -1,4 +1,7 @@
-import React from "react";
+import PendingInventoryOperations from "../../components/PendingInventoryOperations";
+import SupplierPaymentModal from "../../components/purchases/SupplierPaymentModal";
+import React, { useState } from "react";
+import SupplierLedgerModal from "../../components/purchases/SupplierLedgerModal";
 import { Building2, Plus, Phone, MapPin, Edit2, Trash2, Loader2, TrendingUp, CreditCard } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
@@ -27,16 +30,21 @@ const Suppliers = () => {
   const { settings } = state;
   const isAdmin      = isAdminOrManager(state.currentUser);
 
-  const { data: suppliers, loading, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
+  const { data: suppliers, loading, error, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
     usePaginatedApi(getSuppliers, { search: "" }, LIMIT);
 
   const { showModal, setShowModal, editing, saving, deleting, form, setForm, openCreate, openEdit, handleSave, handleDelete } =
     useSupplierForm(refresh);
 
-  const totalOutstanding = suppliers.reduce((s, sup) => s + (sup.outstanding || 0), 0);
+  const [paymentSupplier, setPaymentSupplier] = useState(null);
+  const [ledgerSupplier, setLedgerSupplier] = useState(null);
+  const totalOutstanding = suppliers.reduce((s, sup) => s + Math.max(0, (sup.outstanding || 0) - (sup.creditBalance || 0)), 0);
 
   return (
     <div className="space-y-5 animate-fade-up">
+      <PendingInventoryOperations pathPrefix="/suppliers" onRecovered={refresh} />
+      {paymentSupplier && <SupplierPaymentModal key={paymentSupplier._id} supplier={paymentSupplier} currency={settings.currency} onClose={() => setPaymentSupplier(null)} onRecorded={refresh} />}
+      {ledgerSupplier && <SupplierLedgerModal key={ledgerSupplier._id} supplier={ledgerSupplier} currency={settings.currency} onClose={() => setLedgerSupplier(null)} />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm flex-shrink-0"><Building2 className="w-5 h-5 text-white" /></div>
@@ -51,6 +59,7 @@ const Suppliers = () => {
 
       <FilterBar filters={[{ type: "search", key: "search", placeholder: "Search by name or contact..." }]} values={filters} onChange={setFilter} onClear={() => setFilters({ search: "" })} total={total} />
 
+      {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error} <button type="button" onClick={refresh} className="min-h-11 underline">Retry suppliers</button></p>}
       {loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading suppliers...</span></div>
       ) : suppliers.length === 0 ? (
@@ -82,15 +91,18 @@ const Suppliers = () => {
                 {s.phone   && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{s.phone}</span>}
                 {s.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.address}</span>}
               </div>
+              {(s.creditBalance || 0) > (s.outstanding || 0) && <p className="mb-3 rounded-lg bg-emerald-50 p-2 text-sm font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">Supplier credit: {formatCurrency(Math.max(0, (s.creditBalance || 0) - (s.outstanding || 0)), settings.currency)}</p>}
+              {isAdmin && (s.outstanding || 0) > (s.creditBalance || 0) && <button type="button" onClick={() => setPaymentSupplier(s)} className="mb-3 mr-4 min-h-11 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white">Record payment</button>}
+              <button type="button" onClick={() => setLedgerSupplier(s)} className="mb-3 min-h-11 text-sm font-semibold text-blue-600 underline">View balance movements</button>
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                  <div><p className="text-xs text-slate-400">Total Purchases</p><p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(s.totalPurchases || 0, settings.currency)}</p></div>
+                  <div><p className="text-xs text-slate-400">Net Purchases</p><p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(s.totalPurchases || 0, settings.currency)}</p></div>
                 </div>
-                {(s.outstanding || 0) > 0 && (
+                {(s.outstanding || 0) > (s.creditBalance || 0) && (
                   <div className="flex items-center gap-2">
                     <CreditCard className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                    <div><p className="text-xs text-slate-400">Outstanding</p><p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(s.outstanding, settings.currency)}</p></div>
+                    <div><p className="text-xs text-slate-400">Outstanding</p><p className="text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(Math.max(0, (s.outstanding || 0) - (s.creditBalance || 0)), settings.currency)}</p></div>
                   </div>
                 )}
               </div>

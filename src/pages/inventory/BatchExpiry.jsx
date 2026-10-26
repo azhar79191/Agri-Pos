@@ -16,7 +16,7 @@ const STATS_CFG = (stats) => [
 const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm";
 
 const BatchExpiry = () => {
-  const { batches, loading, showModal, setShowModal, saving, form, setForm, handleAdd } = useBatches();
+  const { batches, loading, error, reload, showModal, setShowModal, saving, form, setForm, handleAdd } = useBatches();
   const [search, setSearch]           = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
@@ -39,6 +39,9 @@ const BatchExpiry = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
+      {error && <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800 dark:bg-red-950 dark:text-red-200">
+        <p>{error}</p><button type="button" onClick={reload} className="mt-2 min-h-11 underline font-semibold">Retry loading batches</button>
+      </div>}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-sm"><Calendar className="w-5 h-5 text-white" /></div>

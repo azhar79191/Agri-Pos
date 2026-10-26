@@ -18,6 +18,7 @@ export const PAGE_TITLES = {
   "customers":                "Customers",
   "customers/dues":           "Customer Dues",
   "customers/history":        "Purchase History",
+  "customers/workspace": "Farmer Workspace",
   "customers/loyalty":        "Loyalty Program",
   "recommendations/diagnosis":"Pest Diagnosis",
   "recommendations/dosage":   "Dosage Guide",

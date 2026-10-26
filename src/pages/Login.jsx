@@ -1,3 +1,4 @@
+import { PLATFORM_BRAND } from "../constants/platformBrand";
 import React, { useState, useEffect } from "react";
 import { Sprout, Loader2, Package, BarChart3, Shield, Sparkles, Zap, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -32,8 +33,8 @@ const BrandingPanel = ({ mode }) => (
           <Sprout className="w-6 h-6 text-white" />
         </div>
         <div>
-          <p className="font-bold text-white text-xl tracking-tight leading-none">AgriNest POS</p>
-          <p className="text-[10px] text-blue-300/70 mt-1 tracking-widest uppercase font-medium">Pesticide Management</p>
+          <p className="font-bold text-white text-xl tracking-tight leading-none">{PLATFORM_BRAND.name}</p>
+          <p className="text-[10px] text-blue-300/70 mt-1 tracking-widest uppercase font-medium">{PLATFORM_BRAND.tagline}</p>
         </div>
       </div>
 
@@ -50,7 +51,7 @@ const BrandingPanel = ({ mode }) => (
         
         <p className="text-slate-300 text-base leading-relaxed max-w-md">
           {mode === "setup"
-            ? "Create your admin account and unlock the complete power of AgriNest POS for your agricultural business."
+            ? `Create your admin account and set up ${PLATFORM_BRAND.name} for your agricultural business.`
             : "Complete point-of-sale solution designed specifically for modern pesticide and agricultural retail shops."}
         </p>
       </div>
@@ -76,7 +77,7 @@ const BrandingPanel = ({ mode }) => (
 
     {/* Footer */}
     <div className="relative z-10 flex items-center justify-between">
-      <p className="text-xs text-slate-500">© {new Date().getFullYear()} AgriNest POS</p>
+      <p className="text-xs text-slate-500">© {new Date().getFullYear()} {PLATFORM_BRAND.name}</p>
       <div className="flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
         <span className="text-xs text-slate-400">All systems operational</span>
@@ -176,8 +177,8 @@ const Login = () => {
                 <Sprout className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-bold text-slate-900 dark:text-white text-lg">AgriNest POS</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 tracking-wider uppercase">Pesticide Management</p>
+                <p className="font-bold text-slate-900 dark:text-white text-lg">{PLATFORM_BRAND.name}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 tracking-wider uppercase">{PLATFORM_BRAND.tagline}</p>
               </div>
             </div>
 

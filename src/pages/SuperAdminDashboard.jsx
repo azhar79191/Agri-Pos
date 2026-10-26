@@ -13,6 +13,7 @@ import {
   deleteSuperAdminShop, getShopUsers,
 } from "../api/superAdminApi";
 import { useApp } from "../context/AppContext";
+import { clearAuthToken } from "../utils/authStorage";
 
 const PLANS = [
   { id: "starter",      label: "Starter",      price: "Free",         icon: Zap,        maxUsers: 2,   maxProducts: 100   },
@@ -460,18 +461,13 @@ const SuperAdminDashboard = () => {
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={() => { 
+          <button onClick={() => {
             if (window.confirm("Are you sure you want to logout?")) {
-              // Clear all auth data
-              localStorage.removeItem("token");
+              clearAuthToken();
               localStorage.removeItem("user");
               localStorage.removeItem("posUser");
               sessionStorage.removeItem("posCart");
-              
-              // Call logout action
               actions.logout(navigate);
-              
-              // Force navigation after a short delay
               setTimeout(() => {
                 window.location.href = "/login";
               }, 200);

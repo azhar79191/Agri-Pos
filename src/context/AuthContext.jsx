@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+﻿import React, { createContext, useContext, useState } from "react";
 import { loginUser, logoutUser, getProfile } from "../api/authApi";
+import { clearAuthToken, readAuthToken, writeAuthToken } from "../utils/authStorage";
 
 const AuthContext = createContext();
 
@@ -10,7 +11,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const isAuthenticated = !!user && !!localStorage.getItem("token");
+  const isAuthenticated = !!user && !!readAuthToken();
 
   const login = async (credentials) => {
     setLoading(true);
@@ -21,7 +22,7 @@ export function AuthProvider({ children }) {
       const token = payload.token;
       const userData = payload.user;
       if (!token || !userData) throw new Error("Invalid response from server");
-      localStorage.setItem("token", token);
+      writeAuthToken(token);
       localStorage.setItem("user", JSON.stringify(userData));
       setUser(userData);
       return userData;
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try { await logoutUser(); } catch {}
-    localStorage.removeItem("token");
+    clearAuthToken();
     localStorage.removeItem("user");
     setUser(null);
   };

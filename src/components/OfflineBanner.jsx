@@ -39,8 +39,8 @@ const OfflineBanner = () => {
                 : isOnline
                 ? lastSynced ? `Synced at ${lastSynced.toLocaleTimeString()}` : "All synced"
                 : pendingCount > 0
-                ? `${pendingCount} action${pendingCount !== 1 ? "s" : ""} will sync when reconnected`
-                : "Actions will be queued until reconnected"
+                ? `${pendingCount} action${pendingCount !== 1 ? "s" : ""} need manual review`
+                : "Your cart is saved. Reconnect to confirm a sale."
               }
             </p>
           </div>
@@ -87,7 +87,7 @@ const OfflineBanner = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{item.label}</p>
                   <p className="text-[10px] text-slate-400">
-                    {new Date(item.queuedAt).toLocaleTimeString()} · {item.attempts > 0 ? `${item.attempts} attempt${item.attempts !== 1 ? "s" : ""}` : "Pending"}
+                    {item.lastError || new Date(item.queuedAt).toLocaleTimeString()} · {item.attempts > 0 ? `${item.attempts} attempt${item.attempts !== 1 ? "s" : ""}` : "Pending"}
                   </p>
                 </div>
                 <button onClick={() => removeFromQueue(item.id)} className="p-1 rounded text-slate-300 hover:text-red-400 transition-colors flex-shrink-0">

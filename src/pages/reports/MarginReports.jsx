@@ -35,16 +35,16 @@ const MarginReports = () => {
             <div key={c.category} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg transition-all">
               <div className="flex items-center justify-between mb-3">
                 <p className="font-bold text-slate-900 dark:text-white">{c.category}</p>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${c.margin >= 25 ? "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" : c.margin >= 20 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>{c.margin}%</span>
+                <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${c.margin >= 25 ? "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" : c.margin >= 20 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>{c.margin == null ? "Unknown" : `${c.margin}%`}</span>
               </div>
               <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 mb-3">
                 <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-600" style={{ width: `${Math.min(c.margin * 3, 100)}%` }} />
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><p className="text-xs text-slate-400">Revenue</p><p className="font-bold text-slate-900 dark:text-white">{formatCurrency(c.revenue, settings.currency)}</p></div>
-                <div><p className="text-xs text-slate-400">Profit</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(c.profit, settings.currency)}</p></div>
+                <div><p className="text-xs text-slate-400">Profit</p><p className="font-bold text-emerald-600 dark:text-emerald-400">{c.profit == null ? "Unknown cost" : formatCurrency(c.profit, settings.currency)}</p></div>
               </div>
-              {c.margin < 20 && (
+              {c.margin != null && c.margin < 20 && (
                 <div className="mt-3 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                   <TrendingDown className="w-3 h-3" />Low margin — consider price adjustment
                 </div>

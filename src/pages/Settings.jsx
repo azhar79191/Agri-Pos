@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SettingsNav from "./settings/SettingsNav";
+import BrandingPanel from "./settings/BrandingPanel";
 import ThemePanel from "./settings/ThemePanel";
 import ShopPanel from "./settings/ShopPanel";
 import TagsPanel from "./settings/TagsPanel";
@@ -12,6 +13,7 @@ import { addBrand, deleteBrand, addCategory, deleteCategory } from "../api/shopA
 import { SETTINGS_NAV } from "./settings/settingsConfig";
 
 const PANELS = {
+  branding: <BrandingPanel />,
   theme:         <ThemePanel />,
   shop:          <ShopPanel />,
   brands:        (

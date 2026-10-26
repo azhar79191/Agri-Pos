@@ -25,3 +25,6 @@ Thumbs.db
 
 # Testing
 coverage
+
+# Local browser verification artifacts
+artifacts/

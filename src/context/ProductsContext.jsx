@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import {
   getProducts, getProduct, createProduct,
   updateProduct, deleteProduct, getLowStockProducts,
@@ -12,6 +12,11 @@ export function ProductsProvider({ children }) {
   const [shopCategories, setShopCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  useEffect(() => {
+    const reset = () => { setProducts([]); setBrands([]); setShopCategories([]); setError(null); };
+    window.addEventListener("business-session-reset", reset);
+    return () => window.removeEventListener("business-session-reset", reset);
+  }, []);
 
   const fetchProducts = useCallback(async (params) => {
     setLoading(true);

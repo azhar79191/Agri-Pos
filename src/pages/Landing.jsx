@@ -1,3 +1,4 @@
+import { PLATFORM_BRAND } from "../constants/platformBrand";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sprout, ArrowRight, Menu, X } from "lucide-react";
@@ -52,8 +53,8 @@ export default function Landing() {
               <Sprout className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-base leading-none">AgriNest POS</p>
-              <p className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: "#60a5fa" }}>Agri Management</p>
+              <p className="font-bold text-white text-base leading-none">{PLATFORM_BRAND.name}</p>
+              <p className="text-[10px] tracking-widest uppercase mt-0.5" style={{ color: "#60a5fa" }}>{PLATFORM_BRAND.tagline}</p>
             </div>
           </div>
 

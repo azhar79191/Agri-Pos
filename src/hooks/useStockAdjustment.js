@@ -6,7 +6,7 @@ import { isAdminOrManager } from "../utils/roleUtils";
 /**
  * useStockAdjustment — manages stock adjustment form state and submission.
  */
-export function useStockAdjustment(fetchLevels, setStockLevels) {
+export function useStockAdjustment(fetchLevels, setStockLevels, stockLevels = []) {
   const { actions, state } = useApp();
   const { fetchLogs, fetchAlerts, adjust } = useStock();
   const isAdmin = isAdminOrManager(state.currentUser);
@@ -19,10 +19,18 @@ export function useStockAdjustment(fetchLevels, setStockLevels) {
 
   const handleAdjust = useCallback(async () => {
     if (!isAdmin) { actions.showToast({ message: "Only admin can adjust stock", type: "error" }); return; }
-    if (!selectedProduct || !quantity || !reason) return;
+    if (!selectedProduct || quantity === "" || !reason.trim()) return;
+    const count = Number(quantity);
+    if (!Number.isSafeInteger(count) || count < (adjustmentType === "set" ? 0 : 1)) {
+      actions.showToast({ message: "Enter a valid whole quantity", type: "error" }); return;
+    }
+    const selected = stockLevels.find(product => product._id === selectedProduct);
+    if (adjustmentType === "set" && !selected) {
+      actions.showToast({ message: "Refresh the stock list before setting a count", type: "error" }); return;
+    }
     setSubmitting(true);
     try {
-      await adjust({ product: selectedProduct, action: adjustmentType, quantity: parseInt(quantity), reason });
+      await adjust({ product: selectedProduct, action: adjustmentType, quantity: count, reason: reason.trim(), ...(adjustmentType === "set" ? { expectedStock: selected.stock } : {}) });
       actions.showToast({ message: "Stock adjusted successfully", type: "success" });
       fetchLogs();
       fetchAlerts();
@@ -31,11 +39,11 @@ export function useStockAdjustment(fetchLevels, setStockLevels) {
       setQuantity("");
       setReason("");
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Adjustment failed", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Adjustment failed", type: "error" });
     } finally {
       setSubmitting(false);
     }
-  }, [isAdmin, selectedProduct, adjustmentType, quantity, reason, adjust, fetchLogs, fetchAlerts, fetchLevels, setStockLevels, actions]);
+  }, [isAdmin, selectedProduct, adjustmentType, quantity, reason, adjust, fetchLogs, fetchAlerts, fetchLevels, setStockLevels, stockLevels, actions]);
 
   return {
     isAdmin,

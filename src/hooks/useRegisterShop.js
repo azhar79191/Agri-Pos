@@ -1,3 +1,4 @@
+import { writeAuthToken } from "../utils/authStorage";
 import { useState } from "react";
 import { registerShopWithAdmin } from "../api/authApi";
 import { createShop } from "../api/shopApi";
@@ -53,7 +54,7 @@ export const useRegisterShop = (isLoggedIn, currentUser, actions) => {
         const token = res.data.data?.token;
         const user = res.data.data?.user;
         if (!token || !user) throw new Error("Invalid response from server");
-        localStorage.setItem("token", token);
+        writeAuthToken(token);
         localStorage.setItem("user", JSON.stringify(user));
         actions.login(user.email, null, user);
         setResult(res.data.data);

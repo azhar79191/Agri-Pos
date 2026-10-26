@@ -155,7 +155,7 @@ const Customers = () => {
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Address</label>
             <textarea name="address" value={formData.address} onChange={handleChange} rows={3} required className="input-premium resize-none" placeholder="Enter complete address..." />
           </div>
-          <Input label="Wallet Balance" name="creditBalance" type="number" min="0" step="0.01" value={formData.creditBalance} onChange={handleChange} placeholder="0.00" helperText="Customer's available wallet balance" />
+          <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">Manage wallet balances through deposits and payments so every change appears in the customer ledger.</p>
         </form>
       </ModernModal>
 

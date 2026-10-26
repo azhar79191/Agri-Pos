@@ -1,3 +1,4 @@
+import useDialogAccessibility from "../../hooks/useDialogAccessibility";
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
@@ -10,6 +11,7 @@ const Modal = ({
 }) => {
   // Lock body scroll when modal is open
   useBodyScrollLock(isOpen);
+  const { dialogRef, titleId } = useDialogAccessibility(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -26,14 +28,15 @@ const Modal = ({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
       <div
+        ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : "Dialog"} tabIndex={-1}
         className={`relative z-10000 w-full ${sizes[size]} max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 animate-scale-in`}
         onClick={e => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-3.5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            {title && <h3 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-white truncate pr-2">{title}</h3>}
+            {title && <h3 id={titleId} className="text-sm sm:text-base font-semibold text-slate-800 dark:text-white truncate pr-2">{title}</h3>}
             {showCloseButton && (
-              <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors flex-shrink-0">
+              <button type="button" aria-label="Close dialog" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors flex-shrink-0">
                 <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             )}

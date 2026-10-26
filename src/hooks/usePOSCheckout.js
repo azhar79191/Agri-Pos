@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { useInvoices } from "./useInvoices";
 import { useCustomers } from "../context/CustomersContext";
@@ -14,6 +14,9 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
   const { addInvoice }     = useInvoices();
   const { addCustomer, refreshCustomer } = useCustomers();
 
+  const attemptKey = `pos-checkout:${currentUser?.shop?._id || currentUser?.shop}:${currentUser?._id || currentUser?.id}`;
+  const checkoutInFlight = useRef(false);
+  const [hasPendingCheckout, setHasPendingCheckout] = useState(() => !!sessionStorage.getItem(attemptKey));
   const [checkoutLoading, setCheckoutLoading]   = useState(false);
   const [completedTransaction, setCompletedTransaction] = useState(null);
   const [showReceipt, setShowReceipt]           = useState(false);
@@ -68,6 +71,11 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
   }, [quickCustomerForm, addCustomer, setSelectedCustomer, actions]);
 
   const handleCheckout = useCallback(async () => {
+    if (checkoutInFlight.current) return;
+    if (!navigator.onLine) {
+      actions.showToast({ message: "Connect to the internet to confirm this sale. Your cart is saved.", type: "error" });
+      return;
+    }
     if (cart.length === 0) { actions.showToast({ message: "Cart is empty", type: "error" }); return; }
     if (paymentMethod === "Cash" && cartCalculations.payableAmount > 0) {
       const received = parseFloat(cashReceived);
@@ -90,16 +98,32 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
         discount:    0,
       })),
       paymentMethod,
-      amountPaid: paymentMethod === "Cash" ? parseFloat(cashReceived) : 0,
+      amountPaid: paymentMethod === "Cash" ? (parseFloat(cashReceived) || 0) : 0,
       discount:   discountAmount,
       notes:      "",
     };
 
+    const signature = JSON.stringify(invoiceData);
+    let attempt;
+    try {
+      attempt = JSON.parse(sessionStorage.getItem(attemptKey) || "null");
+      if (attempt && attempt.signature !== signature) {
+        actions.showToast({ message: "A previous checkout is unresolved. Restore its cart and retry before creating another sale.", type: "error" });
+        return;
+      }
+      attempt ||= { signature, id: crypto.randomUUID() };
+      sessionStorage.setItem(attemptKey, JSON.stringify(attempt));
+    } catch {
+      actions.showToast({ message: "Checkout could not save its recovery identifier. Check browser storage and retry.", type: "error" });
+      return;
+    }
+    invoiceData.clientSaleId = attempt.id;
+    checkoutInFlight.current = true;
     setCheckoutLoading(true);
     try {
       const invoice       = await addInvoice(invoiceData);
       const invoiceRecord = invoice.invoice ?? invoice;
-      const isPending     = paymentMethod === "Online Transfer";
+      const isPending     = invoiceRecord.status === "Pending";
       const transaction   = {
         id:            invoiceRecord.invoiceNumber || generateInvoiceNumber(),
         invoiceNumber: invoiceRecord.invoiceNumber,
@@ -114,14 +138,16 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
               total:    i.total ?? ((i.unitPrice ?? i.price ?? 0) * i.quantity),
             }))
           : cart.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price, total: i.price * i.quantity })),
-        subtotal:      invoiceRecord.subtotal || cartCalculations.subtotal,
-        tax:           invoiceRecord.taxAmount || cartCalculations.tax,
-        discount:      invoiceRecord.discount || discountAmount,
-        grandTotal:    invoiceRecord.total || cartCalculations.grandTotal,
+        subtotal:      invoiceRecord.subtotal ?? cartCalculations.subtotal,
+        tax:           invoiceRecord.taxAmount ?? cartCalculations.tax,
+        discount:      invoiceRecord.discount ?? discountAmount,
+        grandTotal:    invoiceRecord.total ?? cartCalculations.grandTotal,
         paymentMethod,
-        status:        isPending ? "Pending" : "Completed",
+        status: invoiceRecord.status,
         createdBy:     currentUser?.name || "System",
       };
+      sessionStorage.removeItem(attemptKey);
+      setHasPendingCheckout(false);
       actions.createTransaction(invoiceData);
       if (customer?._id) refreshCustomer(customer._id);
       setCompletedTransaction(transaction);
@@ -134,21 +160,52 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
           : `Sale completed! Invoice #${invoiceRecord.invoiceNumber} generated`,
         type: isPending ? "warning" : "success",
       });
-    } catch {
-      // Offline fallback
-      const transaction = actions.createTransaction(invoiceData);
-      actions.createInvoice(transaction);
-      setCompletedTransaction(transaction);
-      setShowReceipt(true);
-      setCashReceived("");
-      resetCart();
-      actions.showToast({ message: `Sale completed (offline)! Invoice #${transaction.id}`, type: "warning" });
+    } catch (error) {
+      const status = error.response?.status;
+      if (status >= 400 && status < 500 && status !== 408 && status !== 429) sessionStorage.removeItem(attemptKey);
+      setHasPendingCheckout(!!sessionStorage.getItem(attemptKey));
+      actions.showToast({
+        message: error.response?.data?.message || "Sale confirmation is unknown. Keep this cart and retry the same checkout to reconcile safely.",
+        type: "error",
+      });
     } finally {
+      checkoutInFlight.current = false;
       setCheckoutLoading(false);
     }
   }, [cart, cartCalculations, discountAmount, paymentMethod, cashReceived, selectedCustomer, customer, selectedSalesRep, currentUser, addInvoice, refreshCustomer, actions, resetCart, setCashReceived]);
 
+  const handleRecoverCheckout = useCallback(async () => {
+    if (checkoutInFlight.current || !navigator.onLine) return;
+    const raw = sessionStorage.getItem(attemptKey);
+    if (!raw) { setHasPendingCheckout(false); return; }
+    checkoutInFlight.current = true;
+    setCheckoutLoading(true);
+    try {
+      const pending = JSON.parse(raw);
+      const payload = JSON.parse(pending.signature);
+      const result = await addInvoice({ ...payload, clientSaleId: pending.id });
+      const invoice = result.invoice ?? result;
+      sessionStorage.removeItem(attemptKey);
+      setHasPendingCheckout(false);
+      setCompletedTransaction({
+        id: invoice.invoiceNumber, invoiceNumber: invoice.invoiceNumber,
+        date: getTodayDate(), time: getCurrentTime(), customerName: invoice.customerName,
+        items: invoice.items.map(item => ({ name: item.productName, quantity: item.quantity, price: item.unitPrice, total: item.total })),
+        subtotal: invoice.subtotal, tax: invoice.taxAmount, discount: invoice.discount,
+        grandTotal: invoice.total, paymentMethod: invoice.paymentMethod, status: invoice.status,
+        createdBy: currentUser?.name,
+      });
+      const sameCart = JSON.stringify(cart.map(item => [item.productId, item.quantity])) === JSON.stringify(payload.items.map(item => [item.product, item.quantity]));
+      if (sameCart) { actions.clearCart(); resetCart(); }
+      setShowReceipt(true);
+      actions.showToast({ message: `Recovered invoice #${invoice.invoiceNumber}`, type: "success" });
+    } catch (error) {
+      actions.showToast({ message: error.response?.data?.message || "Recovery could not be confirmed. The original checkout is retained.", type: "error" });
+    } finally { checkoutInFlight.current = false; setCheckoutLoading(false); }
+  }, [attemptKey, addInvoice, cart, actions, resetCart, currentUser]);
+
   return {
+    hasPendingCheckout, handleRecoverCheckout,
     checkoutLoading, completedTransaction,
     showReceipt, setShowReceipt,
     heldCount, showHeld, setShowHeld,

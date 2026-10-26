@@ -1,10 +1,12 @@
+import { scopedStorageKey } from "../utils/browserScope";
 import React, { createContext, useContext, useReducer, useEffect, useMemo, useRef } from "react";
 import { hasPermission } from "../data/users";
 import { generateInvoiceNumber, getTodayDate, getCurrentTime } from "../utils/helpers";
 import { disconnectSocket } from "../hooks/useSocket";
 import { getProfile } from "../api/authApi";
+import { clearAuthToken, readAuthToken } from "../utils/authStorage";
 
-// ── Bootstrap from storage synchronously (no flash, no extra render) ──
+// â”€â”€ Bootstrap from storage synchronously (no flash, no extra render) â”€â”€
 const _savedUser = (() => {
   try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
 })();
@@ -12,7 +14,7 @@ const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _sa
 const _savedDarkMode = localStorage.getItem("posDarkMode") === "true";
 const _savedThemeColor = localStorage.getItem("posThemeColor") || "#10b981";
 const _savedCart = (() => {
-  try { return JSON.parse(sessionStorage.getItem("posCart") || "[]"); } catch { return []; }
+  try { return JSON.parse(sessionStorage.getItem(scopedStorageKey("posCart")) || "[]"); } catch { return []; }
 })();
 
 // Apply dark class and theme color before React renders
@@ -21,7 +23,7 @@ document.documentElement.style.setProperty("--pos-primary", _savedThemeColor);
 
 const initialState = {
   currentUser: _savedUser || null,
-  isAuthenticated: !!_savedUser && !!localStorage.getItem("token"),
+  isAuthenticated: !!_savedUser && !!readAuthToken(),
   cart: _savedCart,
   currentPage: "dashboard",
   darkMode: _savedDarkMode,
@@ -36,6 +38,7 @@ const initialState = {
     address:           _savedShop?.address        || "",
     phone:             _savedShop?.phone          || "",
     email:             _savedShop?.email          || "",
+    brandName: _savedShop?.brandName || "", brandTagline: _savedShop?.brandTagline || "", brandLogo: _savedShop?.brandLogo || "", brandColor: _savedShop?.brandColor || "",
     shopLogo:          _savedShop?.logo           || "",
     receiptFooter:     _savedShop?.receiptFooter  || "Thank you for your purchase!",
     lowStockThreshold: _savedShop?.lowStockThreshold ?? 5,
@@ -54,7 +57,7 @@ const A = {
 function appReducer(state, action) {
   switch (action.type) {
     case A.LOGIN:
-      return { ...state, currentUser: action.payload, isAuthenticated: true };
+      return { ...state, cart: [], currentUser: action.payload, isAuthenticated: true };
     case A.UPDATE_USER:
       return {
         ...state,
@@ -62,8 +65,8 @@ function appReducer(state, action) {
         isAuthenticated: true,
       };
     case A.LOGOUT:
-      return { 
-        ...initialState, 
+      return {
+        ...initialState,
         currentUser: null,
         isAuthenticated: false,
         cart: [],
@@ -126,6 +129,10 @@ export function AppProvider({ children }) {
     localStorage.setItem("posThemeColor", state.themeColor);
     document.documentElement.style.setProperty("--pos-primary", state.themeColor);
   }, [state.themeColor]);
+  useEffect(() => {
+    document.title = state.settings.brandName || state.settings.shopName || 'Agri-POS';
+    if (state.settings.brandColor) dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor });
+  }, [state.settings.brandName, state.settings.shopName, state.settings.brandColor]);
 
   // Persist user
   useEffect(() => {
@@ -135,7 +142,7 @@ export function AppProvider({ children }) {
 
   // Persist cart
   useEffect(() => {
-    sessionStorage.setItem("posCart", JSON.stringify(state.cart));
+    sessionStorage.setItem(scopedStorageKey("posCart"), JSON.stringify(state.cart));
   }, [state.cart]);
 
   // Cross-tab user sync
@@ -154,15 +161,19 @@ export function AppProvider({ children }) {
     };
   }, []);
 
-  // ── Refresh permissions from backend on startup ──
+  // â”€â”€ Refresh permissions from backend on startup â”€â”€
   // This ensures any permission changes made by admin are reflected immediately
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = readAuthToken();
     if (!token || !state.isAuthenticated) return;
     getProfile()
       .then(res => {
         const fresh = res.data?.data?.user ?? res.data?.user;
         if (!fresh) return;
+        const shop = fresh.shop;
+        if (shop && typeof shop === 'object') dispatch({ type: A.UPDATE_SETTINGS, payload: {
+          brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', brandColor: shop.brandColor || '',
+        } });
         // Only update if permissions actually changed
         const current = stateRef.current.currentUser;
         const freshPerms = JSON.stringify(fresh.permissions || []);
@@ -172,13 +183,15 @@ export function AppProvider({ children }) {
           localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
         }
       })
-      .catch(() => {}); // silent — don't break app if backend is down
+      .catch(() => {}); // silent â€” don't break app if backend is down
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Memoized actions — stable reference, no re-renders on state change ──
+  // â”€â”€ Memoized actions â€” stable reference, no re-renders on state change â”€â”€
   const actions = useMemo(() => ({
     login: (email, password, preloadedUser = null) => {
       if (!preloadedUser) return;
+      disconnectSocket();
+      window.dispatchEvent(new Event("business-session-reset"));
       dispatch({ type: A.LOGIN, payload: preloadedUser });
       localStorage.removeItem("posSettings");
       localStorage.setItem("user", JSON.stringify(preloadedUser));
@@ -186,11 +199,12 @@ export function AppProvider({ children }) {
       dispatch({
         type: A.UPDATE_SETTINGS,
         payload: shop && typeof shop === "object" ? {
+          brandName: shop.brandName || "", brandTagline: shop.brandTagline || "", brandLogo: shop.brandLogo || "", brandColor: shop.brandColor || "",
           shopName: shop.name || "", taxRate: shop.taxRate ?? 5,
           currency: shop.currency || "Rs.", address: shop.address || "",
           phone: shop.phone || "", email: shop.email || "",
           shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-        } : { shopName: "", address: "", phone: "", email: "", shopLogo: "" },
+        } : { brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
       });
       // Welcome toast
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -200,10 +214,11 @@ export function AppProvider({ children }) {
     },
 
     logout: (navigate) => {
-      localStorage.removeItem("token");
+      clearAuthToken();
       localStorage.removeItem("user");
-      sessionStorage.removeItem("posCart");
+      sessionStorage.removeItem(scopedStorageKey("posCart"));
       disconnectSocket();
+      window.dispatchEvent(new Event("business-session-reset"));
       dispatch({ type: A.LOGOUT });
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       dispatch({ type: A.SHOW_TOAST, payload: { message: "Logged out successfully", type: "info", id: Date.now() } });
@@ -219,7 +234,7 @@ export function AppProvider({ children }) {
     hasPermission: (permission) => hasPermission(stateRef.current.currentUser, permission),
 
     addToCart: (product, quantity = 1) => {
-      // Always add to cart — backend validates stock on checkout
+      // Always add to cart â€” backend validates stock on checkout
       // Only block if stock is explicitly 0 AND product is not a bundle
       const stock = product.stock ?? 999;
       if (stock <= 0 && !product.name?.startsWith("[Bundle]")) {
@@ -268,7 +283,7 @@ export function AppProvider({ children }) {
     syncOfflineData: () => {},
   }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Memoize context value — only re-renders consumers when state changes
+  // Memoize context value â€” only re-renders consumers when state changes
   const value = useMemo(() => ({ state, actions }), [state, actions]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

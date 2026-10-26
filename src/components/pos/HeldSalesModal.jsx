@@ -1,13 +1,14 @@
+import { scopedStorageKey } from "../../utils/browserScope";
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { PauseCircle, PlayCircle, Trash2, X, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
-const STORAGE_KEY = "pos_held_sales";
+const storageKey = () => scopedStorageKey("pos_held_sales");
 
 export const getHeldSales = () => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(storageKey()) || "[]"); } catch { return []; }
 };
 
 export const holdSale = (cart, customerName, discount) => {
@@ -19,13 +20,13 @@ export const holdSale = (cart, customerName, discount) => {
     discount,
     heldAt: new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }),
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...held, sale]));
+  localStorage.setItem(storageKey(), JSON.stringify([...held, sale]));
   return sale;
 };
 
 export const removeHeldSale = (id) => {
   const held = getHeldSales().filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(held));
+  localStorage.setItem(storageKey(), JSON.stringify(held));
 };
 
 const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {

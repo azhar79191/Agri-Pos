@@ -64,10 +64,10 @@ const Sidebar = () => {
   const Nav = () => (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/60">
       <div className="h-14 flex items-center gap-3 px-4 flex-shrink-0 border-b border-slate-100 dark:border-slate-800">
-        <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-8 h-8" />
+        <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.shopName} size="w-8 h-8" />
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-slate-900 dark:text-white text-sm truncate leading-none">{settings?.shopName || "AgriNest POS"}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">Agri Management</p>
+          <p className="font-bold text-slate-900 dark:text-white text-sm truncate leading-none">{settings?.brandName || settings?.shopName || "AgriNest POS"}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{settings?.brandTagline || "Agri Management"}</p>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto py-2 mt-5 px-2" ref={navRef}>

@@ -76,6 +76,7 @@ const AIStatistics = () => {
         </button>
       </div>
 
+      {stats?.cache?.available === false && <p className="text-sm text-slate-500">Usage is scoped to your shop. Per-shop cache metrics are not available yet; cost figures are estimates.</p>}
       {/* Admin Notice */}
       <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4">
         <div className="flex items-start gap-3">

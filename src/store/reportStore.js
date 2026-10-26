@@ -85,6 +85,8 @@ export const useReportStore = create(
 
       fetchExport: async (params) => (await exportReport(params)).data,
     }),
-    { name: "pos-reports", partialize: (s) => ({ dashboard: s.dashboard, salesData: s.salesData }) }
+    { name: "pos-reports", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useReportStore.setState(useReportStore.getInitialState(), true));

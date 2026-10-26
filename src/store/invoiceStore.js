@@ -43,6 +43,8 @@ export const useInvoiceStore = create(
       fetchTodaySales: async () => (await getTodaySales()).data.data,
       fetchRecentTransactions: async () => (await getRecentTransactions()).data.data,
     }),
-    { name: "pos-invoices", partialize: (s) => ({ invoices: s.invoices }) }
+    { name: "pos-invoices", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useInvoiceStore.setState(useInvoiceStore.getInitialState(), true));

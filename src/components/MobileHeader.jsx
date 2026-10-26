@@ -35,9 +35,9 @@ const MobileHeader = () => {
         {isRoot ? (
           /* Shop logo + name on root pages */
           <>
-            <ShopLogo logo={settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
+            <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
             <span className="font-bold text-slate-900 dark:text-white text-sm truncate">
-              {settings?.shopName || "AgriNest"}
+              {settings?.brandName || settings?.shopName || "AgriNest"}
             </span>
           </>
         ) : (

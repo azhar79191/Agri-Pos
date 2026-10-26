@@ -23,7 +23,7 @@ export const hasPermission = (user, permission) => {
   const effectiveKey = PERMISSION_MAP[permission] || permission;
 
   const stored =
-    Array.isArray(user.permissions) && user.permissions.length > 0
+    Array.isArray(user.permissions) && (user.permissionsCustomized || user.permissions.length > 0)
       ? user.permissions
       : ROLE_PERMISSIONS[role] || [];
 

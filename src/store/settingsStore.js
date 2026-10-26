@@ -37,6 +37,8 @@ export const useSettingsStore = create(
         return data;
       },
     }),
-    { name: "pos-settings", partialize: (s) => ({ settings: s.settings }) }
+    { name: "pos-settings", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useSettingsStore.setState(useSettingsStore.getInitialState(), true));

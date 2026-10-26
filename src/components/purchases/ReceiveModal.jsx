@@ -13,14 +13,17 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
   const [items, setItems]     = useState([]);
   const [notes, setNotes]     = useState("");
   const [saving, setSaving]   = useState(false);
+  const [hasPendingReceipt, setHasPendingReceipt] = useState(false);
 
   useEffect(() => {
     if (!po) return;
+    setHasPendingReceipt(!!sessionStorage.getItem(`pos-receipt:${po._id}`));
     setItems((Array.isArray(po.items) ? po.items : []).map((i) => ({
-      productId:   i.productId ?? i._id,
+      lineId: i._id,
+      productId: i.product?._id || i.product || i.productId,
       productName: i.productName ?? i.name,
-      ordered:     i.quantity,
-      received:    i.quantity,
+      ordered: Math.max(0, i.quantity - (i.receivedQty || 0)),
+      received: Math.max(0, i.quantity - (i.receivedQty || 0)),
       unitPrice:   i.unitPrice ?? i.price ?? 0,
     })));
     setNotes("");
@@ -33,13 +36,24 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
     if (!po) return;
     setSaving(true);
     try {
-      const res     = await receiveGoods(po._id, { notes, items: items.map((i) => ({ productId: i.productId, productName: i.productName, received: i.received, ordered: i.ordered, unitCost: i.unitPrice })) });
+      const storageKey = `pos-receipt:${po._id}`;
+      let command = { notes, items: items.map(i => ({ lineId: i.lineId, received: i.received })) };
+      let signature = JSON.stringify(command);
+      const previous = JSON.parse(sessionStorage.getItem(storageKey) || "null");
+      if (previous) { command = JSON.parse(previous.signature); signature = previous.signature; }
+      const attempt = previous || { signature, id: crypto.randomUUID() };
+      sessionStorage.setItem(storageKey, JSON.stringify(attempt));
+      const res     = await receiveGoods(po._id, { ...command, clientReceiptId: attempt.id });
+      sessionStorage.removeItem(storageKey);
+      setHasPendingReceipt(false);
       const updated = res.data.data.order ?? res.data.data;
       actions.showToast({ message: `GRN created for ${po.poNumber}`, type: "success" });
       onReceived(updated);
       onClose();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Failed to receive goods", type: "error" });
+      if ([400, 403, 404].includes(err.response?.status)) sessionStorage.removeItem(`pos-receipt:${po._id}`);
+      setHasPendingReceipt(!!sessionStorage.getItem(`pos-receipt:${po._id}`));
+      actions.showToast({ message: err.response?.data?.message || err.message || "Failed to receive goods", type: "error" });
     } finally { setSaving(false); }
   };
 
@@ -58,13 +72,15 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
             <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
             <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              {saving ? "Saving..." : "Confirm Receipt"}
+              {saving ? "Saving..." : hasPendingReceipt ? "Recover original receipt" : "Confirm Receipt"}
             </button>
           </div>
         </div>
       }
     >
       <div className="space-y-4">
+        <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900 dark:bg-blue-950 dark:text-blue-100">Receiving adds the delivery value to the supplier amount owed, applying existing supplier credit first. Record any payment from the Suppliers page.</p>
+        {hasPendingReceipt && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A previous receipt needs confirmation. Recovery will submit its original quantities, using the same identifier.</p>}
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-800">

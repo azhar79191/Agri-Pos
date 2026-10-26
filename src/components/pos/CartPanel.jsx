@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart, Trash2, X, Banknote, CreditCard, Smartphone,
@@ -30,18 +31,43 @@ const CartPanel = ({
   needsCashInput, isOnline, checkoutLoading,
   onRemoveItem, onUpdateQuantity, onClearCart,
   onHoldSale, onShowHeld, heldCount,
-  onCheckout, currency, taxRate,
+  onCheckout, currency, taxRate, mobileCartVisible = true, onReviewCart,
 }) => {
   const { state } = useApp();
   const tc = state.themeColor || "#10b981";
+
+  const checkoutControls = <>
+            {/* Checkout button */}
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={onCheckout} disabled={cart.length === 0 || checkoutLoading || !isOnline}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-black text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${tc}, ${tc}cc)`, boxShadow: `0 8px 24px ${tc}40` }}>
+              {checkoutLoading ? (
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+              ) : (
+                <>
+                  <Receipt className="w-4 h-4" />
+                  {!isOnline ? "Connection required" : paymentMethod === "Online Transfer" ? "Create pending transfer" : paymentMethod === "Credit" ? "Confirm credit sale" : "Confirm cash sale"}
+                  <ArrowRight className="w-4 h-4 ml-auto" />
+                </>
+              )}
+            </motion.button>
+
+            {/* Online status */}
+            <div className={`flex items-center justify-center gap-1.5 text-[10px] font-semibold ${isOnline ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+              {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+              {isOnline ? "Connected - confirm to generate the invoice" : "Offline - cart saved; reconnect to confirm"}
+            </div>  </>;
 
   return (
     <motion.div
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-xl shadow-slate-200/40 dark:shadow-slate-900/40 flex flex-col overflow-hidden"
+      className="lg:sticky lg:top-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-xl shadow-slate-200/40 dark:shadow-slate-900/40 flex flex-col overflow-hidden lg:max-h-[calc(100dvh-20rem)]"
     >
+      <div className="min-h-0 flex-1 overflow-y-auto pb-36 lg:pb-0">
       {/* ── Header ── */}
       <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-900">
         <div className="flex items-center justify-between">
@@ -214,7 +240,7 @@ const CartPanel = ({
             {/* Payment method */}
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Payment Method</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 keep-cols gap-2">
                 {paymentMethods.map(method => {
                   const active = paymentMethod === method.id;
                   const pc = PAY_COLORS[method.color];
@@ -244,31 +270,16 @@ const CartPanel = ({
               )}
             </AnimatePresence>
 
-            {/* Checkout button */}
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              onClick={onCheckout} disabled={cart.length === 0 || checkoutLoading}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-black text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${tc}, ${tc}cc)`, boxShadow: `0 8px 24px ${tc}40` }}>
-              {checkoutLoading ? (
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
-                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
-              ) : (
-                <>
-                  <Receipt className="w-4 h-4" />
-                  {isOnline ? "Place Order" : "Process Offline"}
-                  <ArrowRight className="w-4 h-4 ml-auto" />
-                </>
-              )}
-            </motion.button>
 
-            {/* Online status */}
-            <div className={`flex items-center justify-center gap-1.5 text-[10px] font-semibold ${isOnline ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-              {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-              {isOnline ? "Connected — invoice will be generated" : "Offline — will sync when connected"}
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
+      {cart.length > 0 && <div className="hidden shrink-0 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 lg:block">{checkoutControls}</div>}
+      {cart.length > 0 && createPortal(<div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 lg:hidden">
+        <div className="mb-2 flex items-center justify-between text-sm font-bold"><span>Total payable</span><span>{formatCurrency(cartCalculations.payableAmount, currency)}</span></div>
+        {mobileCartVisible ? checkoutControls : <button type="button" onClick={onReviewCart} className="min-h-11 w-full rounded-lg bg-emerald-600 font-bold text-white">Review cart</button>}
+      </div>, document.body)}
     </motion.div>
   );
 };

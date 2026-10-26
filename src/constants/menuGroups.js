@@ -55,6 +55,7 @@ export const MENU_GROUPS = [
       { id: "customers",          label: "All Customers",   icon: Users },
       { id: "customers/dues",     label: "Customer Dues",   icon: Wallet },
       { id: "customers/history",  label: "Purchase History",icon: History },
+      { id: "customers/workspace", label: "Farmer Workspace", icon: Users },
       { id: "customers/loyalty",  label: "Loyalty Program", icon: Award },
     ],
   },

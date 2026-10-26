@@ -1,4 +1,5 @@
 import React from "react";
+import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import { Award, Gift, Crown, Loader2, X, Star } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
@@ -39,6 +40,7 @@ const Loyalty = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
+      <PendingInventoryOperations pathPrefix="/loyalty" onRecovered={refresh} />
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-sm flex-shrink-0"><Award className="w-5 h-5 text-white" /></div>
         <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Loyalty Program</h1><p className="text-sm text-slate-500 dark:text-slate-400">Reward customers based on total purchases · 1 point per Rs. 100 spent</p></div>

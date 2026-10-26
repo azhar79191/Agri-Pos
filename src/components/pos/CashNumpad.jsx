@@ -80,7 +80,7 @@ const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
       </div>
 
       {/* Quick presets */}
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-4 keep-cols gap-1.5">
         {[
           { label: "Exact",   val: payableAmount },
           { label: "↑500",    val: roundUp(payableAmount, 500) },
@@ -98,7 +98,7 @@ const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
       </div>
 
       {/* Numpad grid */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 keep-cols gap-2">
         {KEYS.map((k) => (
           <button
             key={k}

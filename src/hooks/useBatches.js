@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { getBatches, createBatch } from "../api/batchesApi";
-import { EMPTY_BATCH_FORM, MOCK_BATCHES } from "../constants/batches";
+import { EMPTY_BATCH_FORM } from "../constants/batches";
 
 /**
  * useBatches — manages batch list fetching and add form for BatchExpiry page.
@@ -9,17 +9,23 @@ import { EMPTY_BATCH_FORM, MOCK_BATCHES } from "../constants/batches";
 export function useBatches() {
   const { actions } = useApp();
   const [batches, setBatches]   = useState([]);
+  const [error, setError] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving]     = useState(false);
   const [form, setForm]         = useState(EMPTY_BATCH_FORM);
 
-  useEffect(() => {
-    getBatches()
-      .then((res) => setBatches(res.data.data.batches))
-      .catch(() => setBatches(MOCK_BATCHES))
-      .finally(() => setLoading(false));
+  const reload = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getBatches();
+      setBatches(res.data.data.batches);
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to load batches. Displayed data may be stale.");
+    } finally { setLoading(false); }
   }, []);
+  useEffect(() => { reload(); }, [reload]);
 
   const handleAdd = useCallback(async () => {
     if (!form.productName || !form.batchNo || !form.expiryDate) {
@@ -42,5 +48,5 @@ export function useBatches() {
     } finally { setSaving(false); }
   }, [form, actions]);
 
-  return { batches, loading, showModal, setShowModal, saving, form, setForm, handleAdd };
+  return { batches, loading, error, reload, showModal, setShowModal, saving, form, setForm, handleAdd };
 }

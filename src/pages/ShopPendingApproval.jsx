@@ -4,6 +4,7 @@ import {
   Zap, Crown, ShieldOff, AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { clearAuthToken, clearStoredUser } from "../utils/authStorage";
 
 const PLANS = [
   { name: "Starter",      price: "Free",          features: ["2 Users", "100 Products", "Basic POS"] },
@@ -20,8 +21,8 @@ const ShopPendingApproval = ({ reason }) => {
 
   // Clear auth and go to login — no logout API call, no toast, just redirect
   const handleBackToLogin = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearAuthToken();
+    clearStoredUser();
     localStorage.removeItem("posUser");
     navigate("/login", { replace: true });
   };

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useCallback } from "react";
+﻿import { useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 import API from "../api/axios";
+import { readAuthToken } from "../utils/authStorage";
 
 let socketInstance = null;
 
@@ -9,7 +10,7 @@ const getSocket = () => {
     socketInstance = io(
       import.meta.env.VITE_API_BASE_URL?.replace("/api", "") || "http://localhost:5000",
       {
-        auth: { token: localStorage.getItem("token") },
+        auth: { token: readAuthToken() },
         reconnectionAttempts: 5,
         reconnectionDelay: 2000,
         transports: ["websocket", "polling"],
@@ -38,7 +39,7 @@ export function useSocket({ onNotifications, onNewSale, onCreditDeposited, onSto
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = readAuthToken();
     if (!token) return;
 
     const socket = getSocket();

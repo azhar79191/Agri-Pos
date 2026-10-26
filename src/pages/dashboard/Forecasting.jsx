@@ -31,7 +31,7 @@ const Forecasting = () => {
       </div>
       <DateRangePicker value={dateRange} onChange={setDateRange} />
 
-      {data.loading ? (
+      {data.error ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800"><p>{data.error}</p><button type="button" onClick={data.retry} className="mt-2 min-h-11 underline">Retry forecast</button></div> : data.loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-slate-400">
           <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading forecast...</span>
         </div>

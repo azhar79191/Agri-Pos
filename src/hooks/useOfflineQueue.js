@@ -62,19 +62,19 @@ const useOfflineQueue = () => {
     const failed  = [];
 
     for (const item of current) {
-      if (!item._fn) continue; // fn lost on page reload — skip
+      if (!item._fn) { failed.push({ ...item, lastError: "Legacy action cannot be replayed automatically. Review it manually." }); continue; } // fn lost on page reload — skip
       try {
         await item._fn();
         item._onSuccess?.();
       } catch {
         item.attempts = (item.attempts || 0) + 1;
-        if (item.attempts < 3) failed.push(item); // retry up to 3 times
+        failed.push(item); // retry up to 3 times
         item._onError?.();
       }
     }
 
     setQueue(failed);
-    setLastSynced(new Date());
+    if (failed.length === 0) setLastSynced(new Date());
     setRetrying(false);
     processingRef.current = false;
   }, []);

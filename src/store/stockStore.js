@@ -44,7 +44,7 @@ export const useStockStore = create(
       adjust: async (data) => {
         const res = await adjustStock(data);
         const result = res.data.data;
-        if (result?.product?._id) useProductStore.getState().editProduct(result.product._id, result.product);
+        if (result?.product?._id) useProductStore.setState(state => ({ products: state.products.map(product => product._id === result.product._id ? { ...product, stock: result.product.newStock } : product) }));
         return result;
       },
 
@@ -54,6 +54,8 @@ export const useStockStore = create(
         return res.data.data;
       },
     }),
-    { name: "pos-stock", partialize: (s) => ({ logs: s.logs, alerts: s.alerts }) }
+    { name: "pos-stock", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useStockStore.setState(useStockStore.getInitialState(), true));

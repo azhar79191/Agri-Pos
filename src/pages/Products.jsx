@@ -1,3 +1,4 @@
+import PendingInventoryOperations from "../components/PendingInventoryOperations";
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Download, Package, Tag } from "lucide-react";
 import { useProducts } from "../context/ProductsContext";
@@ -25,7 +26,7 @@ const LIMIT = 15;
 
 const Products = () => {
   const { products, brands: shopBrands, shopCategories, loading, fetchProducts } = useProducts();
-  const { state } = useApp();
+  const { state, actions } = useApp();
 
   const {
     isModalOpen, setIsModalOpen,
@@ -76,6 +77,7 @@ const Products = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
+      <PendingInventoryOperations pathPrefix="/products" onRecovered={() => { actions.hideToast(); return fetchProducts({ page, limit: LIMIT }); }} />
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">

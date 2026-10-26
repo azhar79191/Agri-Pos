@@ -70,6 +70,8 @@ export const useShopStore = create(
         return shop;
       },
     }),
-    { name: "pos-shop", partialize: (s) => ({ shop: s.shop, shops: s.shops }) }
+    { name: "pos-shop", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useShopStore.setState(useShopStore.getInitialState(), true));

@@ -4,6 +4,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory, detectPestFromImage } from "../../api/cropAdvisoryApi";
 import { CROPS, PEST_DISEASE_DATABASE, PRODUCT_DATABASE, SAFETY_PRECAUTIONS } from "../../data/cropAdvisory";
 import FeedbackForm from "../../components/FeedbackForm";
+import { readAuthToken } from "../../utils/authStorage";
 
 const QUICK_ISSUES = {};
 Object.keys(PEST_DISEASE_DATABASE).forEach(crop => {
@@ -19,7 +20,7 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
       formData.append('crop', crop);
       formData.append('symptoms', symptoms || '');
       if (location) formData.append('location', location);
-      
+
       console.log('🔍 Sending image detection request:', {
         crop,
         hasImage: !!imageFile,
@@ -27,29 +28,29 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         symptoms: symptoms || 'none',
         location: location || 'none'
       });
-      
+
       const response = await detectPestFromImage(formData);
-      
+
       // Safe logging - stringify to avoid circular reference errors
       try {
         console.log('✅ Image Detection Full Response:', JSON.stringify(response, null, 2));
       } catch (logError) {
         console.log('✅ Image Detection Response (could not stringify):', response);
       }
-      
+
       // Check if API returned an error
       if (response.success === false) {
         throw new Error(response.message || 'AI service unavailable');
       }
-      
+
       // Extract detection data - handle nested structure (data.detection for images)
       const advisory = response.data?.detection || response.detection || response.data?.advisory || response.advisory || response.data || response;
-      
+
       console.log('📊 Image Detection Advisory:', advisory);
-      
+
       // Extract advisory ID for feedback form
       const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
-      
+
       // Transform response
       return {
         advisoryId: advisoryId,
@@ -82,33 +83,33 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         location: location || '',
         language: 'en'
       };
-      
+
       console.log('🔍 Sending text advisory request:', requestData);
-      console.log('🔑 Token present:', !!localStorage.getItem('token'));
+      console.log('🔑 Token present:', !!readAuthToken());
       console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL);
-      
+
       const response = await getCropAdvisory(requestData);
-      
+
       // Safe logging - stringify to avoid circular reference errors
       try {
         console.log('✅ Text Advisory Full Response:', JSON.stringify(response, null, 2));
       } catch (logError) {
         console.log('✅ Text Advisory Response (could not stringify):', response);
       }
-      
+
       // Check if API returned an error
       if (response.success === false) {
         throw new Error(response.message || 'AI service unavailable');
       }
-      
+
       // Extract advisory data - handle nested structure
       const advisory = response.data?.advisory || response.advisory || response.data || response;
-      
+
       console.log('📊 Text Advisory Advisory:', advisory);
-      
+
       // Extract advisory ID for feedback form
       const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
-      
+
       return {
         advisoryId: advisoryId,
         diagnosis: advisory.diagnosis || 'No diagnosis available',
@@ -145,25 +146,25 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         data: error.response.data
       } : 'No response'
     });
-    
+
     // Extract error message with better fallbacks
     let errorMessage = 'Failed to get AI recommendation';
-    
+
     if (error.response?.data) {
       const data = error.response.data;
-      errorMessage = data.message 
-        || data.error?.message 
-        || data.error 
+      errorMessage = data.message
+        || data.error?.message
+        || data.error
         || errorMessage;
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     // Add status code to error message if available
     if (error.response?.status) {
       errorMessage = `[${error.response.status}] ${errorMessage}`;
     }
-    
+
     throw new Error(errorMessage);
   }
 };
@@ -192,17 +193,17 @@ const EnhancedPestDiagnosis = () => {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleCropSelect = (cropId) => { 
-    setSelectedCrop(cropId); 
-    setSelectedIssue(null); 
-    setResult(null); 
-    setStep(2); 
+  const handleCropSelect = (cropId) => {
+    setSelectedCrop(cropId);
+    setSelectedIssue(null);
+    setResult(null);
+    setStep(2);
   };
 
-  const handleIssueSelect = (issue) => { 
-    setSelectedIssue(issue); 
-    setStep(3); 
-    getRecommendation(issue); 
+  const handleIssueSelect = (issue) => {
+    setSelectedIssue(issue);
+    setStep(3);
+    getRecommendation(issue);
   };
 
   const getRecommendation = async (issue) => {
@@ -243,13 +244,13 @@ const EnhancedPestDiagnosis = () => {
     }
   };
 
-  const reset = () => { 
-    setStep(1); 
-    setSelectedCrop(null); 
-    setSelectedIssue(null); 
-    setResult(null); 
+  const reset = () => {
+    setStep(1);
+    setSelectedCrop(null);
+    setSelectedIssue(null);
+    setResult(null);
     setError(null);
-    setSymptoms(""); 
+    setSymptoms("");
     setUploadedImage(null);
     setImagePreview(null);
     setFieldSize(1);
@@ -260,7 +261,7 @@ const EnhancedPestDiagnosis = () => {
     // Create a printable version of the advisory
     const printWindow = window.open('', '_blank');
     const cropData = CROPS.find(c => c.id === selectedCrop);
-    
+
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -268,9 +269,9 @@ const EnhancedPestDiagnosis = () => {
           <title>AgriNest - Crop Advisory Report</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: Arial, sans-serif; 
-              padding: 40px; 
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
               line-height: 1.6;
               color: #333;
             }
@@ -280,13 +281,13 @@ const EnhancedPestDiagnosis = () => {
               border-bottom: 3px solid #3B82F6;
               padding-bottom: 20px;
             }
-            .header h1 { 
-              color: #3B82F6; 
+            .header h1 {
+              color: #3B82F6;
               font-size: 28px;
               margin-bottom: 5px;
             }
-            .header p { 
-              color: #666; 
+            .header p {
+              color: #666;
               font-size: 14px;
             }
             .section {
@@ -412,9 +413,9 @@ const EnhancedPestDiagnosis = () => {
           <div class="header">
             <h1>🌾 AgriNest Crop Advisory Report</h1>
             <p>AI-Powered Pest & Disease Diagnosis</p>
-            <p style="margin-top: 10px;">Generated on ${new Date().toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
+            <p style="margin-top: 10px;">Generated on ${new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
               day: 'numeric',
               hour: '2-digit',
               minute: '2-digit'
@@ -462,15 +463,15 @@ const EnhancedPestDiagnosis = () => {
 
           <div class="section">
             <div class="section-title">Recommended Products</div>
-            ${result.fullProducts && result.fullProducts.length > 0 ? 
+            ${result.fullProducts && result.fullProducts.length > 0 ?
               result.fullProducts.map(product => `
                 <div class="product-card">
                   <div class="product-name">${product.name || product}</div>
                   ${product.activeIngredient ? `<div class="product-detail">Active Ingredient: ${product.activeIngredient}</div>` : ''}
                   ${product.dosagePerAcre ? `<div class="product-detail">Dosage: ${product.dosagePerAcre}</div>` : ''}
                 </div>
-              `).join('') 
-              : 
+              `).join('')
+              :
               result.products?.map(p => `<div class="product-card"><div class="product-name">${p}</div></div>`).join('')
             }
           </div>
@@ -539,10 +540,10 @@ const EnhancedPestDiagnosis = () => {
         </body>
       </html>
     `;
-    
+
     printWindow.document.write(printContent);
     printWindow.document.close();
-    
+
     // Wait for content to load, then print
     printWindow.onload = () => {
       printWindow.focus();
@@ -620,7 +621,7 @@ const EnhancedPestDiagnosis = () => {
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">NEW</span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Upload a photo of affected plant for instant AI diagnosis</p>
-            
+
             {!imagePreview ? (
               <div className="relative">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
@@ -728,14 +729,14 @@ const EnhancedPestDiagnosis = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white mb-2">Failed to Get Recommendation</h3>
                   <p className="text-sm text-red-600 dark:text-red-400 mb-4">{error}</p>
                   <div className="flex gap-3 justify-center">
-                    <button 
+                    <button
                       onClick={() => uploadedImage ? detectFromImage() : getRecommendation(selectedIssue)}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors"
                     >
                       <RefreshCw className="w-4 h-4" />
                       Try Again
                     </button>
-                    <button 
+                    <button
                       onClick={() => { setStep(2); setError(null); }}
                       className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                     >
@@ -755,7 +756,7 @@ const EnhancedPestDiagnosis = () => {
                     {result.confidence > 0 && (
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden max-w-[200px]">
-                          <div 
+                          <div
                             className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-500"
                             style={{ width: `${result.confidence * 100}%` }}
                           />
@@ -781,7 +782,7 @@ const EnhancedPestDiagnosis = () => {
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />{result.urgency}
                   </div>
                 )}
-                
+
                 {/* Image Analysis Section */}
                 {result.imageAnalysis && typeof result.imageAnalysis === 'object' && (
                   <div className="mt-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
@@ -836,7 +837,7 @@ const EnhancedPestDiagnosis = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                     <FlaskConical className="w-4 h-4 text-emerald-500" />Recommended Products
                   </h3>
-                  
+
                   {/* Display full product details if available */}
                   {result.fullProducts && result.fullProducts.length > 0 && typeof result.fullProducts[0] === 'object' ? (
                     <div className="space-y-3 mb-4">
@@ -863,7 +864,7 @@ const EnhancedPestDiagnosis = () => {
                       ))}
                     </div>
                   )}
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
                       <p className="text-xs text-slate-400 mb-1">Dosage</p>
@@ -930,8 +931,8 @@ const EnhancedPestDiagnosis = () => {
                   <AlertTriangle className="w-4 h-4" />Safety Precautions
                 </h3>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {(result.safetyPrecautions && result.safetyPrecautions.length > 0 
-                    ? result.safetyPrecautions 
+                  {(result.safetyPrecautions && result.safetyPrecautions.length > 0
+                    ? result.safetyPrecautions
                     : SAFETY_PRECAUTIONS.slice(0, 6)
                   ).map((tip, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
@@ -956,7 +957,7 @@ const EnhancedPestDiagnosis = () => {
 
               {/* Feedback Form */}
               {result.advisoryId && (
-                <FeedbackForm 
+                <FeedbackForm
                   advisoryId={result.advisoryId}
                   onSubmitSuccess={() => {
                     console.log('Feedback submitted successfully');

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getCropAdvisory } from '../../api/cropAdvisoryApi';
+import { readAuthToken } from '../../utils/authStorage';
 
 const TestCropAPI = () => {
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,7 @@ const TestCropAPI = () => {
 
     try {
       console.log('🧪 Testing API with sample data...');
-      console.log('🔑 Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+      console.log('🔑 Token:', readAuthToken() ? 'Present' : 'Missing');
       console.log('🌐 Base URL:', import.meta.env.VITE_API_BASE_URL);
 
       const result = await getCropAdvisory({
@@ -45,12 +46,12 @@ const TestCropAPI = () => {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Test Crop Advisory API</h1>
-      
+
       <div className="mb-4 p-4 bg-gray-100 rounded">
         <h2 className="font-semibold mb-2">Environment Info:</h2>
         <p><strong>API Base URL:</strong> {import.meta.env.VITE_API_BASE_URL}</p>
-        <p><strong>Token Present:</strong> {localStorage.getItem('token') ? '✅ Yes' : '❌ No'}</p>
-        <p><strong>Token Value:</strong> {localStorage.getItem('token')?.substring(0, 50)}...</p>
+        <p><strong>Token Present:</strong> {readAuthToken() ? '✅ Yes' : '❌ No'}</p>
+        <p><strong>Token Preview:</strong> {readAuthToken() ? `${readAuthToken().slice(0, 20)}...` : 'No token'}</p>
       </div>
 
       <button

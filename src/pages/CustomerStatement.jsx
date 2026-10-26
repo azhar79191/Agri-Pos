@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, ShoppingBag, Wallet, TrendingUp, Calendar, User, MapPin, Phone, Mail } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-import { getCustomer, getCustomerPurchases } from "../api/customersApi";
+import { getCustomer, getCustomerPurchases, getCustomerLedger } from "../api/customersApi";
 import { downloadInvoicePDF } from "../utils/pdfGenerator";
 import { formatCurrency, formatDate } from "../utils/helpers";
 
@@ -22,6 +22,7 @@ const CustomerStatement = () => {
   const { state } = useApp();
   const { settings } = state;
 
+  const [ledger, setLedger] = useState([]);
   const [customer, setCustomer] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +33,13 @@ const CustomerStatement = () => {
     const load = async () => {
       setLoading(true);
       try {
-        const [custRes, invRes] = await Promise.all([
+        const [custRes, invRes, ledgerRes] = await Promise.all([
           getCustomer(id),
           getCustomerPurchases(id, { page, limit: 10 }),
+          getCustomerLedger(id),
         ]);
         setCustomer(custRes.data.data?.customer);
+        setLedger(ledgerRes.data.data.entries || []);
         const invData = invRes.data.data;
         setInvoices(invData?.invoices || []);
         if (invData?.pagination) setPagination(invData.pagination);
@@ -115,6 +118,19 @@ const CustomerStatement = () => {
         </div>
       </div>
 
+      <section className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <div className="p-5"><h2 className="font-bold">Balance movements</h2><p className="mt-1 text-sm text-slate-500">Latest 100 recorded movements. Older balances require opening-balance reconciliation.</p></div>
+        <table className="w-full text-left text-sm">
+          <thead><tr className="border-y border-slate-200 dark:border-slate-700">{["Date", "Movement", "Change", "Balance after"].map(label => <th key={label} className="px-5 py-3">{label}</th>)}</tr></thead>
+          <tbody>{ledger.map(entry => <tr key={entry._id} className="border-b border-slate-100 dark:border-slate-800">
+            <td className="px-5 py-3">{formatDate(entry.createdAt?.split("T")[0])}</td>
+            <td className="px-5 py-3 capitalize">{entry.kind}</td>
+            <td className="px-5 py-3">{entry.amount > 0 ? "+" : ""}{formatCurrency(entry.amount, settings.currency)}</td>
+            <td className="px-5 py-3">{formatCurrency(entry.balanceAfter, settings.currency)}</td>
+          </tr>)}</tbody>
+        </table>
+        {!ledger.length && <p className="p-5 text-sm text-slate-500">No recorded balance movements yet.</p>}
+      </section>
       {/* Purchase History */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">

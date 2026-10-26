@@ -1,17 +1,19 @@
+import { scopedStorageKey } from "../utils/browserScope";
 import { useState, useMemo, useCallback } from "react";
+import { getProductByBarcode } from "../api/productApi";
 import { useApp } from "../context/AppContext";
 import { calculateTax, calculateGrandTotal, isOutOfStock } from "../utils/helpers";
 
-const RECENT_KEY = "pos_recent_products";
+const recentKey = () => scopedStorageKey("pos_recent_products");
 
 const getRecentProducts = () => {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(recentKey()) || "[]"); } catch { return []; }
 };
 
 const saveRecentProduct = (product) => {
   const recent = getRecentProducts().filter((p) => p._id !== product._id);
   localStorage.setItem(
-    RECENT_KEY,
+    recentKey(),
     JSON.stringify(
       [{ _id: product._id, name: product.name, price: product.price, unit: product.unit, barcode: product.barcode, stock: product.stock }, ...recent].slice(0, 8)
     )
@@ -90,8 +92,10 @@ export function usePOSCart({ settings, customers }) {
     }
   }, [actions]);
 
-  const handleQuickBarcode = useCallback((barcode, products) => {
-    const product = products.find((p) => p.barcode === barcode.trim());
+  const handleQuickBarcode = useCallback(async (barcode) => {
+    let product;
+    try { product = (await getProductByBarcode(encodeURIComponent(barcode.trim()))).data.data.product; }
+    catch (error) { actions.showToast({ message: error.response?.data?.message || "Barcode lookup failed", type: "error" }); return; }
     if (product) {
       actions.addToCart(product, 1);
       saveRecentProduct(product);

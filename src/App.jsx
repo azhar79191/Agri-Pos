@@ -58,6 +58,7 @@ const AdvisoryHistory   = lazy(() => import("./pages/recommendations/AdvisoryHis
 const AIStatistics      = lazy(() => import("./pages/recommendations/AIStatistics"));
 const RecommendationPrint = lazy(() => import("./pages/recommendations/RecommendationPrint"));
 const PurchaseHistory   = lazy(() => import("./pages/customers/PurchaseHistory"));
+const FarmerWorkspace = lazy(() => import("./pages/customers/FarmerWorkspace"));
 const Loyalty           = lazy(() => import("./pages/customers/Loyalty"));
 const ProfitReports     = lazy(() => import("./pages/reports/ProfitReports"));
 const MarginReports     = lazy(() => import("./pages/reports/MarginReports"));
@@ -152,6 +153,7 @@ const AppLayout = () => {
                   <Route path="/sales/credit" element={<CreditSales />} />
                   <Route path="/customers/dues" element={<CustomerDues />} />
                   <Route path="/customers/history" element={<PurchaseHistory />} />
+                  <Route path="/customers/workspace" element={<FarmerWorkspace />} />
                   <Route path="/customers/loyalty" element={<Loyalty />} />
                   <Route path="/recommendations/diagnosis" element={<PestDiagnosis />} />
                   <Route path="/recommendations/dosage" element={<DosageSuggestions />} />

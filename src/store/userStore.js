@@ -107,6 +107,8 @@ export const useUserStore = create(
         set((s) => ({ users: s.users.filter((u) => (u._id || u.id) !== id) }));
       },
     }),
-    { name: "pos-users", partialize: (s) => ({ users: s.users }) }
+    { name: "pos-users", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useUserStore.setState(useUserStore.getInitialState(), true));

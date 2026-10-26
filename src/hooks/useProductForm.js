@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useProducts } from "../context/ProductsContext";
 import { useApp } from "../context/AppContext";
 import { EMPTY_PRODUCT_FORM, generateSKU } from "../constants/products";
@@ -11,6 +11,7 @@ export function useProductForm() {
   const { addProduct, editProduct, removeProduct, fetchProducts } = useProducts();
   const { actions } = useApp();
 
+  const newSku = useRef(null);
   const [isModalOpen, setIsModalOpen]     = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm]  = useState(null);
@@ -18,6 +19,7 @@ export function useProductForm() {
   const [submitting, setSubmitting]        = useState(false);
 
   const resetForm = useCallback(() => {
+    newSku.current = null;
     setFormData(EMPTY_PRODUCT_FORM);
     setEditingProduct(null);
   }, []);
@@ -43,9 +45,10 @@ export function useProductForm() {
     e?.preventDefault();
     setSubmitting(true);
     try {
+      if (!editingProduct) newSku.current ||= generateSKU(formData.name, formData.category);
       const payload = {
         ...formData,
-        sku:           editingProduct?.sku || generateSKU(formData.name, formData.category),
+        sku:           editingProduct?.sku || newSku.current,
         price:         parseFloat(formData.price),
         costPrice:     parseFloat(formData.costPrice) || 0,
         stock:         parseInt(formData.stock),
@@ -60,6 +63,8 @@ export function useProductForm() {
       delete payload.customBrand;
 
       if (editingProduct) {
+        if (payload.stock === editingProduct.stock) delete payload.stock;
+        else payload.expectedStock = editingProduct.stock;
         await editProduct(editingProduct._id, payload);
         actions.showToast({ message: "Product updated successfully", type: "success" });
       } else {
@@ -70,7 +75,7 @@ export function useProductForm() {
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Something went wrong", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Something went wrong", type: "error" });
     } finally {
       setSubmitting(false);
     }

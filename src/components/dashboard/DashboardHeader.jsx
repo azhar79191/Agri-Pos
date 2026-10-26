@@ -27,7 +27,7 @@ const DashboardHeader = ({
           <div className="flex items-center gap-2 mb-3">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-800/30">
               <Activity className="w-3 h-3 text-blue-500" />
-              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Live Dashboard</span>
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Shop overview</span>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
               <Clock className="w-3 h-3 text-slate-400" />

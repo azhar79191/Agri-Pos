@@ -15,6 +15,7 @@ import QuickActionButton from "../components/dashboard/QuickActionButton";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import SalesChart from "../components/dashboard/SalesChart";
 import CategoryChart from "../components/dashboard/CategoryChart";
+import DailyWorkspace from "../components/dashboard/DailyWorkspace";
 import OnboardingChecklist from "../components/dashboard/OnboardingChecklist";
 
 const Dashboard = () => {
@@ -26,18 +27,26 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [salesChartData, setSalesChartData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
   const hasFetched = useRef(false);
 
   const canPOS      = actions.hasPermission("pos");
   const canProducts = actions.hasPermission("products");
   const canReports  = actions.hasPermission("reports");
 
-  const loadData = () => {
-    fetchDashboard().then(setDashboardData).catch(() => {});
+  const loadData = async () => {
+    setRefreshing(true);
+    const dashboardRequest = fetchDashboard().then(data => {
+      if (!data) throw new Error("Dashboard could not be refreshed. Previously loaded figures may be outdated.");
+      setDashboardData(data);
+      setLastUpdated(new Date());
+    });
     const end   = new Date().toISOString().split("T")[0];
     const start = (() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split("T")[0]; })();
-    fetchSalesReport({ startDate: start, endDate: end })
+    const chartRequest = fetchSalesReport({ startDate: start, endDate: end })
       .then(data => {
+        if (!data) throw new Error("Sales chart could not be refreshed.");
         if (data?.salesData) setSalesChartData(
           data.salesData.map(d => ({
             date: new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1)
@@ -45,7 +54,10 @@ const Dashboard = () => {
             sales: d.totalSales || 0,
           }))
         );
-      }).catch(() => {});
+      });
+    const results = await Promise.allSettled([dashboardRequest, chartRequest]);
+    setLoadError(results.filter(result => result.status === "rejected").map(result => result.reason.message).join(" "));
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -55,9 +67,7 @@ const Dashboard = () => {
   }, []); // eslint-disable-line
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    loadData();
-    setTimeout(() => setRefreshing(false), 1200);
+    await loadData();
   };
 
   const todaySales     = dashboardData?.todaySales?.total || 0;
@@ -162,12 +172,15 @@ const Dashboard = () => {
         onNavigate={navigate}
       />
 
+      {loadError && <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">{loadError}<button type="button" disabled={refreshing} onClick={handleRefresh} className="ml-3 min-h-11 px-3 font-semibold underline disabled:opacity-50">Retry</button></div>}
+      <p role="status" className="text-xs text-slate-500 dark:text-slate-400">{refreshing ? "Updating shop overview?" : lastUpdated ? `Overview updated ${lastUpdated.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" })}` : "Overview has not loaded yet"}</p>
+      <DailyWorkspace hasPermission={actions.hasPermission} onNavigate={navigate} lowStock={lowStock} available={!!dashboardData} />
       <div className="flex flex-wrap gap-2">
         {canPOS      && <QuickActionButton icon={ShoppingCart} label="New Sale"    sub="Open POS"         color="blue"    onClick={() => navigate("/pos")}      delay={0} />}
         {canProducts && <QuickActionButton icon={Package}      label="Products"    sub="Manage inventory" color="slate"   onClick={() => navigate("/products")} delay={80} />}
         {canReports  && <QuickActionButton icon={BarChart3}    label="Reports"     sub="View analytics"   color="emerald" onClick={() => navigate("/reports")}  delay={160} />}
       </div>
-      {!loading && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
+      {!loading && !refreshing && dashboardData && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
         <OnboardingChecklist dashboardData={dashboardData} />
       )}
 

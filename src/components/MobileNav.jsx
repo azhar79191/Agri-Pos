@@ -58,6 +58,7 @@ const MORE_SECTIONS = [
     items: [
       { id: "customers/dues",    label: "Customer Dues",    icon: Wallet,  path: "/customers/dues",    permission: "customers" },
       { id: "customers/history", label: "Purchase History", icon: History, path: "/customers/history", permission: "customers" },
+      { id: "customers/workspace", label: "Farmer Workspace", icon: Users, path: "/customers/workspace", permission: "customers" },
       { id: "customers/loyalty", label: "Loyalty Program",  icon: Award,   path: "/customers/loyalty", permission: "customers" },
     ],
   },

@@ -1,3 +1,4 @@
+import { readAuthToken } from "../utils/authStorage";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sprout, Building2, User, CheckCircle } from "lucide-react";
@@ -22,7 +23,7 @@ const emptyMember = { name: "", email: "", phone: "", password: "", role: "cashi
 export default function RegisterShop() {
   const navigate = useNavigate();
   const { state, actions } = useApp();
-  const isLoggedIn = state.isAuthenticated && !!localStorage.getItem("token");
+  const isLoggedIn = state.isAuthenticated && !!readAuthToken();
   const currentUser = state.currentUser;
 
   const [step, setStep] = useState(isLoggedIn ? 2 : 1);
@@ -99,7 +100,7 @@ export default function RegisterShop() {
             {STEPS.map((s, i) => (
               <React.Fragment key={s.id}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.id ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400"}`}>
-                  {step > s.id ? "✓" : s.id}
+                  {step > s.id ? "âœ“" : s.id}
                 </div>
                 {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${step > s.id ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
               </React.Fragment>

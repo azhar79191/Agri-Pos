@@ -51,7 +51,7 @@ export function useCreditSales() {
       setPaymentModal(null);
       loadData();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Payment failed", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Payment failed", type: "error" });
     } finally { setProcessing(false); }
   }, [paymentModal, paymentAmount, paymentMethod, paymentNotes, actions, loadData]);
 

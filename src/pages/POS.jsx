@@ -16,14 +16,20 @@ import ReceiptModal from "../components/pos/ReceiptModal";
 import HeldSalesModal from "../components/pos/HeldSalesModal";
 import QuickAddCustomerModal from "../components/pos/QuickAddCustomerModal";
 import { getSalesReps } from "../api/salesRepsApi";
-import { getBundles } from "../api/bundlesApi";
+import { getProducts } from "../api/productApi";
 
 const DEFAULT_CATS = ["Herbicides", "Insecticides", "Fungicides", "Fertilizers", "Seeds", "Other"];
 
 const POS = () => {
   const { state, actions } = useApp();
   const { settings, currentUser } = state;
-  const { products, shopCategories, fetchProducts } = useProducts();
+  const { shopCategories, fetchProducts } = useProducts();
+  const [products, setProducts] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState(null);
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogPages, setCatalogPages] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const { customers, fetchCustomers } = useCustomers();
   const isOnline = useOnlineStatus();
   const barcodeInputRef = useRef(null);
@@ -35,7 +41,7 @@ const POS = () => {
   const [mobileTab, setMobileTab]             = useState("products");
   const [selectedSalesRep, setSelectedSalesRep] = useState("");
   const [salesReps, setSalesReps]             = useState([]);
-  const [bundles, setBundles]                 = useState([]);
+  const bundles = [];
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -62,7 +68,7 @@ const POS = () => {
         console.error('Failed to fetch sales reps:', err);
         setSalesReps([]);
       });
-    getBundles({ isActive: true, limit: 100 }).then((res) => setBundles(res.data.data.bundles || [])).catch(() => {});
+
   }, []); // eslint-disable-line
 
   const posCart = usePOSCart({ settings, customers });
@@ -81,6 +87,7 @@ const POS = () => {
     setSelectedCustomer, setDiscount, setCashReceived,
   });
   const {
+    hasPendingCheckout, handleRecoverCheckout,
     checkoutLoading, completedTransaction,
     showReceipt, setShowReceipt,
     heldCount, showHeld, setShowHeld,
@@ -94,19 +101,28 @@ const POS = () => {
   const categories = useMemo(() => {
     const fromProducts = [...new Set(products.map((p) => p.category))];
     const custom = (shopCategories || []).filter((c) => !DEFAULT_CATS.includes(c));
-    return [...new Set([...fromProducts, ...custom])];
+    return [...new Set([...DEFAULT_CATS, ...fromProducts, ...custom])];
   }, [products, shopCategories]);
 
-  const filteredProducts = useMemo(() =>
-    products.filter((p) => {
-      const matchesSearch =
-        p.name?.toLowerCase().includes(quickBarcode.toLowerCase()) ||
-        p.brand?.toLowerCase().includes(quickBarcode.toLowerCase()) ||
-        p.barcode?.includes(quickBarcode);
-      return matchesSearch;
-    }),
-    [products, quickBarcode]
-  );
+  useEffect(() => { setCatalogPage(1); }, [quickBarcode, selectedCategory]);
+  useEffect(() => {
+    let cancelled = false;
+    setCatalogLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getProducts({ search: quickBarcode, category: selectedCategory || undefined, page: catalogPage, limit: 24, isActive: true });
+        if (!cancelled) {
+          setProducts(res.data.data.products || []);
+          setCatalogPages(Math.max(1, res.data.data.pagination?.pages || 1));
+          setCatalogError(null);
+        }
+      } catch (error) {
+        if (!cancelled) setCatalogError(error.response?.data?.message || "Catalog could not be loaded. Check your connection and try searching again.");
+      } finally { if (!cancelled) setCatalogLoading(false); }
+    }, 200);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [quickBarcode, selectedCategory, catalogPage]);
+  const filteredProducts = products;
 
   const customerOptions = customers.map((c) => {
     const wallet = c.walletBalance || 0;
@@ -132,6 +148,11 @@ const POS = () => {
 
   return (
     <div className="space-y-6">
+      {hasPendingCheckout && <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+        <p className="font-semibold">A previous checkout needs confirmation</p>
+        <p className="mt-1 text-sm">Recover the original sale before submitting another payment.</p>
+        <button type="button" disabled={checkoutLoading || !isOnline} onClick={handleRecoverCheckout} className="mt-3 min-h-11 rounded-lg bg-amber-900 px-4 font-semibold text-white disabled:opacity-50">Recover previous checkout</button>
+      </div>}
       <POSHeader isOnline={isOnline} itemCount={cartCalculations.itemCount} onScanOpen={() => setIsScannerOpen(true)} />
 
       <BarcodeBar
@@ -161,25 +182,35 @@ const POS = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className={`lg:col-span-2 ${mobileTab === "cart" ? "hidden lg:block" : ""}`}>
+          {catalogError && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{catalogError}</p>}
+          {catalogLoading && <p role="status" className="mb-3 text-sm text-slate-500">Loading catalog...</p>}
           <ProductGrid
             products={filteredProducts}
             cart={cart}
             categories={categories}
             searchTerm={quickBarcode}
-            selectedCategory=""
+            selectedCategory={selectedCategory}
             onSearchChange={(e) => setQuickBarcode(e.target.value)}
-            onCategoryChange={() => {}}
+            onCategoryChange={(value) => setSelectedCategory(value?.target?.value ?? value)}
             onAddToCart={handleAddToCart}
             onUpdateQuantity={handleUpdateQuantity}
             currency={settings.currency}
             recentProducts={recentProducts}
             bundles={bundles}
+            bundlesEnabled={false}
             onAddBundle={handleAddBundle}
           />
+          <nav aria-label="Catalog pages" className="mt-4 flex items-center justify-between gap-3 text-sm">
+            <button type="button" disabled={catalogPage <= 1 || catalogLoading} onClick={() => setCatalogPage(p => p - 1)} className="min-h-11 rounded-lg border px-4 disabled:opacity-40">Previous</button>
+            <span>Page {catalogPage} of {catalogPages}</span>
+            <button type="button" disabled={catalogPage >= catalogPages || catalogLoading} onClick={() => setCatalogPage(p => p + 1)} className="min-h-11 rounded-lg border px-4 disabled:opacity-40">Next</button>
+          </nav>
         </div>
 
         <div className={mobileTab === "products" ? "hidden lg:block" : ""}>
           <CartPanel
+            mobileCartVisible={mobileTab === "cart"}
+            onReviewCart={() => setMobileTab("cart")}
             cart={cart}
             customerOptions={customerOptions}
             selectedCustomer={selectedCustomer}

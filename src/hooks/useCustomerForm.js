@@ -51,7 +51,6 @@ export function useCustomerForm() {
         name:    formData.name,
         phone:   formData.phone,
         address: formData.address,
-        balance: parseFloat(formData.creditBalance) || 0,
       };
       if (editingCustomer) {
         await editCustomer(editingCustomer._id, payload);

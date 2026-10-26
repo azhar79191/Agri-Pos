@@ -183,7 +183,7 @@ const BundleCard = ({ bundle, onAddBundle, currency }) => {
 const ProductGrid = ({
   products, cart, categories, searchTerm, selectedCategory,
   onSearchChange, onCategoryChange, onAddToCart, onUpdateQuantity, currency,
-  recentProducts = [], bundles = [], onAddBundle,
+  recentProducts = [], bundles = [], onAddBundle, bundlesEnabled = true,
 }) => {
   const [viewMode, setViewMode] = useState("grid");
   const [activeTab, setActiveTab] = useState("products"); // "products" | "bundles"
@@ -204,11 +204,11 @@ const ProductGrid = ({
           <Package className="w-4 h-4" />Products
           <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded-full font-bold">{products.length}</span>
         </button>
-        <button onClick={() => setActiveTab("bundles")}
+        <button disabled={!bundlesEnabled} title={!bundlesEnabled ? "Bundle checkout is temporarily unavailable" : "Bundles"} onClick={() => setActiveTab("bundles")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
             activeTab === "bundles" ? "bg-white dark:bg-slate-900 text-pink-600 dark:text-pink-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
           }`}>
-          <PackagePlus className="w-4 h-4" />Bundles
+          <PackagePlus className="w-4 h-4" />{bundlesEnabled ? "Bundles" : "Bundles unavailable"}
           {bundles.length > 0 && (
             <span className="text-xs bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded-full font-bold">{bundles.length}</span>
           )}

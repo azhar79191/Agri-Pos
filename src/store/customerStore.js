@@ -62,6 +62,8 @@ export const useCustomerStore = create(
         }));
       },
     }),
-    { name: "pos-customers", partialize: (s) => ({ customers: s.customers }) }
+    { name: "pos-customers", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useCustomerStore.setState(useCustomerStore.getInitialState(), true));

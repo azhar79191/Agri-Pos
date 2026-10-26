@@ -56,6 +56,8 @@ export const useProductStore = create(
         }));
       },
     }),
-    { name: "pos-products", partialize: (s) => ({ products: s.products, brands: s.brands }) }
+    { name: "pos-products", version: 2, migrate: () => ({}), partialize: () => ({}) }
   )
 );
+
+window.addEventListener("business-session-reset", () => useProductStore.setState(useProductStore.getInitialState(), true));

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useApp } from "../context/AppContext";
+import PendingInventoryOperations from "../components/PendingInventoryOperations";
+import React, { useState, useEffect, useCallback } from "react";
 import { Package, Plus, Minus, Edit3, History, AlertTriangle, Lock, TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import { useProducts } from "../context/ProductsContext";
 import { useStock } from "../hooks/useStock";
@@ -19,9 +21,18 @@ const actionActiveCls = {
 };
 
 const StockManagement = () => {
+  const { actions } = useApp();
   const { products, fetchProducts } = useProducts();
   const { logs, alerts, loading, fetchLogs, fetchAlerts, fetchLevels } = useStock();
-  const [stockLevels, setStockLevels] = useState([]);
+  const [stockLevels, setStockLevels] = useState(null);
+  const [levelError, setLevelError] = useState(null);
+  const [refreshingLevels, setRefreshingLevels] = useState(false);
+  const reloadLevels = useCallback(async () => {
+    setRefreshingLevels(true);
+    try { setStockLevels(await fetchLevels()); setLevelError(null); }
+    catch (error) { setLevelError(error.response?.data?.message || "Stock levels could not be refreshed"); }
+    finally { setRefreshingLevels(false); }
+  }, [fetchLevels]);
 
   const {
     isAdmin,
@@ -30,21 +41,23 @@ const StockManagement = () => {
     quantity, setQuantity,
     reason, setReason,
     submitting, handleAdjust,
-  } = useStockAdjustment(fetchLevels, setStockLevels);
+  } = useStockAdjustment(fetchLevels, setStockLevels, stockLevels ?? products);
 
   useEffect(() => {
     fetchProducts();
     fetchLogs();
     fetchAlerts();
-    fetchLevels().then((data) => { if (data) setStockLevels(data); }).catch(() => {});
+    reloadLevels();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const displayLevels = stockLevels.length > 0 ? stockLevels : products;
+  const displayLevels = stockLevels ?? products;
 
   return (
     <div className="space-y-6 animate-fade-up">
+      <PendingInventoryOperations pathPrefix="/stock/adjust" onRecovered={async () => { actions.hideToast(); setSelectedProduct(null); setQuantity(""); setReason(""); await reloadLevels(); await fetchLogs(); await fetchAlerts(); }} />
+      {levelError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{levelError}</p>}
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
             <Package className="w-5 h-5 text-white" />
@@ -57,6 +70,7 @@ const StockManagement = () => {
             </p>
           </div>
         </div>
+        <button type="button" disabled={refreshingLevels} onClick={reloadLevels} className="min-h-11 rounded-lg border border-slate-200 px-4 text-sm font-semibold disabled:opacity-50">{refreshingLevels ? "Refreshing..." : "Refresh stock"}</button>
       </div>
 
       {/* View-only notice */}
@@ -101,16 +115,16 @@ const StockManagement = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Product</label>
-                <select value={selectedProduct || ""} onChange={(e) => setSelectedProduct(e.target.value)} className={inputCls}>
+                <label htmlFor="stock-product" className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Product</label>
+                <select id="stock-product" value={selectedProduct || ""} onChange={(e) => setSelectedProduct(e.target.value)} className={inputCls}>
                   <option value="">Select Product</option>
-                  {products.map((p) => <option key={p._id} value={p._id}>{p.name} (Current: {p.stock})</option>)}
+                  {displayLevels.map((p) => <option key={p._id} value={p._id}>{p.name} (Current: {p.stock})</option>)}
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Action</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 keep-cols gap-2">
                   {ACTIONS.map(({ value, label, icon: Icon, color }) => (
                     <button key={value} onClick={() => setAdjustmentType(value)}
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 text-xs font-semibold transition-all ${
@@ -126,15 +140,16 @@ const StockManagement = () => {
                 <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">
                   {adjustmentType === "set" ? "New Stock Level" : "Quantity"}
                 </label>
-                <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className={inputCls} placeholder="Enter quantity" />
+                <input id="stock-quantity" aria-label={adjustmentType === "set" ? "Counted stock" : "Adjustment quantity"} type="number" min={adjustmentType === "set" ? 0 : 1} step="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className={inputCls} placeholder="Enter quantity" />
               </div>
 
+              {adjustmentType === "set" && <p className="text-xs text-slate-500">Enter the physical count, including zero. If stock changes while you are counting, refresh and review before applying it.</p>}
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Reason</label>
-                <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} placeholder="Enter reason for adjustment" />
+                <input aria-label="Adjustment reason" type="text" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} placeholder="Enter reason for adjustment" />
               </div>
 
-              <button onClick={handleAdjust} disabled={!selectedProduct || !quantity || !reason || submitting}
+              <button onClick={handleAdjust} disabled={!selectedProduct || quantity === "" || !reason.trim() || submitting}
                 className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
                 {submitting ? "Applying..." : "Apply Adjustment"}
               </button>
@@ -162,8 +177,8 @@ const StockManagement = () => {
               logs.slice(0, 10).map((entry, i) => (
                 <div key={entry._id || i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${entry.type === "add" ? "bg-emerald-100 dark:bg-blue-900/20" : "bg-red-100 dark:bg-red-900/30"}`}>
-                      {entry.type === "add"
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${entry.newStock >= entry.previousStock ? "bg-emerald-100 dark:bg-blue-900/20" : "bg-red-100 dark:bg-red-900/30"}`}>
+                      {entry.newStock >= entry.previousStock
                         ? <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         : <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />}
                     </div>
@@ -172,8 +187,8 @@ const StockManagement = () => {
                       <p className="text-xs text-slate-500 dark:text-slate-400">{entry.reason} · {entry.createdAt?.split("T")[0]}</p>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${entry.type === "add" ? "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
-                    {entry.type === "add" ? "+" : "-"}{entry.quantity}
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${entry.newStock >= entry.previousStock ? "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                    {entry.newStock - entry.previousStock > 0 ? "+" : ""}{entry.newStock - entry.previousStock}
                   </span>
                 </div>
               ))
@@ -198,10 +213,10 @@ const StockManagement = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {displayLevels.map((product) => {
-                const min    = product.minStockLevel || 5;
-                const status = product.stock <= 0 ? "low" : product.stock <= min ? "low" : product.stock <= min * 4 ? "medium" : "good";
-                const statusCls = status === "low" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : status === "medium" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400";
-                const dotCls    = status === "low" ? "bg-red-500" : status === "medium" ? "bg-amber-500" : "bg-emerald-500";
+                const min    = product.minStockLevel ?? 5;
+                const status = product.stock <= 0 ? "out" : product.stock <= min ? "low" : product.stock <= min * 4 ? "medium" : "good";
+                const statusCls = (status === "low" || status === "out") ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : status === "medium" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400";
+                const dotCls    = (status === "low" || status === "out") ? "bg-red-500" : status === "medium" ? "bg-amber-500" : "bg-emerald-500";
                 return (
                   <tr key={product._id || product.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{product.name}</td>
@@ -210,7 +225,7 @@ const StockManagement = () => {
                     <td className="px-4 py-3.5">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${statusCls}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${dotCls}`} />
-                        {status === "low" ? "Low Stock" : status === "medium" ? "Medium" : "Good Stock"}
+                        {status === "out" ? "Out of Stock" : status === "low" ? "Low Stock" : status === "medium" ? "Medium" : "Good Stock"}
                       </span>
                     </td>
                   </tr>

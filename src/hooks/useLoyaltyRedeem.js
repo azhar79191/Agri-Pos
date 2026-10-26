@@ -12,8 +12,8 @@ export function useLoyaltyRedeem(refresh) {
   const [redeeming, setRedeeming]     = useState(false);
 
   const handleRedeem = useCallback(async () => {
-    const pts = parseInt(redeemPts);
-    if (!pts || pts <= 0) { actions.showToast({ message: "Enter valid points", type: "error" }); return; }
+    const pts = Number(redeemPts);
+    if (!Number.isSafeInteger(pts) || pts <= 0) { actions.showToast({ message: "Enter valid points", type: "error" }); return; }
     if (pts > redeemModal.points) { actions.showToast({ message: "Insufficient points", type: "error" }); return; }
     setRedeeming(true);
     try {
@@ -23,7 +23,7 @@ export function useLoyaltyRedeem(refresh) {
       setRedeemPts("");
       refresh();
     } catch (err) {
-      actions.showToast({ message: err.response?.data?.message || "Redemption failed", type: "error" });
+      actions.showToast({ message: err.response?.data?.message || err.message || "Redemption failed", type: "error" });
     } finally { setRedeeming(false); }
   }, [redeemPts, redeemModal, actions, refresh]);
 
