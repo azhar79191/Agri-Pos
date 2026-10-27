@@ -1,14 +1,11 @@
+import Select from "../../components/ui/Select";
 import React from "react";
 import { Settings } from "lucide-react";
 import { SETTINGS_NAV } from "./settingsConfig";
 
 const SettingsNav = ({ active, onChange }) => (
   <aside className="w-full lg:w-64 shrink-0">
-    <label className="block rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 lg:hidden">Settings section
-      <select aria-label="Settings section" value={active} onChange={event => onChange(event.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white">
-        {SETTINGS_NAV.map(group => <optgroup key={group.group} label={group.group}>{group.items.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</optgroup>)}
-      </select>
-    </label>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900 lg:hidden"><Select label="Settings section" aria-label="Settings section" value={active} onChange={event => onChange(event.target.value)} options={SETTINGS_NAV.flatMap(group => group.items.map(item => ({ value: item.id, label: item.label })))} /></div>
     <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">

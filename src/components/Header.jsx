@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
 import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
+import ShopLogo from "./ui/ShopLogo";
 import UserAvatar from "./ui/UserAvatar";
 import NotificationCenter from "./NotificationCenter";
 import GlobalSearch from "./GlobalSearch";
@@ -17,7 +18,7 @@ const getRoleColorClass = (color) => {
 
 const Header = () => {
   const { state, actions } = useApp();
-  const { darkMode, cart, currentUser } = state;
+  const { darkMode, cart, currentUser, settings } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
@@ -65,8 +66,12 @@ const Header = () => {
     <header className="h-14 flex items-center justify-between px-4 lg:px-5 sticky top-0 z-50 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-700/50 shadow-sm">
 
       {/* Left — title + breadcrumb */}
-      <div className="flex items-center gap-3">
-        <div>
+      <div className="flex min-w-0 items-center gap-4">
+        <div aria-label="Company identity" className="flex min-w-0 max-w-[240px] items-center gap-3 border-r border-slate-200 pr-4 dark:border-slate-700">
+          <ShopLogo logo={settings.brandLogo || settings.shopLogo} name={settings.brandName || settings.shopName} size="w-8 h-8" />
+          <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900 dark:text-white">{settings.brandName || settings.shopName || 'Your company'}</p>{settings.brandTagline && <p className="truncate text-[10px] text-slate-500">{settings.brandTagline}</p>}</div>
+        </div>
+        <div className="hidden xl:block">
           {breadcrumb && (
             <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mb-0.5">
               <span>{breadcrumb[0]}</span>
@@ -86,7 +91,7 @@ const Header = () => {
       </div>
 
       {/* Center — Global Search */}
-      <div className="flex-1 flex justify-center px-6">
+      <div className="hidden xl:flex flex-1 min-w-0 justify-center px-4">
         <GlobalSearch />
       </div>
 

@@ -14,6 +14,7 @@ import {
  * `single: true` renders the group as a flat button with no dropdown.
  */
 export const MENU_GROUPS = [
+  { id: "assistant", label: "Business Assistant", icon: Activity, permission: "assistant:use", single: true, children: [{ id: "assistant", label: "Business Assistant", icon: Activity }] },
   {
     id: "dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard",
     children: [
@@ -60,7 +61,7 @@ export const MENU_GROUPS = [
     ],
   },
   {
-    id: "recommendations", label: "Crop Advisory", icon: Bug, permission: "products",
+    id: "recommendations", label: "Crop Advisory", icon: Bug, permission: "ai:use",
     children: [
       { id: "recommendations/diagnosis", label: "AI Pest Diagnosis", icon: Bug },
       { id: "recommendations/dosage",    label: "Dosage Calculator", icon: Beaker },

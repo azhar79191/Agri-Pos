@@ -57,7 +57,7 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         diagnosis: advisory.diagnosis || 'No diagnosis available',
         severity: advisory.severity || 'Medium',
         detectedIssue: advisory.detectedIssue || 'Detected Issue',
-        confidence: advisory.confidence || 0,
+        confidence: null,
         products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
         dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
         applicationMethod: advisory.applicationMethod || 'Follow product instructions',
@@ -115,7 +115,7 @@ const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
         diagnosis: advisory.diagnosis || 'No diagnosis available',
         severity: advisory.severity || 'Medium',
         detectedIssue: advisory.detectedIssue || issue,
-        confidence: advisory.confidence || 0,
+        confidence: null,
         products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
         dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
         applicationMethod: advisory.applicationMethod || 'Follow product instructions',
@@ -260,6 +260,9 @@ const EnhancedPestDiagnosis = () => {
   const handlePrint = () => {
     // Create a printable version of the advisory
     const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const safeResult = JSON.parse(JSON.stringify(result), (key, value) => typeof value === 'string' ? escapeHtml(value) : value);
     const cropData = CROPS.find(c => c.id === selectedCrop);
 
     const printContent = `
@@ -425,28 +428,28 @@ const EnhancedPestDiagnosis = () => {
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Crop</div>
-              <div class="info-value">${cropData?.name || selectedCrop}</div>
+              <div class="info-value">${escapeHtml(cropData?.name || selectedCrop)}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Issue Detected</div>
-              <div class="info-value">${selectedIssue}</div>
+              <div class="info-value">${escapeHtml(selectedIssue)}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Field Size</div>
-              <div class="info-value">${fieldSize} acre(s)</div>
+              <div class="info-value">${escapeHtml(fieldSize)} acre(s)</div>
             </div>
             <div class="info-item">
               <div class="info-label">Location</div>
-              <div class="info-value">${location || 'Not specified'}</div>
+              <div class="info-value">${escapeHtml(location || 'Not specified')}</div>
             </div>
           </div>
 
-          ${result.confidence > 0 ? `
+          ${safeResult.confidence > 0 ? `
             <div class="section">
               <div class="section-title">AI Confidence</div>
               <div class="confidence-bar">
-                <div class="confidence-fill" style="width: ${result.confidence * 100}%">
-                  ${(result.confidence * 100).toFixed(0)}% Confident
+                <div class="confidence-fill" style="width: ${safeResult.confidence * 100}%">
+                  ${(safeResult.confidence * 100).toFixed(0)}% Confident
                 </div>
               </div>
             </div>
@@ -455,16 +458,16 @@ const EnhancedPestDiagnosis = () => {
           <div class="section">
             <div class="section-title">Diagnosis</div>
             <div class="diagnosis-box">
-              <span class="badge badge-${result.severity?.toLowerCase() || 'medium'}">${result.severity || 'Medium'} Severity</span>
-              <p style="margin-top: 10px;">${result.diagnosis}</p>
+              <span class="badge badge-${safeResult.severity?.toLowerCase() || 'medium'}">${safeResult.severity || 'Medium'} Severity</span>
+              <p style="margin-top: 10px;">${safeResult.diagnosis}</p>
             </div>
-            ${result.urgency ? `<p style="color: #dc2626; font-weight: bold;">⚠️ ${result.urgency}</p>` : ''}
+            ${safeResult.urgency ? `<p style="color: #dc2626; font-weight: bold;">⚠️ ${safeResult.urgency}</p>` : ''}
           </div>
 
           <div class="section">
             <div class="section-title">Recommended Products</div>
-            ${result.fullProducts && result.fullProducts.length > 0 ?
-              result.fullProducts.map(product => `
+            ${safeResult.fullProducts && safeResult.fullProducts.length > 0 ?
+              safeResult.fullProducts.map(product => `
                 <div class="product-card">
                   <div class="product-name">${product.name || product}</div>
                   ${product.activeIngredient ? `<div class="product-detail">Active Ingredient: ${product.activeIngredient}</div>` : ''}
@@ -472,67 +475,62 @@ const EnhancedPestDiagnosis = () => {
                 </div>
               `).join('')
               :
-              result.products?.map(p => `<div class="product-card"><div class="product-name">${p}</div></div>`).join('')
+              safeResult.products?.map(p => `<div class="product-card"><div class="product-name">${p}</div></div>`).join('')
             }
           </div>
 
-          ${result.applicationMethod ? `
+          ${safeResult.applicationMethod ? `
             <div class="section">
               <div class="section-title">Application Method</div>
-              <p>${result.applicationMethod}</p>
+              <p>${safeResult.applicationMethod}</p>
             </div>
           ` : ''}
 
-          ${result.bestTimeToApply ? `
+          ${safeResult.bestTimeToApply ? `
             <div class="section">
               <div class="section-title">Best Time to Apply</div>
-              <p>🕐 ${result.bestTimeToApply}</p>
+              <p>🕐 ${safeResult.bestTimeToApply}</p>
             </div>
           ` : ''}
 
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Safety Interval</div>
-              <div class="info-value">${result.safetyInterval}</div>
+              <div class="info-value">${safeResult.safetyInterval}</div>
             </div>
-            ${fieldSize > 0 ? `
-              <div class="info-item">
-                <div class="info-label">Estimated Cost</div>
-                <div class="info-value">PKR ${(fieldSize * 850).toFixed(0)}</div>
-              </div>
-            ` : ''}
+
           </div>
 
-          ${result.alternatives && result.alternatives.length > 0 ? `
+          ${safeResult.alternatives && safeResult.alternatives.length > 0 ? `
             <div class="section">
               <div class="section-title">Alternative Products</div>
               <ul>
-                ${result.alternatives.map(alt => `<li>${alt}</li>`).join('')}
+                ${safeResult.alternatives.map(alt => `<li>${alt}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
 
-          ${result.preventionTips && result.preventionTips.length > 0 ? `
+          ${safeResult.preventionTips && safeResult.preventionTips.length > 0 ? `
             <div class="section">
               <div class="section-title">Prevention Tips</div>
               <ul>
-                ${result.preventionTips.map(tip => `<li>${tip}</li>`).join('')}
+                ${safeResult.preventionTips.map(tip => `<li>${tip}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
 
-          ${result.safetyPrecautions && result.safetyPrecautions.length > 0 ? `
+          ${safeResult.safetyPrecautions && safeResult.safetyPrecautions.length > 0 ? `
             <div class="section">
               <div class="section-title">⚠️ Safety Precautions</div>
               <ul>
-                ${result.safetyPrecautions.map(precaution => `<li>${precaution}</li>`).join('')}
+                ${safeResult.safetyPrecautions.map(precaution => `<li>${precaution}</li>`).join('')}
               </ul>
             </div>
           ` : ''}
 
           <div class="footer">
             <p><strong>AgriNest POS</strong> - Premium Pesticide Management System</p>
-            <p>Powered by ${result.source || 'AI'} ${result.responseTime ? `• Response Time: ${(result.responseTime / 1000).toFixed(1)}s` : ''}</p>
+            <p>Powered by ${safeResult.source || 'AI'} ${safeResult.responseTime ? `• Response Time: ${(safeResult.responseTime / 1000).toFixed(1)}s` : ''}</p>
             <p style="margin-top: 10px; font-size: 11px;">
               This advisory is AI-generated and should be used as a guide. Always consult with a certified agronomist for critical decisions.
             </p>
@@ -571,6 +569,7 @@ const EnhancedPestDiagnosis = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
+      <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-100">Draft AI advisory. Identification and treatment suggestions require qualified review and an applicable registered product label. Model confidence is not a validated diagnosis.</p>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm flex-shrink-0">
           <Bug className="w-5 h-5 text-white" />

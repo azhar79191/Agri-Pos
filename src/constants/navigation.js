@@ -1,5 +1,6 @@
 /** Maps route paths → page titles shown in the Header */
 export const PAGE_TITLES = {
+  "assistant": "Business Assistant",
   "dashboard":                "Dashboard",
   "dashboard/analytics":      "Analytics",
   "dashboard/forecasting":    "Forecasting",

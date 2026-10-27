@@ -7,6 +7,11 @@ const origin = 'http://127.0.0.1:5179';
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5179', '--strictPort'], { windowsHide: true, stdio: 'ignore' });
 let browser, page;
 const pageErrors = [];
+async function pickOption(control, value) {
+  if (await control.evaluate(element => element.tagName === 'SELECT')) return control.selectOption(value);
+  await control.click();
+  await page.locator(`[role="option"][data-value="${value}"]`).click();
+}
 try {
   for (let attempt = 0; attempt < 100; attempt++) {
     try { if ((await fetch(origin)).ok) break; } catch { /* Wait for local Vite startup. */ }
@@ -29,9 +34,12 @@ try {
   const supplier = { _id: 'dddddddddddddddddddddddd', name: 'Test Supplier', outstanding: 120, creditBalance: 0, totalPurchases: 120, paymentTerms: 'Net 30' };
   const accessRoles = [], staffRole = { _id: 'ffffffffffffffffffffffff', name: 'Inventory staff', email: 'staff@example.test', role: 'cashier' };
   const roleCommands = [];
+  const logoImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j6y8AAAAASUVORK5CYII=';
   let brandSettings = { shopName: 'Test Agri Shop', brandName: '', brandTagline: '', brandColor: '#047857', brandLogo: '', emailFooter: 'Thank you', actionEmailsEnabled: false };
   const farmerSeasons = [], farmerTasks = [], farmerCommands = [];
   const farmer = { _id: 'eeeeeeeeeeeeeeeeeeeeeeee', name: 'Test Farmer', phone: '03000000000' };
+  const assistantConnections = [];
+  let assistantFailure = true;
   const supplierPayments = [];
   const supplierMovements = [{ _id: 'receipt-fixture', reference: 'GRN-TEST', kind: 'receipt', value: 120, outstandingAfter: 120, creditAfter: 0, createdAt: new Date().toISOString() }];
   const fixtureProduct = () => ({ _id: 'cccccccccccccccccccccccc', name: 'Test Seed', sku: 'SEED', category: 'Other', price: 100, stock, unit: 'packet' });
@@ -41,12 +49,29 @@ try {
     if (url.origin === origin && route.request().resourceType() === 'document') return route.continue();
     const path = url.pathname.replace(/^\/api/, '');
     let data;
-    if (path === '/auth/profile') data = { user };
+    if (path === '/assistant/tools') data = { tools: [{ name: 'stock_alerts', description: 'Read company stock alerts' }], aiPlanningEnabled: false };
+    else if (path === '/assistant/chat') {
+      if (assistantFailure) { assistantFailure = false; return route.fulfill({ status: 503, json: { success: false, message: 'Assistant temporarily unavailable' } }); }
+      data = { tool: 'stock_alerts', message: 'Company stock alerts', generatedAt: new Date().toISOString(), data: { products: [{ name: 'Assistant seed fixture', stock: 2, unit: 'packet' }] } };
+    }
+    else if (path === '/assistant/connections') {
+      if (route.request().method() === 'POST') { assistantConnections.push({ _id: 'connection-fixture', label: route.request().postDataJSON().label, expiresAt: new Date(Date.now() + 3600000).toISOString() }); data = { token: 'synthetic-browser-token', connection: assistantConnections[0] }; }
+      else data = { connections: assistantConnections };
+    }
+    else if (path === '/assistant/connections/connection-fixture') { assistantConnections[0].revokedAt = new Date().toISOString(); data = {}; }
+    else if (path === '/auth/profile') data = { user };
     else if (path === '/roles') {
       if (route.request().method() === 'POST') { const command = route.request().postDataJSON(); roleCommands.push(command); accessRoles.push({ ...command, _id: 'role-fixture' }); data = { role: accessRoles.at(-1) }; }
       else data = { roles: accessRoles, users: [staffRole], permissions: ['dashboard:view', 'products:view', 'products:edit'] };
     }
     else if (path === '/roles/role-fixture/assign') { staffRole.customRoleId = 'role-fixture'; data = { userId: staffRole._id }; }
+    else if (path === '/settings/logo') {
+      const raw = route.request().postDataBuffer().toString();
+      const settings = raw.match(/name="settings"\r\n\r\n([^\r\n]+)/);
+      assert(settings, 'Logo and settings must be submitted together');
+      Object.assign(brandSettings, JSON.parse(settings[1]), { brandLogo: `data:image/png;base64,${logoImage}` });
+      Object.assign(user.shop, brandSettings); data = { settings: brandSettings };
+    }
     else if (path === '/settings/email-status') data = { workerEnabled: false, providerConfigured: false, jobs: [] };
     else if (path === '/settings') {
       if (route.request().method() === 'PUT') { Object.assign(brandSettings, route.request().postDataJSON()); Object.assign(user.shop, brandSettings); }
@@ -106,6 +131,38 @@ try {
   page.setDefaultTimeout(30000);
   page.on('pageerror', error => pageErrors.push(error.message));
   await mkdir('artifacts', { recursive: true });
+  await page.goto(`${origin}/assistant`);
+  await page.getByRole('heading', { name: 'Business assistant', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Which items have low stock?' }).click();
+  await page.getByRole('button', { name: 'Ask assistant', exact: true }).click();
+  await page.getByRole('alert').filter({ hasText: 'Assistant temporarily unavailable' }).waitFor();
+  assert.equal(await page.getByLabel('Ask about your business').inputValue(), 'Which items have low stock?');
+  await page.getByRole('button', { name: 'Ask assistant', exact: true }).click();
+  await page.getByRole('cell', { name: 'Assistant seed fixture' }).waitFor();
+  await page.getByLabel('Connection name', { exact: true }).fill('Browser acceptance');
+  await page.getByRole('checkbox', { name: /I understand/ }).check();
+  await page.getByRole('button', { name: 'Create one-hour connection' }).click();
+  await page.getByLabel('New connection token', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Hide token' }).click();
+  assert.equal(await page.getByLabel('New connection token', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Revoke', exact: true }).click();
+  await page.getByText('Revoked', { exact: true }).waitFor();
+  await page.screenshot({ path: 'artifacts/assistant-desktop.png', fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Assistant must fit mobile width');
+  await page.screenshot({ path: 'artifacts/assistant-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`${origin}/recommendations/dosage`);
+  await page.getByRole('heading', { name: 'Calculate from a product label' }).waitFor();
+  await page.getByLabel('Product and formulation').fill('Synthetic label fixture');
+  await page.getByLabel('Label reference or registration number').fill('TEST-REFERENCE');
+  await page.getByLabel('Field area', { exact: true }).fill('2.5');
+  await page.getByLabel('Rate printed on label').fill('100');
+  await page.getByRole('checkbox', { name: /I checked/ }).check();
+  await page.getByRole('button', { name: 'Calculate label quantity' }).click();
+  await page.getByRole('heading', { name: 'Calculated quantity: 250 ml' }).waitFor();
+  await page.getByLabel('Field area', { exact: true }).fill('3');
+  assert.equal(await page.getByRole('heading', { name: /Calculated quantity:/ }).count(), 0, 'Editing inputs must invalidate the old total');
   await page.goto(`${origin}/pos`);
   await page.getByRole('heading', { name: 'Point of Sale', exact: true }).waitFor();
   await page.waitForFunction(() => !document.body.textContent.includes('Loading catalog'));
@@ -139,7 +196,7 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${origin}/stock`);
   await page.getByRole('heading', { name: 'Stock Management', exact: true }).waitFor();
-  await page.getByRole('combobox').first().selectOption('cccccccccccccccccccccccc');
+  await pickOption(page.getByRole('combobox').first(), 'cccccccccccccccccccccccc');
   await page.getByRole('button', { name: 'Set Level', exact: true }).click();
   await page.getByPlaceholder('Enter quantity', { exact: true }).fill('0');
   await page.getByPlaceholder('Enter reason for adjustment', { exact: true }).fill('Physical count');
@@ -172,7 +229,7 @@ try {
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.goto(`${origin}/customers/workspace`);
   await page.getByRole('heading', { name: 'Farmer workspace', exact: true }).waitFor();
-  await page.getByLabel('Customer', { exact: true }).selectOption(farmer._id);
+  await pickOption(page.getByLabel('Customer', { exact: true }), farmer._id);
   await page.getByLabel('Crop', { exact: true }).fill('Wheat');
   await page.getByLabel('Season name', { exact: true }).fill('Rabi 2026');
   await page.getByLabel('Cultivated area', { exact: true }).fill('2.5');
@@ -185,7 +242,7 @@ try {
   assert.equal(farmerCommands[0].consent, true);
   assert(farmerCommands[0].clientOperationId);
   await page.getByRole('button', { name: 'Follow-up inbox', exact: true }).click();
-  await page.getByLabel('Customer', { exact: true }).selectOption(farmer._id);
+  await pickOption(page.getByLabel('Customer', { exact: true }), farmer._id);
   await page.getByLabel('Follow-up title', { exact: true }).fill('Discuss next crop visit');
   await page.getByLabel('Due date', { exact: true }).fill('2026-11-01');
   await page.getByRole('button', { name: 'Create follow-up', exact: true }).click();
@@ -197,7 +254,7 @@ try {
   await page.getByText('Farmer requested Tuesday', { exact: true }).waitFor();
   assert.equal(farmerTasks[0].dueDate, '2026-11-03');
   await page.getByRole('button', { name: 'Mark completed', exact: true }).click();
-  await page.getByLabel('Task status', { exact: true }).selectOption('completed');
+  await pickOption(page.getByLabel('Task status', { exact: true }), 'completed');
   await page.getByRole('button', { name: 'Reopen task', exact: true }).waitFor();
   assert.equal(farmerTasks[0].status, 'completed');
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Farmer workspace must fit mobile width');
@@ -214,11 +271,31 @@ try {
   assert.equal(brandSettings.brandName, 'Green Fields');
   assert.equal(await page.title(), 'Green Fields');
   assert.equal(brandSettings.actionEmailsEnabled, false);
+  await page.getByLabel('Brand name', { exact: true }).fill('Discard this draft');
+  await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
+  assert.equal(await page.getByLabel('Brand name', { exact: true }).inputValue(), 'Green Fields');
+  await page.getByLabel('Upload company logo', { exact: true }).setInputFiles({ name: 'company.png', mimeType: 'image/png', buffer: Buffer.from(logoImage, 'base64') });
+  await page.getByText('New logo ready. It will be uploaded when you save.', { exact: true }).waitFor();
+  assert.equal(brandSettings.brandLogo, '');
+  await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
+  await page.getByText('Company settings are up to date', { exact: true }).waitFor();
+  assert(brandSettings.brandLogo.startsWith('data:image/png;base64,'));
+  const companyHeader = page.getByLabel('Company identity', { exact: true });
+  assert.equal(await companyHeader.getByRole('img').getAttribute('src'), brandSettings.brandLogo);
+  assert.equal(await page.evaluate(() => document.querySelector('link[rel="icon"]').getAttribute('href')), brandSettings.brandLogo);
+  await page.reload();
+  await page.getByRole('button', { name: /Branding & Emails/ }).click();
+  await page.getByRole('heading', { name: 'Brand studio', exact: true }).waitFor();
+  assert.equal(await page.getByLabel('Company identity', { exact: true }).getByRole('img').getAttribute('src'), brandSettings.brandLogo);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Company header must fit a small desktop viewport');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'artifacts/company-brand-studio-desktop.png', fullPage: true, animations: 'disabled' });
   await page.screenshot({ path: 'artifacts/branding-desktop.png', fullPage: true, animations: 'disabled' });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Brand settings must fit mobile width');
-  await page.screenshot({ path: 'artifacts/branding-mobile.png', fullPage: true, animations: 'disabled' });
-  await page.getByLabel('Settings section', { exact: true }).selectOption('theme');
+  await page.screenshot({ path: 'artifacts/company-brand-studio-mobile.png', fullPage: true, animations: 'disabled' });
+  await pickOption(page.getByLabel('Settings section', { exact: true }), 'theme');
   const oldAccentSurface = await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).evaluate(element => getComputedStyle(element).color);
   await page.getByRole('button', { name: 'Rose accent', exact: true }).click();
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--brand-500')), '244 63 94');
@@ -227,7 +304,7 @@ try {
   await page.getByRole('switch', { name: 'Dark appearance', exact: true }).click();
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
   await page.reload();
-  await page.getByLabel('Settings section', { exact: true }).selectOption('theme');
+  await pickOption(page.getByLabel('Settings section', { exact: true }), 'theme');
   await page.getByRole('button', { name: 'Rose accent', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#f43f5e');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
@@ -244,8 +321,26 @@ try {
   await page.getByRole('button', { name: 'Create role', exact: true }).click();
   await page.getByRole('heading', { name: 'Inventory assistant', exact: true }).waitFor();
   assert.deepEqual(roleCommands[0].permissions, ['products:view']);
-  await page.getByLabel('Staff member', { exact: true }).selectOption(staffRole._id);
-  await page.getByLabel('Access role', { exact: true }).selectOption('role-fixture');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByLabel('Staff member', { exact: true }).click();
+  await page.getByRole('listbox', { name: 'Staff member', exact: true }).waitFor();
+  const lightOption = await page.getByRole('option', { name: /Inventory staff/ }).evaluate(element => getComputedStyle(element).backgroundColor);
+  await page.screenshot({ path: 'artifacts/custom-select-light.png', fullPage: true, animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await page.getByTitle('Dark mode', { exact: true }).click();
+  await page.getByLabel('Staff member', { exact: true }).click();
+  const darkOption = await page.getByRole('option', { name: /Inventory staff/ }).evaluate(element => getComputedStyle(element).backgroundColor);
+  assert.notEqual(lightOption, darkOption, 'Custom option backgrounds follow appearance mode');
+  await page.screenshot({ path: 'artifacts/custom-select-dark.png', fullPage: true, animations: 'disabled' });
+  await page.keyboard.press('Escape');
+  await page.getByTitle('Light mode', { exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel('Staff member', { exact: true }).click();
+  const menuBounds = await page.getByRole('listbox', { name: 'Staff member', exact: true }).boundingBox();
+  assert(menuBounds && menuBounds.x >= 0 && menuBounds.x + menuBounds.width <= 390 && menuBounds.y >= 0 && menuBounds.y + menuBounds.height <= 844, 'Custom menu stays within mobile viewport');
+  await page.keyboard.press('Escape');
+  await pickOption(page.getByLabel('Staff member', { exact: true }), staffRole._id);
+  await pickOption(page.getByLabel('Access role', { exact: true }), 'role-fixture');
   await page.getByRole('button', { name: 'Assign role', exact: true }).click();
   await page.getByRole('button', { name: 'Restore standard cashier role', exact: true }).waitFor();
   assert.equal(staffRole.customRoleId, 'role-fixture');
@@ -307,7 +402,7 @@ try {
   await platformPage.screenshot({ path: 'artifacts/platform-mobile.png', fullPage: true, animations: 'disabled' });
   await platformContext.close();
   assert.deepEqual(pageErrors, []);
-  console.log('Browser smoke passed: POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, branding settings, role creation/assignment, platform desktop/mobile, live theme/dark-mode persistence, and directory search/retry/mobile controls.');
+  console.log('Browser smoke passed: assistant retry/results/connections/mobile, label quantity worksheet and result invalidation, POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, branding settings, role creation/assignment, platform desktop/mobile, live theme/dark-mode persistence, directory search/retry/mobile controls, and company logo upload/header persistence.');
 } catch (error) {
   if (page) {
     await mkdir('artifacts', { recursive: true });

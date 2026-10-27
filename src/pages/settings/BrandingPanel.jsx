@@ -1,46 +1,87 @@
-import { useEffect, useState } from 'react';
+import Select from "../../components/ui/Select";
+import { useEffect, useRef, useState } from 'react';
 import API from '../../api/axios';
 import { getSettings, updateSettings } from '../../api/settingsApi';
 import { useApp } from '../../context/AppContext';
-import SettingsCard from './SettingsCard';
+import ShopLogo from '../../components/ui/ShopLogo';
+import { themePalette } from '../../utils/theme';
 
+const keys = ['brandName', 'brandTagline', 'brandLogo', 'brandColor', 'emailFooter', 'actionEmailsEnabled', 'theme', 'shopName', 'shopEmail', 'shopPhone', 'shopAddress', 'receiptFooter'];
+const input = 'mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white';
 export default function BrandingPanel() {
-  const { actions } = useApp();
-  const [form, setForm] = useState(null);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
-  const [delivery, setDelivery] = useState(null);
+  const { state, actions } = useApp();
+  const [form, setForm] = useState(null), [baseline, setBaseline] = useState(null);
+  const [error, setError] = useState(''), [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false), [delivery, setDelivery] = useState(null);
+  const [file, setFile] = useState(null), [preview, setPreview] = useState('');
+  const fileInput = useRef(null);
+  const canEdit = actions.hasPermission('settings:edit');
   const load = () => {
     setError('');
     API.get('/settings/email-status').then(response => setDelivery(response.data.data)).catch(() => setDelivery(null));
-    getSettings().then(response => setForm(response.data.data.settings)).catch(e => setError(e.response?.data?.message || 'Brand settings could not be loaded'));
+    getSettings().then(response => { setForm(response.data.data.settings); setBaseline(response.data.data.settings); }).catch(e => setError(e.response?.data?.message || 'Company settings could not be loaded'));
   };
   useEffect(load, []);
+  const set = (key, value) => setForm(current => ({ ...current, [key]: value }));
+  const discard = () => { setForm(baseline); setFile(null); setPreview(''); setError(''); setMessage(''); if (fileInput.current) fileInput.current.value = ''; };
+  const dirty = !!file || JSON.stringify(form) !== JSON.stringify(baseline);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = event => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
+  const chooseLogo = event => {
+    const image = event.target.files?.[0]; if (!image) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(image.type) || image.size > 2 * 1024 * 1024) { setError('Choose a PNG, JPEG or WebP logo up to 2 MB.'); event.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = () => { setFile(image); setPreview(String(reader.result)); setError(''); };
+    reader.onerror = () => setError('The image could not be read. Choose it again.');
+    reader.readAsDataURL(image);
+  };
   const save = async event => {
-    event.preventDefault(); setBusy(true); setError(''); setMessage('');
+    event.preventDefault();
+    const expectedShop = state.currentUser?.shop?._id || state.currentUser?.shop;
+    setBusy(true); setError(''); setMessage('');
     try {
-      const payload = Object.fromEntries(['brandName', 'brandTagline', 'brandLogo', 'brandColor', 'emailFooter', 'actionEmailsEnabled', 'theme'].map(key => [key, form[key]]));
-      const response = await updateSettings(payload);
+      const payload = Object.fromEntries(keys.map(key => [key, form[key]]));
+      payload.brandLogo = form.brandLogo || form.shopLogo || '';
+      let response;
+      if (file) { const upload = new FormData(); upload.append('logo', file); upload.append('settings', JSON.stringify(payload)); response = await API.post('/settings/logo', upload, { headers: { 'Content-Type': 'multipart/form-data' } }); }
+      else response = await updateSettings(payload);
       const saved = response.data.data.settings;
-      setForm(saved); actions.updateSettings(saved); actions.setThemeColor(saved.brandColor || '#047857');
+      setForm(saved); setBaseline(saved); setFile(null); setPreview('');
+      if (fileInput.current) fileInput.current.value = '';
+      actions.applyCompanySettings(saved, expectedShop);
       setMessage('Branding and email preferences saved. Delivery also requires the server email worker and provider configuration.');
-    } catch (e) { setError(e.response?.data?.message || 'Settings could not be saved'); }
+    } catch (e) { setError(e.response?.data?.message || 'Company settings could not be saved. Your edits are retained.'); }
     finally { setBusy(false); }
   };
-  const input = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white';
-  return <SettingsCard title="Branding & action emails" desc="Configure your shop identity and confirmations for signed-in staff.">
-    {error && <p role="alert" className="mb-4 text-red-700 dark:text-red-300">{error}<button type="button" className="ml-3 min-h-11 underline" onClick={load}>Reload</button></p>}
-    {message && <p role="status" className="mb-4 text-sm">{message}</p>}
-    {!form ? <p>Loading brand settings…</p> : <form onSubmit={save} className="space-y-5">
-      {[['brandName', 'Brand name', 100], ['brandTagline', 'Tagline', 160], ['brandLogo', 'Logo image URL (HTTPS)', 1000], ['emailFooter', 'Email footer', 500]].map(([key, label, maxLength]) => <label key={key} className="block text-sm font-medium">{label}<input type={key === 'brandLogo' ? 'url' : 'text'} maxLength={maxLength} className={input} value={form[key] || ''} onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))} /></label>)}
-      <label className="block text-sm font-medium">Company appearance<select aria-label="Company appearance" className={input} value={form.theme || "light"} onChange={e => setForm(current => ({ ...current, theme: e.target.value }))}><option value="light">Light</option><option value="dark">Dark</option></select></label>
-      <label className="block text-sm font-medium">Brand accent<input type="color" className="ml-3 h-11 w-16 align-middle" value={form.brandColor || '#047857'} onChange={e => setForm(current => ({ ...current, brandColor: e.target.value }))} /></label>
-      <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-5 w-5" checked={!!form.actionEmailsEnabled} onChange={e => setForm(current => ({ ...current, actionEmailsEnabled: e.target.checked }))} />Enable action confirmations to the signed-in staff member’s account email. Customer marketing emails are separate.</label>
-      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"><div className="p-5 text-white" style={{ background: form.brandColor || '#047857' }}>{form.brandLogo && /^https:\/\//i.test(form.brandLogo) && <img src={form.brandLogo} alt="Brand logo preview" className="mb-3 h-12 max-w-full object-contain" />}<h3 className="text-xl font-bold text-white">{form.brandName || form.shopName}</h3><p className="mt-1 text-sm">{form.brandTagline}</p></div><div className="space-y-3 p-5"><p className="font-semibold">Action confirmation preview</p><p className="text-sm">Hello, your action was recorded successfully.</p><p className="text-xs text-slate-500">{form.emailFooter}</p></div></div>
-      <p className="text-xs text-slate-500">Templates cover sales, invoice changes/payments, stock/product changes, supplier returns/payments, loyalty redemption and farmer workspace actions. Password-reset emails keep their existing security flow. Email delivery can be delayed or retried.</p>
-      {delivery && <section aria-label="Email delivery status" className="space-y-2 rounded-lg border border-slate-200 p-4 dark:border-slate-700"><h3 className="font-semibold">Delivery status</h3><p className="text-sm">Provider: {delivery.providerConfigured ? 'configured (delivery unverified)' : 'not configured'} | Worker: {delivery.workerEnabled ? 'enabled' : 'disabled'}</p><p className="text-xs text-slate-500">Recent confirmations: {delivery.jobs.length}. Sent means the provider accepted the message; it does not confirm inbox delivery.</p>{delivery.jobs.map(job => <div key={job._id} className="flex flex-wrap justify-between gap-2 border-t py-2 text-xs"><span>{job.eventKey.split(':')[0]}</span><span>{job.status} ? {job.attempts} attempts</span></div>)}</section>}
-      <button disabled={busy} className="min-h-11 rounded-lg px-5 font-semibold text-white disabled:opacity-50" style={{ background: form.brandColor || '#047857' }}>{busy ? 'Saving…' : 'Save brand settings'}</button>
-    </form>}
-  </SettingsCard>;
+  const field = (key, label, maxLength, type = 'text', required = false) => <label className="block text-sm font-medium">{label}<input required={required} type={type} maxLength={maxLength} className={input} value={key === 'brandLogo' && form[key]?.startsWith('data:') ? '' : form[key] || ''} onChange={e => { set(key, e.target.value); if (key === 'brandLogo') { setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = ''; } }} /></label>;
+  if (!form) return <section className="card-base p-6">{error ? <p role="alert">{error}<button type="button" onClick={load} className="ml-3 underline">Retry</button></p> : <p role="status">Loading company identity...</p>}</section>;
+  const brand = themePalette(form.brandColor);
+  const logo = preview || form.brandLogo || form.shopLogo || '';
+  return <form onSubmit={save} className="space-y-6">
+    <header className="workspace-hero"><p className="workspace-eyebrow">Your company workspace</p><h1>Brand studio</h1><p>Make this shop recognizably yours. Identity, contact details and appearance are saved only for your company.</p></header>
+    {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 dark:bg-red-950 dark:text-red-100">{error}</p>}
+    {message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">{message}</p>}
+    {!canEdit && <p className="rounded-xl border p-4 text-sm">You can preview company settings. Ask a shop administrator for permission to edit branding.</p>}
+    <fieldset disabled={busy || !canEdit} className="min-w-0 space-y-6">
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
+      <div className="min-w-0 space-y-6">
+        <section className="card-base space-y-5 p-5"><div><h2 className="text-lg font-semibold">Company identity</h2><p className="mt-1 text-sm text-slate-500">The display name and logo appear in your app header, navigation and receipt header.</p></div>
+          {field('brandName', 'Brand name', 100)}{field('brandTagline', 'Tagline', 160)}
+          <div className="rounded-xl border border-dashed border-slate-300 p-4 dark:border-slate-600"><div className="flex items-center gap-4"><ShopLogo logo={logo} name={form.brandName || form.shopName} size="w-16 h-16" /><div className="min-w-0"><p className="font-semibold">Company logo</p><p className="mt-1 text-xs text-slate-500">PNG, JPEG or WebP. Maximum 2 MB. Transparent or square artwork works best.</p></div></div><label className="mt-4 block text-sm font-medium">Upload company logo<input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseLogo} disabled={busy} className="mt-2 block w-full min-w-0 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-3 file:text-slate-800 dark:file:bg-slate-700 dark:file:text-white" /></label>{file && <p className="mt-2 text-xs text-slate-500">New logo ready. It will be uploaded when you save.</p>}<button type="button" disabled={busy || !logo} onClick={() => { setForm(current => ({ ...current, brandLogo: '', shopLogo: '' })); setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = ''; }} className="mt-2 min-h-11 text-sm text-red-700 underline dark:text-red-300">Remove logo</button></div>
+          {field('brandLogo', 'Logo image URL (HTTPS)', 200000, 'text')}
+          <p className="text-xs text-slate-500">Upload for permanent storage with your shop record, or use an HTTPS URL. Uploaded logos are not shown as a long data URL in this field.</p>
+        </section>
+        <section className="card-base space-y-5 p-5"><h2 className="text-lg font-semibold">Business details</h2>{field('shopName', 'Registered shop / company name', 200, 'text', true)}{field('shopEmail', 'Business email', 200, 'email')}{field('shopPhone', 'Business phone', 20, 'tel')}{field('shopAddress', 'Business address', 500)}{field('receiptFooter', 'Receipt footer', 500)}</section>
+        <section className="card-base space-y-5 p-5"><h2 className="text-lg font-semibold">Company appearance</h2><label className="block text-sm font-medium">Brand accent<input aria-label="Brand accent" type="color" className="ml-3 h-11 w-16 align-middle" value={brand.hex} onChange={e => set('brandColor', e.target.value)} /></label><Select label="Company appearance" aria-label="Company appearance" value={form.theme || 'light'} onChange={event => set('theme', event.target.value)} options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} /><p className="text-xs text-slate-500">Staff can keep personal appearance overrides. Use shop appearance defaults in Theme & Colors to follow this company theme.</p></section>
+        <section className="card-base space-y-5 p-5"><h2 className="text-lg font-semibold">Email identity</h2>{field('emailFooter', 'Email footer', 500)}<label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-5 w-5" checked={!!form.actionEmailsEnabled} onChange={e => set('actionEmailsEnabled', e.target.checked)} />Enable confirmations to the signed-in staff account. Provider and worker configuration are required; customer marketing is separate.</label>{delivery && <div aria-label="Email delivery status" className="rounded-xl bg-slate-50 p-4 text-sm dark:bg-slate-800"><p>Provider: {delivery.providerConfigured ? 'configured (unverified)' : 'not configured'} | Worker: {delivery.workerEnabled ? 'enabled' : 'disabled'}</p><p className="mt-2 text-xs text-slate-500">{delivery.jobs.length} recent confirmations. Sent means provider acceptance, not inbox delivery.</p></div>}</section>
+      </div>
+      <aside className="min-w-0 space-y-4 xl:sticky xl:top-4 xl:self-start"><section className="card-base overflow-hidden"><div className="p-5" style={{ background: brand.hex, color: brand.foreground }}><p className="text-xs font-semibold uppercase tracking-widest">Live preview</p><div className="mt-5 flex items-center gap-3"><ShopLogo logo={logo} name={form.brandName || form.shopName} size="w-12 h-12" /><div className="min-w-0"><h2 className="break-words text-lg font-bold" style={{ color: brand.foreground }}>{form.brandName || form.shopName}</h2><p className="mt-1 break-words text-xs">{form.brandTagline || 'Your company tagline'}</p></div></div></div><div className="space-y-4 p-5"><p className="text-sm font-semibold">Receipt identity</p><p className="break-words text-sm">{form.shopName}</p><p className="break-words text-xs text-slate-500">{form.shopAddress}</p><p className="break-words text-xs text-slate-500">{form.shopPhone} {form.shopEmail}</p><div className="border-t border-dashed pt-4 text-center text-xs text-slate-500">{form.receiptFooter}</div></div></section><p className="px-1 text-xs leading-relaxed text-slate-500">Preview changes are not public until saved. Uploads are optimized to PNG. Uploaded logos are included inline in new action emails. Some email clients may hide images until the recipient allows them.</p></aside>
+    </div>
+    <footer className="card-base flex flex-wrap items-center justify-between gap-3 p-4"><p role="status" className="text-sm text-slate-500">{dirty ? 'You have unsaved company changes' : 'Company settings are up to date'}</p><div className="flex flex-wrap gap-3"><button type="button" disabled={busy || !dirty} onClick={discard} className="min-h-11 rounded-xl border px-4 disabled:opacity-40">Discard changes</button><button disabled={busy || !dirty} className="min-h-11 rounded-xl px-5 font-semibold disabled:opacity-40" style={{ background: brand.hex, color: brand.foreground }}>{busy ? 'Saving...' : 'Save brand settings'}</button></div></footer>
+    </fieldset>
+  </form>;
 }

@@ -90,6 +90,7 @@ const MORE_SECTIONS = [
     label: "Administration",
     color: "indigo",
     items: [
+      { id: "assistant", label: "Business Assistant", icon: Zap, path: "/assistant", permission: "assistant:use" },
       { id: "staff/roles", label: "Roles & Access", icon: Shield, path: "/staff/roles", permission: "users", ownerOnly: true },
       { id: "staff",    label: "Staff Hub",    icon: Shield,   path: "/staff",    permission: "users"    },
       { id: "shops",    label: "My Shop",      icon: Building2,path: "/shops",    permission: "settings" },

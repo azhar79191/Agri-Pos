@@ -35,7 +35,7 @@ const MobileHeader = () => {
         {isRoot ? (
           /* Shop logo + name on root pages */
           <>
-            <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.shopName} size="w-7 h-7" />
+            <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.brandName || settings?.shopName} size="w-7 h-7" />
             <span className="font-bold text-slate-900 dark:text-white text-sm truncate">
               {settings?.brandName || settings?.shopName || "AgriNest"}
             </span>
@@ -50,7 +50,9 @@ const MobileHeader = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
+            <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.brandName || settings?.shopName} size="w-7 h-7" />
             <div className="min-w-0">
+              <p className="truncate text-[10px] text-slate-500">{settings?.brandName || settings?.shopName}</p>
               {breadcrumb && (
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-none mb-0.5">
                   {breadcrumb[0]}

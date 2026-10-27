@@ -11,6 +11,7 @@ import { clearAuthToken, readAuthToken } from "../utils/authStorage";
 const _savedUser = (() => {
   try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
 })();
+const _defaultIcon = document.querySelector('link[rel="icon"]')?.getAttribute("href") || "/favicon.svg";
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
 const _savedDarkMode = (localStorage.getItem(scopedStorageKey("appearance:dark")) ?? String(_savedShop?.theme === "dark")) === "true";
 const _savedThemeColor = localStorage.getItem(scopedStorageKey("appearance:color")) || _savedShop?.brandColor || "#047857";
@@ -130,10 +131,13 @@ export function AppProvider({ children }) {
     applyTheme(state.themeColor);
   }, [state.themeColor]);
   useEffect(() => {
+    let icon = document.querySelector('link[rel="icon"]');
+    if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
+    icon.href = state.settings.brandLogo || _defaultIcon;
     document.title = state.settings.brandName || state.settings.shopName || 'Agri-POS';
     if (state.settings.brandColor && !localStorage.getItem(scopedStorageKey("appearance:color"))) dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor });
     if (!localStorage.getItem(scopedStorageKey('appearance:dark'))) dispatch({ type: A.SET_DARK_MODE, payload: state.settings.theme === 'dark' });
-  }, [state.settings.brandName, state.settings.shopName, state.settings.brandColor, state.settings.theme]);
+  }, [state.settings.brandName, state.settings.shopName, state.settings.brandLogo, state.settings.brandColor, state.settings.theme]);
 
   // Persist user
   useEffect(() => {
@@ -151,7 +155,11 @@ export function AppProvider({ children }) {
     localStorage.removeItem("posSettings");
     const handleUserUpdate = (e) => {
       const incoming = e.detail || (e.newValue ? JSON.parse(e.newValue) : null);
-      if (incoming) dispatch({ type: A.UPDATE_USER, payload: incoming });
+      if (incoming) {
+        dispatch({ type: A.UPDATE_USER, payload: incoming });
+        const shop = incoming.shop && typeof incoming.shop === 'object' ? incoming.shop : {};
+        dispatch({ type: A.UPDATE_SETTINGS, payload: { shopName: shop.name || '', shopLogo: shop.logo || '', brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', brandColor: shop.brandColor || '', theme: shop.theme || 'light', address: shop.address || '', phone: shop.phone || '', email: shop.email || '' } });
+      }
     };
     window.addEventListener("user-updated", handleUserUpdate);
     const handleStorage = (e) => { if (e.key === "user" && e.newValue) handleUserUpdate(e); };
@@ -173,13 +181,15 @@ export function AppProvider({ children }) {
         if (!fresh) return;
         const shop = fresh.shop;
         if (shop && typeof shop === 'object') dispatch({ type: A.UPDATE_SETTINGS, payload: {
+          shopName: shop.name || '', shopLogo: shop.logo || '', address: shop.address || '', phone: shop.phone || '', email: shop.email || '', receiptFooter: shop.receiptFooter || '',
           theme: shop.theme || "light", brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', brandColor: shop.brandColor || '',
         } });
         // Only update if permissions actually changed
         const current = stateRef.current.currentUser;
         const freshPerms = JSON.stringify(fresh.permissions || []);
         const currentPerms = JSON.stringify(current?.permissions || []);
-        if (freshPerms !== currentPerms || fresh.isActive !== current?.isActive) {
+        localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
+        if (freshPerms !== currentPerms || fresh.isActive !== current?.isActive || fresh.role !== current?.role || fresh.permissionsCustomized !== current?.permissionsCustomized) {
           dispatch({ type: A.UPDATE_USER, payload: fresh });
           localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
         }
@@ -268,6 +278,19 @@ export function AppProvider({ children }) {
     },
     createInvoice: (t) => t,
 
+    applyCompanySettings: (settings, expectedShop) => {
+      const current = stateRef.current.currentUser;
+      const currentShop = current?.shop?._id || current?.shop;
+      if (expectedShop && String(currentShop) !== String(expectedShop)) return false;
+      const normalized = { ...settings, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail };
+      dispatch({ type: A.UPDATE_SETTINGS, payload: normalized });
+      if (current?.shop && typeof current.shop === 'object') {
+        const updated = { ...current, shop: { ...current.shop, name: settings.shopName, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail,
+          logo: settings.shopLogo || "", brandName: settings.brandName, brandTagline: settings.brandTagline, brandLogo: settings.brandLogo, brandColor: settings.brandColor, theme: settings.theme, receiptFooter: settings.receiptFooter } };
+        dispatch({ type: A.UPDATE_USER, payload: updated });
+        localStorage.setItem('user', JSON.stringify(updated));
+      }
+    },
     updateSettings: (settings) => dispatch({ type: A.UPDATE_SETTINGS, payload: settings }),
     toggleDarkMode: () => { const value = !stateRef.current.darkMode; localStorage.setItem(scopedStorageKey("appearance:dark"), String(value)); dispatch({ type: A.SET_DARK_MODE, payload: value }); },
     resetAppearance: () => {

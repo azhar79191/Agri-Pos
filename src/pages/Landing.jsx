@@ -35,7 +35,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#060b18", color: "#e2e8f0", fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: "#060b18", color: "#e2e8f0" }}>
 
       {/* ── Navbar ── */}
       <nav

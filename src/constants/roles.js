@@ -8,7 +8,7 @@ export const ROLES = {
 /** Role-based default permissions — mirrors backend getRolePermissions */
 export const ROLE_PERMISSIONS = {
   admin: [
-    "dashboard:view",
+    "dashboard:view", "assistant:use", "ai:use",
     "pos:view", "pos:process",
     "products:view", "products:create", "products:edit", "products:delete",
     "customers:view", "customers:create", "customers:edit", "customers:delete",
@@ -16,10 +16,10 @@ export const ROLE_PERMISSIONS = {
     "reports:view", "reports:export",
     "stock:view", "stock:manage",
     "users:view", "users:create", "users:edit", "users:delete",
-    "settings:view", "settings:edit",
+    "settings:view", "settings:edit", "integrations:manage", "ai:manage", "ai:review",
   ],
   manager: [
-    "dashboard:view",
+    "dashboard:view", "assistant:use", "ai:use",
     "pos:view", "pos:process",
     "products:view", "products:create", "products:edit",
     "customers:view", "customers:create", "customers:edit",
@@ -30,7 +30,7 @@ export const ROLE_PERMISSIONS = {
     "settings:view",
   ],
   cashier: [
-    "dashboard:view",
+    "dashboard:view", "assistant:use", "ai:use",
     "pos:view", "pos:process",
     "products:view",
     "customers:view", "customers:create",
@@ -46,6 +46,7 @@ export const ROLE_PERMISSIONS = {
  */
 export const PERMISSION_MAP = {
   dashboard: "dashboard:view",
+  assistant: "assistant:use", ai: "ai:use",
   pos:       "pos:view",
   products:  "products:view",
   customers: "customers:view",

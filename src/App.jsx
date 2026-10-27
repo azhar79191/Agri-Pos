@@ -21,6 +21,7 @@ import RegisterShop from "./pages/RegisterShop";
 import Landing from "./pages/Landing";
 
 // Lazy — code-split heavy pages
+const BusinessAssistant = lazy(() => import("./pages/BusinessAssistant"));
 const Dashboard         = lazy(() => import("./pages/Dashboard"));
 const Products          = lazy(() => import("./pages/Products"));
 const Customers         = lazy(() => import("./pages/Customers"));
@@ -130,6 +131,7 @@ const AppLayout = () => {
               <Suspense fallback={<PageLoader />}>
                 <AccessBoundary><Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/assistant" element={<BusinessAssistant />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/customers" element={<Customers />} />
