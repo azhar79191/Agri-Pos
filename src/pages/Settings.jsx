@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SettingsNav from "./settings/SettingsNav";
 import BrandingPanel from "./settings/BrandingPanel";
-import ThemePanel from "./settings/ThemePanel";
 import ShopPanel from "./settings/ShopPanel";
 import TagsPanel from "./settings/TagsPanel";
 import AlertsPanel from "./settings/AlertsPanel";
@@ -14,7 +13,6 @@ import { SETTINGS_NAV } from "./settings/settingsConfig";
 
 const PANELS = {
   branding: <BrandingPanel />,
-  theme:         <ThemePanel />,
   shop:          <ShopPanel />,
   brands:        (
     <TagsPanel
@@ -49,7 +47,7 @@ const PANELS = {
 const ALL_ITEMS = SETTINGS_NAV.flatMap(g => g.items);
 
 const Settings = () => {
-  const [active, setActive] = useState("theme");
+  const [active, setActive] = useState("branding");
   const current = ALL_ITEMS.find(i => i.id === active);
 
   // "?" shortcut from anywhere opens this panel directly

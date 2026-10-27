@@ -79,7 +79,7 @@ const InvoiceManagement = () => {
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Invoices</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xs text-slate-500 dark:text-slate-400">{filtered.length} of {invoices.length} invoices</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{invoices.length} of {pagination.total} invoices</p>
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${isOnline ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"}`}>
                 {isOnline ? <Wifi className="w-2.5 h-2.5" /> : <WifiOff className="w-2.5 h-2.5" />}
                 {isOnline ? "Online" : "Offline"}

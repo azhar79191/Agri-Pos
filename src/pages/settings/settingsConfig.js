@@ -7,8 +7,7 @@ export const SETTINGS_NAV = [
   {
     group: "Appearance",
     items: [
-      { id: "branding", label: "Branding & Emails", icon: Palette, desc: "Shop identity and action confirmations" },
-      { id: "theme",         label: "Theme & Colors",      icon: Palette,       desc: "Accent color and dark mode" },
+      { id: "branding", label: "Company Branding", icon: Palette, desc: "Company logo, shared colors and appearance" },
     ],
   },
   {

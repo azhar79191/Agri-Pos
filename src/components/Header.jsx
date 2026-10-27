@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, Sun, Moon, LogOut, ChevronDown, Shield, User, Store, Download, Share, X } from "lucide-react";
+import { Bell, LogOut, ChevronDown, Shield, User, Store, Download, Share, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
@@ -18,7 +18,7 @@ const getRoleColorClass = (color) => {
 
 const Header = () => {
   const { state, actions } = useApp();
-  const { darkMode, cart, currentUser, settings } = state;
+  const { cart, currentUser, settings } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
@@ -109,16 +109,7 @@ const Header = () => {
           </button>
         )}
 
-        {/* Dark mode toggle */}
-        <button
-          onClick={actions.toggleDarkMode}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"
-          title={darkMode ? "Light mode" : "Dark mode"}
-        >
-          {darkMode
-            ? <Sun className="w-[18px] h-[18px] text-amber-400" />
-            : <Moon className="w-[18px] h-[18px]" />}
-        </button>
+
 
         <NotificationCenter />
 

@@ -27,7 +27,6 @@ export const SHORTCUTS = [
   { group: "POS",         keys: ["F8"],            label: "Checkout / Pay",        action: "checkout" },
 
   // UI
-  { group: "Interface",   keys: ["Ctrl", "\\"],    label: "Toggle Dark Mode",      action: "darkmode" },
   { group: "Interface",   keys: ["Escape"],        label: "Close Modal / Search",  action: "escape" },
   { group: "Interface",   keys: ["?"],             label: "Show Keyboard Shortcuts",action: "shortcuts" },
 ];
@@ -48,7 +47,6 @@ const useKeyboardShortcuts = () => {
       // ── Ctrl/Cmd combos — always active ──
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "k") return; // handled by GlobalSearch
-        if (e.key === "\\") { e.preventDefault(); actions.toggleDarkMode(); return; }
       }
 
       // Block single-key shortcuts while typing

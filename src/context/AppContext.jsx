@@ -13,14 +13,14 @@ const _savedUser = (() => {
 })();
 const _defaultIcon = document.querySelector('link[rel="icon"]')?.getAttribute("href") || "/favicon.svg";
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
-const _savedDarkMode = (localStorage.getItem(scopedStorageKey("appearance:dark")) ?? String(_savedShop?.theme === "dark")) === "true";
-const _savedThemeColor = localStorage.getItem(scopedStorageKey("appearance:color")) || _savedShop?.brandColor || "#047857";
+const _savedDarkMode = _savedShop?.theme === "dark";
+const _savedThemeColor = _savedShop?.brandColor || "#047857";
 const _savedCart = (() => {
   try { return JSON.parse(sessionStorage.getItem(scopedStorageKey("posCart")) || "[]"); } catch { return []; }
 })();
 
 // Apply dark class and theme color before React renders
-if (_savedDarkMode) document.documentElement.classList.add("dark");
+document.documentElement.classList.toggle("dark", _savedDarkMode);
 applyTheme(_savedThemeColor);
 
 const initialState = {
@@ -73,8 +73,9 @@ function appReducer(state, action) {
         currentUser: null,
         isAuthenticated: false,
         cart: [],
-        darkMode: state.darkMode,
-        themeColor: state.themeColor,
+        settings: { ...initialState.settings, shopName: "", brandName: "", brandTagline: "", brandLogo: "", shopLogo: "", brandColor: "", theme: "light" },
+        darkMode: false,
+        themeColor: "#047857",
       };
     case A.SET_PAGE:
       return { ...state, currentPage: action.payload };
@@ -133,11 +134,11 @@ export function AppProvider({ children }) {
   useEffect(() => {
     let icon = document.querySelector('link[rel="icon"]');
     if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
-    icon.href = state.settings.brandLogo || _defaultIcon;
+    icon.href = state.settings.brandLogo || state.settings.shopLogo || _defaultIcon;
     document.title = state.settings.brandName || state.settings.shopName || 'Agri-POS';
-    if (state.settings.brandColor && !localStorage.getItem(scopedStorageKey("appearance:color"))) dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor });
-    if (!localStorage.getItem(scopedStorageKey('appearance:dark'))) dispatch({ type: A.SET_DARK_MODE, payload: state.settings.theme === 'dark' });
-  }, [state.settings.brandName, state.settings.shopName, state.settings.brandLogo, state.settings.brandColor, state.settings.theme]);
+    dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor || "#047857" });
+    dispatch({ type: A.SET_DARK_MODE, payload: state.settings.theme === 'dark' });
+  }, [state.settings.brandName, state.settings.shopName, state.settings.brandLogo, state.settings.shopLogo, state.settings.brandColor, state.settings.theme]);
 
   // Persist user
   useEffect(() => {
@@ -207,8 +208,8 @@ export function AppProvider({ children }) {
       localStorage.removeItem("posSettings");
       localStorage.setItem("user", JSON.stringify(preloadedUser));
       const shop = preloadedUser.shop;
-      dispatch({ type: A.SET_THEME_COLOR, payload: localStorage.getItem(scopedStorageKey("appearance:color")) || shop?.brandColor || "#047857" });
-      dispatch({ type: A.SET_DARK_MODE, payload: (localStorage.getItem(scopedStorageKey("appearance:dark")) ?? String(shop?.theme === "dark")) === "true" });
+      dispatch({ type: A.SET_THEME_COLOR, payload: shop?.brandColor || "#047857" });
+      dispatch({ type: A.SET_DARK_MODE, payload: shop?.theme === "dark" });
       dispatch({
         type: A.UPDATE_SETTINGS,
         payload: shop && typeof shop === "object" ? {
@@ -217,7 +218,7 @@ export function AppProvider({ children }) {
           currency: shop.currency || "Rs.", address: shop.address || "",
           phone: shop.phone || "", email: shop.email || "",
           shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-        } : { brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
+        } : { theme: "light", brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
       });
       // Welcome toast
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -292,14 +293,6 @@ export function AppProvider({ children }) {
       }
     },
     updateSettings: (settings) => dispatch({ type: A.UPDATE_SETTINGS, payload: settings }),
-    toggleDarkMode: () => { const value = !stateRef.current.darkMode; localStorage.setItem(scopedStorageKey("appearance:dark"), String(value)); dispatch({ type: A.SET_DARK_MODE, payload: value }); },
-    resetAppearance: () => {
-      localStorage.removeItem(scopedStorageKey('appearance:color')); localStorage.removeItem(scopedStorageKey('appearance:dark'));
-      dispatch({ type: A.SET_THEME_COLOR, payload: stateRef.current.settings.brandColor || '#047857' });
-      dispatch({ type: A.SET_DARK_MODE, payload: stateRef.current.settings.theme === 'dark' });
-    },
-    setThemeColor: (color) => { localStorage.setItem(scopedStorageKey("appearance:color"), color); dispatch({ type: A.SET_THEME_COLOR, payload: color }); },
-
     showToast: (toast) => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
       dispatch({ type: A.SHOW_TOAST, payload: { ...toast, id: Date.now() } });
