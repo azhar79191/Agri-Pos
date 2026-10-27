@@ -1,3 +1,4 @@
+import EmptyState from "../components/ui/EmptyState";
 import React, { useEffect } from "react";
 import { Plus, Edit3, Trash2, Shield, Eye, EyeOff, UserCheck, UserX, Settings, RefreshCw, Users, X } from "lucide-react";
 import { useUsers } from "../hooks/useUsers";
@@ -55,10 +56,7 @@ const UserManagement = () => {
       {loading ? (
         <div className="text-center py-16 text-slate-500">Loading users...</div>
       ) : users.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
-          <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-500 dark:text-slate-400">No users found</p>
-        </div>
+        <EmptyState title={<>No users found</>} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.map((user, i) => {

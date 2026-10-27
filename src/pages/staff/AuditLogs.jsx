@@ -1,3 +1,4 @@
+import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useMemo, useEffect } from "react";
 import { Shield, Search, ChevronDown, User, Clock, Edit3, Trash2, DollarSign, Package } from "lucide-react";
 import { formatDate } from "../../utils/helpers";
@@ -48,10 +49,10 @@ const AuditLogs = () => {
         <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Audit Logs</h1><p className="text-sm text-slate-500 dark:text-slate-400">{logs.length} activities tracked</p></div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search logs..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white" /></div>
-        <div className="relative"><select value={filterAction} onChange={e => setFilterAction(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm cursor-pointer text-slate-700 dark:text-slate-300"><option value="all">All Actions</option><option value="stock_edit">Stock Edits</option><option value="price_change">Price Changes</option><option value="invoice_edit">Invoice Edits</option><option value="invoice_delete">Invoice Deletes</option><option value="discount_override">Discount Overrides</option><option value="user_activity">User Activity</option></select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" /></div>
-      </div>
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input aria-label="Search logs" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search logs..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white" /></div>
+        <div className="relative"><select aria-label="All Actions" value={filterAction} onChange={e => setFilterAction(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm cursor-pointer text-slate-700 dark:text-slate-300"><option value="all">All Actions</option><option value="stock_edit">Stock Edits</option><option value="price_change">Price Changes</option><option value="invoice_edit">Invoice Edits</option><option value="invoice_delete">Invoice Deletes</option><option value="discount_override">Discount Overrides</option><option value="user_activity">User Activity</option></select><ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" /></div>
+      </FilterBar>
 
       <div className="space-y-2">
         {filtered.map(log => {

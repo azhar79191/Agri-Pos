@@ -1,3 +1,6 @@
+import EmptyState from "../../components/ui/EmptyState";
+import FilterBar from "../../components/ui/FilterBar";
+import DataTable from "../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
 import { History, Search, Filter, Calendar, Eye, Trash2, Download, Share2, Loader2, AlertCircle } from "lucide-react";
 import { getAllAdvisories, deleteAdvisory, exportAdvisories } from "../../api/cropAdvisoryApi";
@@ -140,12 +143,12 @@ const AdvisoryHistory = () => {
 
       {/* Filters */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <FilterBar className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* Search */}
           <div className="md:col-span-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
+              <input aria-label="Search advisories"
                 type="text"
                 placeholder="Search advisories..."
                 value={filters.search}
@@ -156,7 +159,7 @@ const AdvisoryHistory = () => {
           </div>
 
           {/* Crop Filter */}
-          <select
+          <select aria-label="All Crops"
             value={filters.crop}
             onChange={(e) => setFilters({ ...filters, crop: e.target.value })}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
@@ -169,7 +172,7 @@ const AdvisoryHistory = () => {
           </select>
 
           {/* Severity Filter */}
-          <select
+          <select aria-label="All Severities"
             value={filters.severity}
             onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
@@ -183,14 +186,14 @@ const AdvisoryHistory = () => {
 
           {/* Date Range */}
           <div className="flex gap-2">
-            <input
+            <input aria-label="Filter date"
               type="date"
               value={filters.startDate}
               onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
               className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             />
           </div>
-        </div>
+        </FilterBar>
       </div>
 
       {/* Advisories List */}
@@ -200,14 +203,10 @@ const AdvisoryHistory = () => {
             <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
           </div>
         ) : advisories.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <AlertCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" />
-            <p className="font-semibold text-slate-900 dark:text-white">No advisories found</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try adjusting your filters</p>
-          </div>
+          <EmptyState title={<>No advisories found</>} description={<>Try adjusting your filters</>} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <DataTable sortScope="Sorting applies to this page" className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
@@ -259,7 +258,7 @@ const AdvisoryHistory = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </DataTable>
           </div>
         )}
 

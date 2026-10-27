@@ -1,5 +1,6 @@
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import SupplierPaymentModal from "../../components/purchases/SupplierPaymentModal";
+import SupplierClaims from "../../components/purchases/SupplierClaims";
 import React, { useState } from "react";
 import SupplierLedgerModal from "../../components/purchases/SupplierLedgerModal";
 import { Building2, Plus, Phone, MapPin, Edit2, Trash2, Loader2, TrendingUp, CreditCard } from "lucide-react";
@@ -43,6 +44,7 @@ const Suppliers = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       <PendingInventoryOperations pathPrefix="/suppliers" onRecovered={refresh} />
+      {isAdmin && <SupplierClaims suppliers={suppliers} currency={settings.currency} onRecorded={refresh} />}
       {paymentSupplier && <SupplierPaymentModal key={paymentSupplier._id} supplier={paymentSupplier} currency={settings.currency} onClose={() => setPaymentSupplier(null)} onRecorded={refresh} />}
       {ledgerSupplier && <SupplierLedgerModal key={ledgerSupplier._id} supplier={ledgerSupplier} currency={settings.currency} onClose={() => setLedgerSupplier(null)} />}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

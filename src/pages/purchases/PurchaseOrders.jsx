@@ -1,3 +1,4 @@
+import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useCallback } from "react";
 import { ShoppingBag, Plus, Search, ChevronDown, Loader2, AlertCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -58,17 +59,17 @@ const PurchaseOrders = () => {
       </div>
 
       {/* ── Filters ── */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
+          <input aria-label="Search by PO # or supplier"
             onChange={e => setFilter("search", e.target.value)}
             placeholder="Search by PO # or supplier..."
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           />
         </div>
         <div className="relative">
-          <select
+          <select aria-label="All Status"
             onChange={e => setFilter("status", e.target.value)}
             className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           >
@@ -77,7 +78,7 @@ const PurchaseOrders = () => {
           </select>
           <ChevronDown className="absolute right-[200px] sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
-      </div>
+      </FilterBar>
 
       {/* ── Loading ── */}
       {loading && (

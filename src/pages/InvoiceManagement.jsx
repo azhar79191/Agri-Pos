@@ -1,3 +1,5 @@
+import EmptyState from "../components/ui/EmptyState";
+import FilterBar from "../components/ui/FilterBar";
 import React, { useState, useEffect } from "react";
 import {
   FileText, Search, Download, CheckCircle, Clock,
@@ -115,7 +117,7 @@ const InvoiceManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input aria-label="Search invoices" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -137,7 +139,7 @@ const InvoiceManagement = () => {
             </button>
           )}
         </div>
-      </div>
+      </FilterBar>
 
       <p className="text-xs text-slate-500">{pagination.total} matching invoices. Cards, summaries and exports cover the loaded page only. Completed invoice totals are not cash collections.</p>
       {/* Cards grid */}
@@ -146,14 +148,7 @@ const InvoiceManagement = () => {
       ) : loading ? (
         <CardSkeleton count={6} />
       ) : paginated.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-            <FileText className="w-8 h-8 text-slate-400 opacity-40" />
-          </div>
-          <p className="font-bold text-slate-500 dark:text-slate-400">No invoices found</p>
-          <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">{hasFilters ? "Try adjusting your filters" : "No invoices generated yet"}</p>
-          {hasFilters && <button onClick={clearFilters} className="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors">Clear Filters</button>}
-        </div>
+        <EmptyState icon={FileText} title="No invoices found" description={hasFilters ? "Try adjusting your filters." : "Invoices will appear here after your first sale."} filtered={!!hasFilters} onClear={hasFilters ? clearFilters : undefined} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {paginated.map((invoice) => (
@@ -183,8 +178,8 @@ const InvoiceManagement = () => {
       {showModal && selectedInvoice && (
         <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:hidden" onClick={() => setShowModal(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-backdrop" />
-          <div 
-            className=" z-10 w-full  max-w-6xl flex flex-col overflow-y-auto h-[80vh] rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in" 
+          <div
+            className=" z-10 w-full  max-w-6xl flex flex-col overflow-y-auto h-[80vh] rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -199,23 +194,23 @@ const InvoiceManagement = () => {
                     {selectedInvoice.customerName || "Walk-in Customer"} • {new Date(selectedInvoice.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                <button 
-                  onClick={() => setShowModal(false)} 
+                <button
+                  onClick={() => setShowModal(false)}
                   className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all flex-shrink-0"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
             </div>
-            
+
             {/* Modal Content - Scrollable */}
             <div className="flex-1">
-              <Invoice 
-                invoice={selectedInvoice} 
-                settings={settings} 
-                onPrint={() => window.print()} 
-                onDownload={() => downloadInvoicePDF(selectedInvoice, settings)} 
-                onEmail={() => {}} 
+              <Invoice
+                invoice={selectedInvoice}
+                settings={settings}
+                onPrint={() => window.print()}
+                onDownload={() => downloadInvoicePDF(selectedInvoice, settings)}
+                onEmail={() => {}}
               />
             </div>
           </div>

@@ -1,3 +1,4 @@
+import DataTable from "../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
 import { Package, DollarSign, TrendingDown, Archive, Loader2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -66,7 +67,7 @@ const InventoryReports = () => {
           <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800"><p className="font-bold text-slate-900 dark:text-white text-sm">Product Stock Details</p></div>
             <div className="overflow-x-auto">
-              <table className="w-full table-premium">
+              <DataTable searchable className="w-full table-premium">
                 <thead><tr>{["Product", "Category", "Stock", "Unit", "Value", "Status"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {products.map((p) => (
@@ -75,12 +76,12 @@ const InventoryReports = () => {
                       <td className="px-4 py-3.5 text-sm text-slate-500">{p.category}</td>
                       <td className="px-4 py-3.5 text-sm font-bold text-slate-900 dark:text-white">{p.stock}</td>
                       <td className="px-4 py-3.5 text-sm text-slate-500">{p.unit}</td>
-                      <td className="px-4 py-3.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.stockValue, settings.currency)}</td>
+                      <td data-sort-value={p.stockValue} className="px-4 py-3.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.stockValue, settings.currency)}</td>
                       <td className="px-4 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${p.status === "In Stock" ? "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400" : p.status === "Low Stock" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>{p.status}</span></td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </DataTable>
             </div>
           </div>
         </>

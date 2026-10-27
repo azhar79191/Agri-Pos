@@ -1,3 +1,5 @@
+import EmptyState from "../components/ui/EmptyState";
+import DataTable from "../components/ui/DataTable";
 import { useApp } from "../context/AppContext";
 import PendingInventoryOperations from "../components/PendingInventoryOperations";
 import React, { useState, useEffect, useCallback } from "react";
@@ -169,10 +171,7 @@ const StockManagement = () => {
             {loading ? (
               <p className="text-slate-500 dark:text-slate-400 text-center py-8 text-sm">Loading...</p>
             ) : logs.length === 0 ? (
-              <div className="text-center py-10">
-                <History className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                <p className="text-slate-500 dark:text-slate-400 text-sm">No stock history available</p>
-              </div>
+              <EmptyState title={<>No stock history available</>} />
             ) : (
               logs.slice(0, 10).map((entry, i) => (
                 <div key={entry._id || i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -205,7 +204,7 @@ const StockManagement = () => {
           <span className="ml-auto text-xs text-slate-400">{displayLevels.length} products</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full table-premium">
+          <DataTable searchable className="w-full table-premium">
             <thead>
               <tr>{["Product", "Current Stock", "Unit", "Status"].map((h) => (
                 <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
@@ -232,7 +231,7 @@ const StockManagement = () => {
                 );
               })}
             </tbody>
-          </table>
+          </DataTable>
         </div>
       </div>
     </div>

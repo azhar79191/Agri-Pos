@@ -1,3 +1,4 @@
+import { companyName } from "../utils/company";
 import React, { forwardRef } from "react";
 import { Printer, Download, Mail, Phone, MapPin, Calendar, Clock, Hash, User, CreditCard, FileText } from "lucide-react";
 import { formatCurrency as formatCurrencyHelper } from "../utils/helpers";
@@ -9,25 +10,25 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
     if (isNaN(num)) return `${settings.currency || "Rs."} 0.00`;
     return `${settings.currency || "Rs."} ${num.toFixed(2)}`;
   };
-  
+
   const formatDate = (date) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString('en-IN');
   };
-  
+
   const formatTime = (time) => {
     if (!time) return new Date().toLocaleTimeString('en-IN');
     return time;
   };
 
   // Extract shop data from settings
-  const shopName = settings.shopName || "Shop Name";
-  const shopAddress = settings.address || "Shop Address";
-  const shopPhone = settings.phone || "Phone Number";
-  const shopEmail = settings.email || "email@shop.com";
-  const shopLogo = settings.shopLogo;
+  const shopName = companyName(settings);
+  const shopAddress = settings.shopAddress || settings.address || "";
+  const shopPhone = settings.shopPhone || settings.phone || "";
+  const shopEmail = settings.shopEmail || settings.email || "";
+  const shopLogo = settings.brandLogo || settings.shopLogo;
   const receiptFooter = settings.receiptFooter || "Thank you for your business!";
-  
+
   // Get shop initials for logo
   const shopInitials = shopName.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
 
@@ -167,8 +168,8 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Status:</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  invoice.status === 'Completed' 
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                  invoice.status === 'Completed'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                     : invoice.status === 'Pending'
                     ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                     : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
@@ -234,19 +235,19 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
                 <span>Subtotal:</span>
                 <span className="font-medium dark:text-white">{formatCurrency(invoice.subtotal || 0)}</span>
               </div>
-              
+
               {(invoice.discount || 0) > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 text-sm">
                   <span>Discount:</span>
                   <span className="font-medium">-{formatCurrency(invoice.discount || 0)}</span>
                 </div>
               )}
-              
+
               <div className="flex justify-between text-gray-600 dark:text-gray-400 text-sm">
                 <span>Tax ({invoice.taxRate || invoice.taxAmount || settings.taxRate || 0}%):</span>
                 <span className="font-medium dark:text-white">{formatCurrency(invoice.tax || invoice.taxAmount || 0)}</span>
               </div>
-              
+
               <div className="border-t border-gray-300 dark:border-slate-600 pt-3">
                 <div className="flex justify-between text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                   <span>Total:</span>

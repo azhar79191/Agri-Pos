@@ -1,3 +1,5 @@
+import FilterBar from "../components/ui/FilterBar";
+import DataTable from "../components/ui/DataTable";
 import ListFeedback from "../components/ui/ListFeedback";
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Users, Download, Search } from "lucide-react";
@@ -85,15 +87,7 @@ const Customers = () => {
       />
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-          style={{ paddingLeft: "2.5rem" }} aria-label="Search customers" placeholder="Search by name, phone, or email..."
-          className="input-premium w-full pl-10"
-        />
-      </div>
+      <FilterBar filters={[{ type: 'search', key: 'search', label: 'Search customers', placeholder: 'Search by name, phone, or email...' }]} values={{ search: searchTerm }} onChange={(_, value) => { setSearchTerm(value); setPage(1); }} onClear={() => { setSearchTerm(''); setPage(1); }} total={pagination.total} />
 
       <p className="text-xs text-slate-500 dark:text-slate-400">Summary cards and exports describe the loaded page. Search checks the full shop directory.</p>
       {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
@@ -101,7 +95,7 @@ const Customers = () => {
       <div className="card-base overflow-hidden">
         {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={4} /> : (
           <div className="overflow-x-auto">
-            <table className="w-full table-premium">
+            <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
               <thead>
                 <tr>
                   <th className="w-10"><input type="checkbox" aria-label="Select all customers on this page" checked={selected.size === filteredCustomers.length && filteredCustomers.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
@@ -113,6 +107,7 @@ const Customers = () => {
                   <CustomerRow
                     key={customer._id}
                     customer={customer}
+                    sortValues={[null, customer.name, customer.address, customer.walletBalance || 0, customer.creditBalance || 0]}
                     onEdit={actions.hasPermission("customers:edit") ? openEdit : null}
                     onDelete={actions.hasPermission("customers:delete") ? setDeleteConfirm : null}
                     onViewStatement={(c) => navigate(`/customers/${c._id}/statement`)}
@@ -122,7 +117,7 @@ const Customers = () => {
                   />
                 ))}
               </tbody>
-            </table>
+            </DataTable>
             <ListFeedback empty={filteredCustomers.length === 0} title={searchTerm ? 'No matching customers' : 'No active customers yet'} description={searchTerm ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm ? () => { setSearchTerm(""); setPage(1); } : undefined} />
           </div>
         )}

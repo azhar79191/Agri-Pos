@@ -1,3 +1,4 @@
+import { companyName } from "../utils/company";
 import React, { useState, useEffect, useRef } from "react";
 import { Bell, LogOut, ChevronDown, Shield, User, Store, Download, Share, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -69,7 +70,7 @@ const Header = () => {
       <div className="flex min-w-0 items-center gap-4">
         <div aria-label="Company identity" className="flex min-w-0 max-w-[240px] items-center gap-3 border-r border-slate-200 pr-4 dark:border-slate-700">
           <ShopLogo logo={settings.brandLogo || settings.shopLogo} name={settings.brandName || settings.shopName} size="w-8 h-8" />
-          <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900 dark:text-white">{settings.brandName || settings.shopName || 'Your company'}</p>{settings.brandTagline && <p className="truncate text-[10px] text-slate-500">{settings.brandTagline}</p>}</div>
+          <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900 dark:text-white">{companyName(settings)}</p>{settings.brandTagline && <p className="truncate text-[10px] text-slate-500">{settings.brandTagline}</p>}</div>
         </div>
         <div className="hidden xl:block">
           {breadcrumb && (
@@ -103,7 +104,7 @@ const Header = () => {
           <button
             onClick={() => canInstall ? install() : setShowInstallModal(true)}
             className="p-2 rounded-lg text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-150"
-            title="Install AgriNest App"
+            title={`Install ${companyName(settings)} App`}
           >
             <Download className="w-[18px] h-[18px]" />
           </button>
@@ -222,7 +223,7 @@ const Header = () => {
                 <Download className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Install AgriNest</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Install {companyName(settings)}</p>
                 <p className="text-xs text-slate-400">Add to your device</p>
               </div>
             </div>
@@ -264,7 +265,7 @@ const Header = () => {
                 <ol className="space-y-3">
                   {[
                     <>Look for the <strong>⊕ install icon</strong> in the browser address bar</>,
-                    <>Or open the browser menu (⋮) and select <strong>"Install AgriNest"</strong></>,
+                    <>Or open the browser menu (⋮) and select <strong>"Install {companyName(settings)}"</strong></>,
                     <>Click <strong>"Install"</strong> to confirm</>,
                   ].map((step, i) => (
                     <li key={i} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">

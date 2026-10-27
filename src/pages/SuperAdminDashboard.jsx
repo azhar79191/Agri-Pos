@@ -1,3 +1,6 @@
+import EmptyState from "../components/ui/EmptyState";
+import FilterBar from "../components/ui/FilterBar";
+import DataTable from "../components/ui/DataTable";
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -504,8 +507,8 @@ const SuperAdminDashboard = () => {
       )}
 
       {/* Filters + search */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search shops or owner email..."
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
+        <input aria-label="Search shops or owner email" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search shops or owner email..."
           className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
           {["all","pending","active","suspended"].map(f => (
@@ -515,7 +518,7 @@ const SuperAdminDashboard = () => {
             </button>
           ))}
         </div>
-      </div>
+      </FilterBar>
 
       {/* Shops table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -524,13 +527,10 @@ const SuperAdminDashboard = () => {
             <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading shops...</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 text-slate-400">
-            <Store className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No shops found</p>
-          </div>
+          <EmptyState title={<>No shops found</>} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <DataTable sortScope="Sorting applies to this page" className="w-full">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800">
                   {["Shop", "Owner", "Plan", "Status", "Members", "Expiry", "Actions"].map(h => (
@@ -625,7 +625,7 @@ const SuperAdminDashboard = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </DataTable>
           </div>
         )}
       </div>

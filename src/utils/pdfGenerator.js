@@ -1,3 +1,4 @@
+import { companyName } from './company';
 import { themePalette } from './theme';
 // Lazy-loaded PDF generator — jsPDF only loads when first PDF is requested
 import { normalizeInvoiceItems } from './normalizeInvoiceItems';
@@ -11,6 +12,9 @@ const buildDoc = async (invoice, settings) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const currency = settings?.currency || 'Rs.';
+  const address = settings?.shopAddress || settings?.address;
+  const phone = settings?.shopPhone || settings?.phone;
+  const email = settings?.shopEmail || settings?.email;
 
   const brand = themePalette(settings?.brandColor);
   // Header
@@ -19,12 +23,12 @@ const buildDoc = async (invoice, settings) => {
   doc.setTextColor(...(brand.foreground === '#ffffff' ? [255, 255, 255] : [16, 34, 27]));
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(settings?.brandName || settings?.shopName || 'AgriNest POS', 14, 16);
+  doc.text(companyName(settings), 14, 16);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  if (settings?.address) doc.text(settings.address, 14, 23);
-  if (settings?.phone)   doc.text(`Phone: ${settings.phone}`, 14, 29);
-  if (settings?.email)   doc.text(`Email: ${settings.email}`, 14, 35);
+  if (address) doc.text(address, 14, 23);
+  if (phone) doc.text(`Phone: ${phone}`, 14, 29);
+  if (email) doc.text(`Email: ${email}`, 14, 35);
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   doc.text('INVOICE', pageW - 14, 16, { align: 'right' });

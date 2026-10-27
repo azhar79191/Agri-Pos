@@ -2,10 +2,11 @@
  * shareReceiptOnWhatsApp
  * Builds a premium WhatsApp-formatted receipt message with enhanced design
  */
+import { companyName } from './company';
 import { normalizeInvoiceItems } from './normalizeInvoiceItems';
 
 export const shareReceiptOnWhatsApp = (transaction, settings, phone = "") => {
-  const shop   = settings?.brandName || settings?.shopName || "AgriNest POS";
+  const shop   = companyName(settings);
   const curr   = settings?.currency       || "Rs.";
   const footer = settings?.receiptFooter  || "Thank you for your business!";
   const address = settings?.shopAddress   || "";
@@ -15,14 +16,14 @@ export const shareReceiptOnWhatsApp = (transaction, settings, phone = "") => {
 
   // Format date and time
   const dateObj = transaction.date ? new Date(transaction.date) : new Date();
-  const formattedDate = dateObj.toLocaleDateString("en-PK", { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  const formattedDate = dateObj.toLocaleDateString("en-PK", {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   });
-  const formattedTime = dateObj.toLocaleTimeString("en-PK", { 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const formattedTime = dateObj.toLocaleTimeString("en-PK", {
+    hour: '2-digit',
+    minute: '2-digit'
   });
 
   // Build items list with better formatting
@@ -82,7 +83,7 @@ export const shareReceiptOnWhatsApp = (transaction, settings, phone = "") => {
     `│  _${footer}_  │`,
     "└─────────────────────────────┘",
     "",
-    "🌟 *Powered by AgriNest POS* 🌟",
+    `*${shop}*`,
     "_Premium Pesticide Management System_",
   ]
     .filter((l) => l !== null)

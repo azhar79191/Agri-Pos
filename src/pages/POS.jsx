@@ -18,7 +18,7 @@ import QuickAddCustomerModal from "../components/pos/QuickAddCustomerModal";
 import { getSalesReps } from "../api/salesRepsApi";
 import { getProducts } from "../api/productApi";
 
-const DEFAULT_CATS = ["Herbicides", "Insecticides", "Fungicides", "Fertilizers", "Seeds", "Other"];
+
 
 const POS = () => {
   const { state, actions } = useApp();
@@ -99,10 +99,12 @@ const POS = () => {
   } = checkout;
 
   const categories = useMemo(() => {
-    const fromProducts = [...new Set(products.map((p) => p.category))];
-    const custom = (shopCategories || []).filter((c) => !DEFAULT_CATS.includes(c));
-    return [...new Set([...DEFAULT_CATS, ...fromProducts, ...custom])];
-  }, [products, shopCategories]);
+    return shopCategories || [];
+  }, [shopCategories]);
+
+  useEffect(() => {
+    if (selectedCategory && !categories.includes(selectedCategory)) setSelectedCategory("");
+  }, [categories, selectedCategory]);
 
   useEffect(() => { setCatalogPage(1); }, [quickBarcode, selectedCategory]);
   useEffect(() => {

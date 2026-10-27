@@ -1,3 +1,4 @@
+import DataTable from "../../components/ui/DataTable";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import React, { useState, useCallback, useEffect } from "react";
 import { RotateCcw, Plus, X, Loader2, CheckCircle, Clock, XCircle, Package, Eye, AlertCircle, Edit2, Trash2 } from "lucide-react";
@@ -47,9 +48,9 @@ const PurchaseReturns = () => {
 
   const loadSupplierProducts = useCallback(async (supplierId) => {
     if (!supplierId) { setSupplierProducts([]); return; }
-    try { 
-      const res = await getSupplierProducts(supplierId); 
-      setSupplierProducts(res.data.data.products || []); 
+    try {
+      const res = await getSupplierProducts(supplierId);
+      setSupplierProducts(res.data.data.products || []);
     } catch (err) {
       actions.showToast({ message: "Failed to load supplier products", type: "error" });
       setSupplierProducts([]);
@@ -63,7 +64,7 @@ const PurchaseReturns = () => {
   }, [form.supplierId, loadSupplierProducts]);
 
   const openModal = () => { loadSuppliers(); setForm(emptyForm); setEditingReturn(null); setShowModal(true); };
-  const openEditModal = (returnItem) => { 
+  const openEditModal = (returnItem) => {
     loadSuppliers();
     setEditingReturn(returnItem);
     setForm({
@@ -86,11 +87,11 @@ const PurchaseReturns = () => {
   const updateItem = (i, key, val) => {
     if (key === 'product') {
       const product = supplierProducts.find(p => p._id === val);
-      setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? { 
-        ...item, 
-        product: val, 
+      setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? {
+        ...item,
+        product: val,
         productName: product?.name || "",
-        unitCost: product?.costPrice || 0 
+        unitCost: product?.costPrice || 0
       } : item) }));
     } else {
       setForm(p => ({ ...p, items: p.items.map((item, idx) => idx === i ? { ...item, [key]: val } : item) }));
@@ -106,14 +107,14 @@ const PurchaseReturns = () => {
     }
     setSaving(true);
     try {
-      const items = form.items.map(i => ({ 
+      const items = form.items.map(i => ({
         product: i.product,
-        productName: i.productName, 
+        productName: i.productName,
         quantity: Number(i.quantity),
         unitCost: Number(i.unitCost),
         total: Number(i.quantity) * Number(i.unitCost)
       }));
-      
+
       if (editingReturn) {
         await updatePurchaseReturn(editingReturn._id, { supplierId: form.supplierId, reason: form.reason, notes: form.notes, items });
         actions.showToast({ message: "Purchase return updated", type: "success" });
@@ -130,18 +131,18 @@ const PurchaseReturns = () => {
 
   const handleStatusUpdate = async (id, status) => {
     const returnItem = returns.find(r => r._id === id);
-    
+
     if (status === "Approved") {
       const totalAmount = returnItem.total || returnItem.items?.reduce((sum, item) => sum + (item.total || 0), 0) || 0;
       const confirmMsg = `Approve this return for ${formatCurrency(totalAmount, settings.currency)}? Stock will be removed. The return first offsets the amount owed to the supplier; any remainder becomes supplier credit.`;
 
       if (!window.confirm(confirmMsg)) return;
     }
-    
+
     setUpdatingId(id);
     try {
       await updateReturnStatus(id, status);
-      const msg = status === "Approved" 
+      const msg = status === "Approved"
         ? "Return approved. Stock and supplier balances updated."
         : `Return ${status.toLowerCase()}`;
       actions.showToast({ message: msg, type: "success" });
@@ -214,7 +215,7 @@ const PurchaseReturns = () => {
           <EmptyState icon={RotateCcw} title="No purchase returns" description="Create a return when you need to send goods back to a supplier" actionLabel={isAdmin ? "New Return" : undefined} onAction={isAdmin ? openModal : undefined} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full table-premium">
+            <DataTable sortScope="Sorting applies to this page" className="w-full table-premium">
               <thead>
                 <tr>
                   {["Return #", "Supplier", "Reason", "Items", "Total", "Status", "Date", isAdmin ? "Actions" : ""].filter(Boolean).map(h => (
@@ -234,7 +235,7 @@ const PurchaseReturns = () => {
                       <td className="px-4 py-3.5 text-sm font-medium text-slate-900 dark:text-white">{r.supplierName}</td>
                       <td className="px-4 py-3.5 text-sm text-slate-500 max-w-[160px] truncate">{r.reason}</td>
                       <td className="px-4 py-3.5 text-sm text-slate-500">{r.items?.length || 0} items</td>
-                      <td className="px-4 py-3.5 text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(r.total, settings.currency)}</td>
+                      <td data-sort-value={r.total} className="px-4 py-3.5 text-sm font-bold text-red-600 dark:text-red-400">{formatCurrency(r.total, settings.currency)}</td>
                       <td className="px-4 py-3.5">
                         <div className="flex flex-col gap-1">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${sc.cls} w-fit`}>
@@ -248,7 +249,7 @@ const PurchaseReturns = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-slate-500">{formatDate(r.createdAt?.split?.("T")[0] || r.createdAt)}</td>
+                      <td data-sort-value={r.createdAt?.split?.("T")[0] || r.createdAt} className="px-4 py-3.5 text-sm text-slate-500">{formatDate(r.createdAt?.split?.("T")[0] || r.createdAt)}</td>
                       {isAdmin && (
                         <td className="px-4 py-3.5">
                           <div className="flex gap-1.5">
@@ -282,7 +283,7 @@ const PurchaseReturns = () => {
                   );
                 })}
               </tbody>
-            </table>
+            </DataTable>
           </div>
         )}
         <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
@@ -405,7 +406,7 @@ const PurchaseReturns = () => {
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Items</p>
               <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                <table className="w-full text-sm">
+                <DataTable className="w-full text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
                       <th className="text-left px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Product</th>
@@ -419,12 +420,12 @@ const PurchaseReturns = () => {
                       <tr key={i}>
                         <td className="px-3 py-2 text-slate-900 dark:text-white">{item.productName}</td>
                         <td className="px-3 py-2 text-center text-slate-600 dark:text-slate-400">{item.quantity}</td>
-                        <td className="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(item.unitCost, settings.currency)}</td>
-                        <td className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(item.total, settings.currency)}</td>
+                        <td data-sort-value={item.unitCost} className="px-3 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(item.unitCost, settings.currency)}</td>
+                        <td data-sort-value={item.total} className="px-3 py-2 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(item.total, settings.currency)}</td>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </DataTable>
               </div>
             </div>
 

@@ -1,5 +1,7 @@
+import ShopLogo from "../../components/ui/ShopLogo";
+import { companyName, companyLogo } from "../../utils/company";
 import React from "react";
-import { Info, Sprout, Globe, Code2, Zap } from "lucide-react";
+import { Info, Globe, Code2, Zap } from "lucide-react";
 import SettingsCard from "./SettingsCard";
 import { useApp } from "../../context/AppContext";
 
@@ -16,15 +18,15 @@ const Row = ({ icon: Icon, label, value }) => (
 const AboutPanel = () => {
   const { state } = useApp();
   return (
-    <SettingsCard title="About AgriNest POS" desc="System information and version details">
+    <SettingsCard title={`About ${companyName(state.settings)}`} desc="System information and version details">
       <div className="space-y-5">
         {/* Logo block */}
         <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-100 dark:border-blue-900/20">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow">
-            <Sprout className="w-6 h-6 text-white" />
+            <ShopLogo logo={companyLogo(state.settings)} name={companyName(state.settings)} size="w-10 h-10" />
           </div>
           <div>
-            <p className="text-base font-bold text-slate-900 dark:text-white">AgriNest POS</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{companyName(state.settings)}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">Agricultural Point of Sale System</p>
             <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-0.5">v3.0.0</p>
           </div>

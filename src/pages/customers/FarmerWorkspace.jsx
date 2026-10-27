@@ -3,12 +3,14 @@ import API from '../../api/axios';
 import { financialCommand } from '../../api/financialCommand';
 import { useApp } from '../../context/AppContext';
 import PendingInventoryOperations from '../../components/PendingInventoryOperations';
+import SeasonBudget from '../../components/SeasonBudget';
 
 const initial = { customer: '', crop: '', season: '', village: '', area: '', areaUnit: 'acre', sowingDate: '', language: 'Urdu', consent: false, title: '', kind: 'crop_visit', dueDate: '', notes: '' };
 const control = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-white';
 
 export default function FarmerWorkspace() {
-  const { actions } = useApp();
+  const { actions, state } = useApp();
+  const [budgetSeason, setBudgetSeason] = useState(null);
   const requestVersion = useRef(0);
   const [editingTask, setEditingTask] = useState(null);
   const [tab, setTab] = useState('seasons');
@@ -68,6 +70,7 @@ export default function FarmerWorkspace() {
   return <div className="space-y-5 text-slate-900 dark:text-white">
     <header className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950/40"><p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Farmer relationships</p><h1 className="mt-2 text-2xl font-bold">Farmer workspace</h1><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Keep crop seasons and follow-ups connected to the customer account. Contact is manual; no messages are sent.</p></header>
     <div className="flex flex-wrap gap-2" aria-label="Workspace views">{[['seasons', 'Crop seasons'], ['tasks', 'Follow-up inbox']].map(([key, label]) => <button key={key} type="button" aria-pressed={tab === key} disabled={busy || loading} onClick={() => { setTab(key); setPage(1); setItems([]); setEditingTask(null); }} className={`min-h-11 rounded-lg px-4 font-semibold ${tab === key ? 'bg-emerald-700 text-white' : 'border border-slate-300'}`}>{label}</button>)}</div>
+    {tab === 'seasons' && <section className="rounded-xl border p-4"><label className="block text-sm font-semibold">Plan a crop-season budget<select className={control} value={budgetSeason || ''} onChange={e => setBudgetSeason(e.target.value || null)}><option value="">Select a season from this page</option>{items.map(item => <option key={item._id} value={item._id}>{item.customer?.name || 'Customer'} · {item.crop} · {item.season}</option>)}</select></label>{items.find(item => item._id === budgetSeason) && <SeasonBudget key={budgetSeason} season={items.find(item => item._id === budgetSeason)} canEdit={canEdit} currency={state.settings?.currency || ''} />}</section>}
     <PendingInventoryOperations pathPrefix="/farmer-workspace" onRecovered={async () => { setForm(initial); await refresh(); }} />
     {error && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-3 text-red-800">{error}</p>}
     {message && <p role="status">{message}</p>}

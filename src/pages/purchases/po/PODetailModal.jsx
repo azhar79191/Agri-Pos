@@ -1,3 +1,4 @@
+import DataTable from "../../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
 import { Send, Package, Calendar, FileText, Loader2 } from "lucide-react";
 import ModernModal from "../../../components/ui/ModernModal";
@@ -113,7 +114,7 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
             </p>
             {items.length > 0 ? (
               <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <table className="w-full text-sm">
+                <DataTable className="w-full text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-800">
                     <tr>
                       <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Product</th>
@@ -142,7 +143,7 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
                       </td>
                     </tr>
                   </tfoot>
-                </table>
+                </DataTable>
               </div>
             ) : (
               <p className="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">No items</p>

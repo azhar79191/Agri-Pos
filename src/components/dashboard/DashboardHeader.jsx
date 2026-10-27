@@ -1,3 +1,4 @@
+import { companyName } from "../../utils/company";
 import React from "react";
 import { AlertTriangle, ArrowUpRight, Calendar, RefreshCw, ShoppingCart } from "lucide-react";
 import { formatDate, getTodayDate } from "../../utils/helpers";
@@ -29,7 +30,7 @@ const DashboardHeader = ({
             {greeting()}{currentUser?.name ? `, ${currentUser.name.split(" ")[0]}` : ""}
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-sm">
-            Here’s what’s happening at <span className="font-semibold text-slate-900 dark:text-white">{settings.shopName || "your shop"}</span> today.
+            Here’s what’s happening at <span className="font-semibold text-slate-900 dark:text-white">{companyName(settings)}</span> today.
           </p>
         </div>
 

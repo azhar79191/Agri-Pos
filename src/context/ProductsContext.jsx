@@ -10,6 +10,11 @@ export function ProductsProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [shopCategories, setShopCategories] = useState([]);
+  useEffect(() => {
+    const update = (event) => setShopCategories(event.detail);
+    window.addEventListener("shop-categories-updated", update);
+    return () => window.removeEventListener("shop-categories-updated", update);
+  }, []);
   const [loading, setLoading] = useState(false);
   const requestVersion = useRef(0);
   const [error, setError] = useState(null);

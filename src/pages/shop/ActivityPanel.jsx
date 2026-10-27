@@ -1,3 +1,4 @@
+import EmptyState from "../../components/ui/EmptyState";
 import React, { useState, useEffect } from "react";
 import { Bell, Loader2, ShoppingCart, Package, Users, Settings, RefreshCw } from "lucide-react";
 import ShopCard from "./ShopCard";
@@ -53,10 +54,7 @@ const ActivityPanel = () => {
           <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading activity...</span>
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-          <Bell className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">No activity recorded yet</p>
-        </div>
+        <EmptyState title={<>No activity recorded yet</>} />
       ) : (
         <div className="space-y-1">
           {logs.map((log, i) => {

@@ -28,9 +28,9 @@ const PANELS = {
   categories:    (
     <TagsPanel
       title="Product Categories"
-      desc="Custom categories appear in product forms and POS filters"
+      desc="Configure the categories shown in product forms and POS filters. Add or remove categories below; changes save instantly. Removing a category keeps existing products and sales unchanged."
       placeholder="e.g. Herbicides, Seeds, Fertilizers..."
-      emptyNote="No custom categories yet."
+      emptyNote="No categories configured. Add a category to use it in product forms and POS filters."
       addFn={addCategory}
       deleteFn={deleteCategory}
       listKey="categories"

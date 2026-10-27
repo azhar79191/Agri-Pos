@@ -1,3 +1,5 @@
+import { useApp } from "../../context/AppContext";
+import { companyName } from "../../utils/company";
 import React, { useState, useRef } from "react";
 import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send, Camera, Upload, X, Image as ImageIcon, MapPin, DollarSign, Printer } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
@@ -180,6 +182,7 @@ const SeverityBadge = ({ severity }) => {
 };
 
 const EnhancedPestDiagnosis = () => {
+  const { state: { settings } } = useApp();
   const [step, setStep] = useState(1);
   const [selectedCrop, setSelectedCrop] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -269,7 +272,7 @@ const EnhancedPestDiagnosis = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>AgriNest - Crop Advisory Report</title>
+          <title>${escapeHtml(companyName(settings))} - Crop Advisory Report</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body {
@@ -414,7 +417,7 @@ const EnhancedPestDiagnosis = () => {
         </head>
         <body>
           <div class="header">
-            <h1>🌾 AgriNest Crop Advisory Report</h1>
+            <h1>🌾 ${escapeHtml(companyName(settings))} Crop Advisory Report</h1>
             <p>AI-Powered Pest & Disease Diagnosis</p>
             <p style="margin-top: 10px;">Generated on ${new Date().toLocaleDateString('en-US', {
               year: 'numeric',
@@ -529,7 +532,7 @@ const EnhancedPestDiagnosis = () => {
           ` : ''}
 
           <div class="footer">
-            <p><strong>AgriNest POS</strong> - Premium Pesticide Management System</p>
+            <p><strong>${escapeHtml(companyName(settings))}</strong> - Premium Pesticide Management System</p>
             <p>Powered by ${safeResult.source || 'AI'} ${safeResult.responseTime ? `• Response Time: ${(safeResult.responseTime / 1000).toFixed(1)}s` : ''}</p>
             <p style="margin-top: 10px; font-size: 11px;">
               This advisory is AI-generated and should be used as a guide. Always consult with a certified agronomist for critical decisions.

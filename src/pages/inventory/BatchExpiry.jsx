@@ -1,3 +1,5 @@
+import FilterBar from "../../components/ui/FilterBar";
+import DataTable from "../../components/ui/DataTable";
 import React, { useState, useMemo } from "react";
 import { Package, AlertTriangle, Clock, Calendar, Search, ChevronDown, Plus } from "lucide-react";
 import { formatDate } from "../../utils/helpers";
@@ -63,24 +65,24 @@ const BatchExpiry = () => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by product or batch #..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+          <input aria-label="Search by product or batch #" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by product or batch #..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="relative">
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer">
+          <select aria-label="All Batches" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer">
             <option value="all">All Batches</option>
             <option value="expiring">Expiring Soon</option>
             <option value="expired">Expired</option>
           </select>
           <ChevronDown className="absolute right-60 sm:right-3  top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
-      </div>
+      </FilterBar>
 
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full table-premium">
+          <DataTable emptyState={false} className="w-full table-premium">
             <thead>
               <tr>{["Product", "Batch/Lot #", "Mfg Date", "Expiry Date", "Qty", "Remaining", "Status"].map((h) => (
                 <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>
@@ -93,8 +95,8 @@ const BatchExpiry = () => {
                   <tr key={batch._id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{batch.productName}</td>
                     <td className="px-4 py-3.5"><span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-lg">{batch.batchNo}</span></td>
-                    <td className="px-4 py-3.5 text-sm text-slate-500">{formatDate(batch.mfgDate)}</td>
-                    <td className="px-4 py-3.5 text-sm font-medium text-slate-700 dark:text-slate-300">{formatDate(batch.expiryDate)}</td>
+                    <td data-sort-value={batch.mfgDate} className="px-4 py-3.5 text-sm text-slate-500">{formatDate(batch.mfgDate)}</td>
+                    <td data-sort-value={batch.expiryDate} className="px-4 py-3.5 text-sm font-medium text-slate-700 dark:text-slate-300">{formatDate(batch.expiryDate)}</td>
                     <td className="px-4 py-3.5 text-sm font-bold text-slate-900 dark:text-white">{batch.quantity}</td>
                     <td className="px-4 py-3.5 text-sm font-bold text-slate-900 dark:text-white">{batch.remaining}</td>
                     <td className="px-4 py-3.5">
@@ -106,7 +108,7 @@ const BatchExpiry = () => {
                 );
               })}
             </tbody>
-          </table>
+          </DataTable>
           {filtered.length === 0 && <EmptyState icon={Package} title="No batches found" description="Add batch tracking to your products" />}
         </div>
       </div>

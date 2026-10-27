@@ -1,3 +1,5 @@
+import EmptyState from "../components/ui/EmptyState";
+import DataTable from "../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Download, ShoppingBag, Wallet, TrendingUp, Calendar, User, MapPin, Phone, Mail } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -120,16 +122,16 @@ const CustomerStatement = () => {
 
       <section className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="p-5"><h2 className="font-bold">Balance movements</h2><p className="mt-1 text-sm text-slate-500">Latest 100 recorded movements. Older balances require opening-balance reconciliation.</p></div>
-        <table className="w-full text-left text-sm">
+        <DataTable searchable className="w-full text-left text-sm">
           <thead><tr className="border-y border-slate-200 dark:border-slate-700">{["Date", "Movement", "Change", "Balance after"].map(label => <th key={label} className="px-5 py-3">{label}</th>)}</tr></thead>
           <tbody>{ledger.map(entry => <tr key={entry._id} className="border-b border-slate-100 dark:border-slate-800">
-            <td className="px-5 py-3">{formatDate(entry.createdAt?.split("T")[0])}</td>
+            <td data-sort-value={entry.createdAt?.split("T")[0]} className="px-5 py-3">{formatDate(entry.createdAt?.split("T")[0])}</td>
             <td className="px-5 py-3 capitalize">{entry.kind}</td>
-            <td className="px-5 py-3">{entry.amount > 0 ? "+" : ""}{formatCurrency(entry.amount, settings.currency)}</td>
-            <td className="px-5 py-3">{formatCurrency(entry.balanceAfter, settings.currency)}</td>
+            <td data-sort-value={entry.amount} className="px-5 py-3">{entry.amount > 0 ? "+" : ""}{formatCurrency(entry.amount, settings.currency)}</td>
+            <td data-sort-value={entry.balanceAfter} className="px-5 py-3">{formatCurrency(entry.balanceAfter, settings.currency)}</td>
           </tr>)}</tbody>
-        </table>
-        {!ledger.length && <p className="p-5 text-sm text-slate-500">No recorded balance movements yet.</p>}
+        </DataTable>
+
       </section>
       {/* Purchase History */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
@@ -139,10 +141,7 @@ const CustomerStatement = () => {
         </div>
 
         {invoices.length === 0 ? (
-          <div className="text-center py-14">
-            <ShoppingBag className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500 dark:text-slate-400">No purchases yet</p>
-          </div>
+          <EmptyState title={<>No purchases yet</>} />
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {invoices.map(inv => (

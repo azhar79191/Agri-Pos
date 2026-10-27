@@ -1,10 +1,10 @@
 import {
   LayoutDashboard, Package, Users, ShoppingCart, FileText,
-  BarChart3, Settings, Building2, Layers, Bug, ChevronDown,
+  BarChart3, Settings, Building2, Layers, Bug,
   Calendar, Zap, PackagePlus, ShoppingBag, ClipboardCheck,
   RotateCcw, Beaker, Printer, CreditCard, Wallet,
   History, Award, Shield, TrendingUp, DollarSign, PieChart, Clock,
-  Cloud, Activity,
+  Cloud, Activity, Leaf, ContactRound, UserRoundCog, ShieldCheck, Bot, ScanLine, ClipboardList,
 } from "lucide-react";
 
 /**
@@ -25,7 +25,7 @@ export const MENU_GROUPS = [
   {
     id: "sales", label: "Sales", icon: ShoppingCart, permission: "pos",
     children: [
-      { id: "pos",          label: "POS Billing",  icon: ShoppingCart },
+      { id: "pos",          label: "POS Billing",  icon: ScanLine },
       { id: "invoices",     label: "Invoices",     icon: FileText },
       { id: "sales/credit", label: "Credit Sales", icon: CreditCard },
     ],
@@ -43,7 +43,7 @@ export const MENU_GROUPS = [
   {
     id: "purchases", label: "Purchases", icon: ShoppingBag, permission: "stock",
     children: [
-      { id: "purchases/orders",    label: "Purchase Orders", icon: ShoppingBag },
+      { id: "purchases/orders",    label: "Purchase Orders", icon: ClipboardList },
       { id: "purchases/grn",       label: "Goods Receiving", icon: ClipboardCheck },
       { id: "purchases/returns",   label: "Returns",         icon: RotateCcw },
       { id: "purchases/suppliers", label: "Suppliers",       icon: Building2 },
@@ -55,12 +55,12 @@ export const MENU_GROUPS = [
       { id: "customers",          label: "All Customers",   icon: Users },
       { id: "customers/dues",     label: "Customer Dues",   icon: Wallet },
       { id: "customers/history",  label: "Purchase History",icon: History },
-      { id: "customers/workspace", label: "Farmer Workspace", icon: Users },
+      { id: "customers/workspace", label: "Farmer Workspace", icon: ContactRound },
       { id: "customers/loyalty",  label: "Loyalty Program", icon: Award },
     ],
   },
   {
-    id: "recommendations", label: "Crop Support", icon: Bug, permission: "ai:use",
+    id: "recommendations", label: "Crop Support", icon: Leaf, permission: "ai:use",
     children: [
       { id: "recommendations/diagnosis", label: "Pest Diagnosis", icon: Bug },
       { id: "recommendations/dosage",    label: "Dosage Calculator", icon: Beaker },
@@ -81,13 +81,13 @@ export const MENU_GROUPS = [
       { id: "reports/aging",     label: "Invoice Aging",    icon: Clock },
     ],
   },
-  { id: "assistant", label: "Shop Assistant", icon: Activity, permission: "assistant:use", single: true, children: [{ id: "assistant", label: "Shop Assistant", icon: Activity }] },
+  { id: "assistant", label: "Shop Assistant", icon: Bot, permission: "assistant:use", single: true, children: [{ id: "assistant", label: "Shop Assistant", icon: Bot }] },
   {
-    id: "staff", label: "Staff Hub", icon: Shield, permission: "users",
+    id: "staff", label: "Staff Hub", icon: UserRoundCog, permission: "users",
     single: false,
     children: [
-      { id: "staff", label: "Team overview", icon: Shield },
-      { id: "staff/roles", label: "Roles & Access", icon: Shield },
+      { id: "staff", label: "Team overview", icon: Users },
+      { id: "staff/roles", label: "Roles & Access", icon: ShieldCheck },
     ],
   },
   {

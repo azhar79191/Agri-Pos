@@ -34,7 +34,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
 
   const handleAdd = async () => {
     const val = input.trim();
-    if (!val || !shop) return;
+    if (!val || !shop || adding || deleting) return;
     if (tags.map(t => t.toLowerCase()).includes(val.toLowerCase())) {
       actions.showToast({ message: `"${val}" already exists`, type: "error" }); return;
     }
@@ -42,6 +42,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
     try {
       const res = await addFn(shop._id, val);
       setTags(res.data.data[listKey]);
+      if (listKey === "categories") window.dispatchEvent(new CustomEvent("shop-categories-updated", { detail: res.data.data[listKey] }));
       setInput("");
       inputRef.current?.focus();
       actions.showToast({ message: `"${val}" added`, type: "success" });
@@ -51,11 +52,12 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
   };
 
   const handleDelete = async (val) => {
-    if (!shop) return;
+    if (!shop || adding || deleting) return;
     setDeleting(val);
     try {
       const res = await deleteFn(shop._id, val);
       setTags(res.data.data[listKey]);
+      if (listKey === "categories") window.dispatchEvent(new CustomEvent("shop-categories-updated", { detail: res.data.data[listKey] }));
       actions.showToast({ message: `"${val}" removed`, type: "success" });
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Failed to remove", type: "error" });
@@ -78,6 +80,8 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
           <div className="flex gap-2">
             <input
               ref={inputRef}
+              maxLength={80}
+              aria-label={title === "Product Categories" ? "Category name" : "Brand name"}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } }}
@@ -108,7 +112,8 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
                   {tag}
                   <button
                     onClick={() => handleDelete(tag)}
-                    disabled={deleting === tag}
+                    aria-label={`Remove ${tag}`}
+                    disabled={adding || !!deleting}
                     className="flex items-center justify-center w-4 h-4 hover:text-red-500 disabled:opacity-50 transition-colors"
                   >
                     {deleting === tag ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3.5 h-3.5" />}

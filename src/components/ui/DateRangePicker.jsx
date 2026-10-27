@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useId } from "react";
 import { Calendar, ChevronDown, X } from "lucide-react";
 
 const PRESETS = [
@@ -11,7 +11,7 @@ const PRESETS = [
   { label: "This year",    getDates: () => ({ start: yearStart(), end: today() }) },
 ];
 
-const fmt   = (d) => d.toISOString().split("T")[0];
+const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const today = () => fmt(new Date());
 const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return fmt(d); };
 const monthStart = () => { const d = new Date(); d.setDate(1); return fmt(d); };
@@ -31,7 +31,19 @@ const DateRangePicker = ({ value, onChange, className = "" }) => {
   const { start = "", end = "" } = value || {};
   const [open, setOpen]           = useState(false);
   const [activePreset, setActive] = useState(null);
-  const ref                       = useRef(null);
+  const ref = useRef(null);
+  const panelId = useId();
+  const [alignRight, setAlignRight] = useState(false);
+  useLayoutEffect(() => {
+    if (!open) return;
+    const align = () => {
+      const rect = ref.current?.getBoundingClientRect();
+      if (rect) setAlignRight(rect.left + 288 > window.innerWidth - 12);
+    };
+    align();
+    window.addEventListener("resize", align);
+    return () => window.removeEventListener("resize", align);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -51,9 +63,13 @@ const DateRangePicker = ({ value, onChange, className = "" }) => {
   const hasValue = start || end;
 
   return (
-    <div className={`relative ${className}`} ref={ref}>
+    <div className={`relative inline-flex max-w-full ${className}`} ref={ref}>
       {/* Trigger */}
       <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onKeyDown={e => { if (e.key === "Escape") setOpen(false); }}
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-all ${
           hasValue
@@ -71,13 +87,13 @@ const DateRangePicker = ({ value, onChange, className = "" }) => {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute top-full mt-1.5 right-0 z-50 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+        <div id={panelId} className={`date-range-panel absolute top-full mt-1.5 ${alignRight ? "right-0" : "left-0"} z-50 w-72 max-w-[calc(100vw-24px)] bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden`}
           style={{ animation: "scale-in 0.12s ease both" }}>
 
           {/* Presets */}
           <div className="p-2 border-b border-slate-100 dark:border-slate-800">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 pb-1.5">Quick Select</p>
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-2 keep-cols gap-1">
               {PRESETS.map((p) => (
                 <button key={p.label} onClick={() => { const d = p.getDates(); apply(d.start, d.end, p.label); }}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
@@ -94,7 +110,7 @@ const DateRangePicker = ({ value, onChange, className = "" }) => {
           {/* Custom range */}
           <div className="p-3 space-y-2.5">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Custom Range</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 keep-cols gap-2">
               <div>
                 <label className="block text-xs text-slate-500 mb-1">From</label>
                 <input type="date" value={start} max={end || undefined}

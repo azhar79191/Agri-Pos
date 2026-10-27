@@ -1,3 +1,4 @@
+import { companyName, escapeCompanyHtml } from "../../utils/company";
 import React, { useRef, useState } from "react";
 import { Printer, X, Tag, ChevronDown } from "lucide-react";
 
@@ -58,7 +59,7 @@ const BarcodeLabelPrinter = ({ products, settings, onClose }) => {
     if (!content) return;
     const win = window.open("", "_blank", "width=900,height=700");
     win.document.write(`
-      <html><head><title>Price Labels — ${settings?.shopName || "AgriNest"}</title>
+      <html><head><title>Price Labels — ${escapeCompanyHtml(companyName(settings))}</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: white; }
@@ -169,7 +170,7 @@ const BarcodeLabelPrinter = ({ products, settings, onClose }) => {
                   <div key={`${p._id}-${ci}`}
                     style={{ width: size.w, minHeight: size.h }}
                     className="bg-white border border-slate-300 rounded-lg flex flex-col items-center justify-center p-1.5 overflow-hidden shadow-sm">
-                    <p className="text-[7px] text-slate-400 uppercase tracking-widest">{settings?.shopName || "AgriNest"}</p>
+                    <p className="text-[7px] text-slate-400 uppercase tracking-widest">{companyName(settings)}</p>
                     <p className="text-[9px] font-bold text-slate-900 text-center leading-tight mt-0.5 line-clamp-2">{p.name}</p>
                     <p className="text-sm font-black text-emerald-600 mt-0.5">{settings?.currency} {p.price}</p>
                     {p.barcode && (

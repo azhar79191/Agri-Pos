@@ -1,3 +1,5 @@
+import EmptyState from "../../../components/ui/EmptyState";
+import FilterBar from "../../../components/ui/FilterBar";
 import React, { useState, useEffect } from "react";
 import {
   Plus, Edit3, Trash2, Shield, Eye, EyeOff,
@@ -242,10 +244,10 @@ const UsersPanel = () => {
   return (
     <div className="space-y-5">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email..."
+          <input aria-label="Search by name or email" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or email..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/30 transition-all" />
         </div>
         <div className="flex gap-2">
@@ -258,7 +260,7 @@ const UsersPanel = () => {
             </button>
           )}
         </div>
-      </div>
+      </FilterBar>
 
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3">
@@ -289,13 +291,7 @@ const UsersPanel = () => {
               onEdit={openEdit} onPerms={setPermUser} onDelete={setDeleteTarget} />
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
-              <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                <Users className="w-8 h-8 opacity-40" />
-              </div>
-              <p className="text-sm font-medium">No users found</p>
-              <p className="text-xs mt-1">Try a different search term</p>
-            </div>
+            <EmptyState title={<>No users found</>} description={<>Try a different search term</>} />
           )}
         </div>
       )}

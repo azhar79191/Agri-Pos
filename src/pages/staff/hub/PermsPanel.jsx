@@ -1,3 +1,4 @@
+import EmptyState from "../../../components/ui/EmptyState";
 import React, { useEffect } from "react";
 import { Shield, Check, X, Loader2, Zap } from "lucide-react";
 import { useUsers } from "../../../hooks/useUsers";
@@ -45,12 +46,7 @@ const PermsPanel = () => {
   );
 
   if (users.length === 0) return (
-    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-      <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-        <Shield className="w-8 h-8 opacity-40" />
-      </div>
-      <p className="text-sm font-medium">No users to manage</p>
-    </div>
+    <EmptyState title={<>No users to manage</>} />
   );
 
   return (

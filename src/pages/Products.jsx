@@ -1,3 +1,4 @@
+import DataTable from "../components/ui/DataTable";
 import ListFeedback from "../components/ui/ListFeedback";
 import PendingInventoryOperations from "../components/PendingInventoryOperations";
 import React, { useState, useMemo, useEffect } from "react";
@@ -19,8 +20,9 @@ import BulkActionBar from "../components/ui/BulkActionBar";
 import { deleteProduct } from "../api/productApi";
 import BarcodeLabelPrinter from "../components/products/BarcodeLabelPrinter";
 import ProductBarcodeField from "../components/ProductBarcodeField";
+import ProductAuthenticity from "../components/products/ProductAuthenticity";
 import {
-  DEFAULT_CATEGORIES, UNIT_OPTIONS, SUB_UNIT_OPTIONS, EMPTY_PRODUCT_FORM,
+  UNIT_OPTIONS, SUB_UNIT_OPTIONS, EMPTY_PRODUCT_FORM,
 } from "../constants/products";
 
 const LIMIT = 15;
@@ -58,10 +60,7 @@ const Products = () => {
   }, [page, searchTerm, filterCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  const allCategories = useMemo(() => [
-    ...DEFAULT_CATEGORIES,
-    ...(shopCategories || []).filter((c) => !DEFAULT_CATEGORIES.includes(c)),
-  ], [shopCategories]);
+  const allCategories = shopCategories || [];
 
   const categoryOptions = allCategories.map((c) => ({ value: c, label: c }));
 
@@ -97,6 +96,7 @@ const Products = () => {
       </div>
 
       <ProductStatsCards stats={stockStats} />
+      <ProductAuthenticity products={products} canEdit={actions.hasPermission('products:edit')} />
 
       <ProductFilters
         searchTerm={searchTerm}
@@ -112,7 +112,7 @@ const Products = () => {
       <div className="card-base overflow-hidden">
         {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={6} /> : (
           <div className="overflow-x-auto">
-            <table className="w-full table-premium">
+            <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
               <thead>
                 <tr>
                   <th className="w-10"><input type="checkbox" aria-label="Select all products on this page" checked={selected.size === filteredProducts.length && filteredProducts.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
@@ -124,6 +124,7 @@ const Products = () => {
                   <ProductRow
                     key={product._id || product.id}
                     product={product}
+                    sortValues={[null, product.name, product.category, product.manufacturer, product.unit, product.price, product.stock]}
                     onEdit={actions.hasPermission("products:edit") ? (p) => openEdit(p, shopBrands) : null}
                     onDelete={actions.hasPermission("products:delete") ? setDeleteConfirm : null}
                     currency={state.settings.currency}
@@ -132,7 +133,7 @@ const Products = () => {
                   />
                 ))}
               </tbody>
-            </table>
+            </DataTable>
             <ListFeedback empty={filteredProducts.length === 0} title={searchTerm || filterCategory ? 'No matching products' : 'No active products yet'} description={searchTerm || filterCategory ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm || filterCategory ? () => { setSearchTerm(""); setFilterCategory(""); setPage(1); } : undefined} />
           </div>
         )}

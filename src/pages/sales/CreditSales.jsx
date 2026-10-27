@@ -1,3 +1,5 @@
+import FilterBar from "../../components/ui/FilterBar";
+import DataTable from "../../components/ui/DataTable";
 import React, { useState, useMemo } from "react";
 import { CreditCard, DollarSign, Clock, AlertTriangle, Search, Loader2, CheckCircle } from "lucide-react";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -60,34 +62,34 @@ const CreditSales = () => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white" />
+          <input aria-label="Search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white" />
         </div>
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-x-auto">
           {FILTER_TABS.map((t) => (
             <button key={t.id} onClick={() => setFilter(t.id)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${filter === t.id ? "bg-white dark:bg-slate-900 text-emerald-600 shadow-sm" : "text-slate-500"}`}>{t.l}</button>
           ))}
         </div>
-      </div>
+      </FilterBar>
 
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full table-premium min-w-[800px]">
+            <DataTable emptyState={false} className="w-full table-premium min-w-[800px]">
               <thead><tr>{["Invoice", "Customer", "Total", "Paid", "Balance", "Due Date", "Status", "Actions"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filtered.map((s) => (
                   <tr key={s._id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="px-4 py-3.5"><span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-lg">{s.invoiceNumber}</span></td>
                     <td className="px-4 py-3.5"><p className="font-semibold text-slate-900 dark:text-white text-sm">{s.customer}</p><p className="text-xs text-slate-400">{s.phone}</p></td>
-                    <td className="px-4 py-3.5 font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(s.total, settings.currency)}</td>
-                    <td className="px-4 py-3.5 text-sm text-emerald-600 font-semibold">{formatCurrency(s.paid, settings.currency)}</td>
-                    <td className="px-4 py-3.5 text-sm font-bold text-red-600">{formatCurrency(s.balance, settings.currency)}</td>
-                    <td className="px-4 py-3.5 text-sm text-slate-500">{formatDate(s.dueDate?.split?.("T")[0] || s.dueDate)}</td>
+                    <td data-sort-value={s.total} className="px-4 py-3.5 font-bold text-slate-900 dark:text-white text-sm">{formatCurrency(s.total, settings.currency)}</td>
+                    <td data-sort-value={s.paid} className="px-4 py-3.5 text-sm text-emerald-600 font-semibold">{formatCurrency(s.paid, settings.currency)}</td>
+                    <td data-sort-value={s.balance} className="px-4 py-3.5 text-sm font-bold text-red-600">{formatCurrency(s.balance, settings.currency)}</td>
+                    <td data-sort-value={s.dueDate?.split?.("T")[0] || s.dueDate} className="px-4 py-3.5 text-sm text-slate-500">{formatDate(s.dueDate?.split?.("T")[0] || s.dueDate)}</td>
                     <td className="px-4 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_CLS[s.status] || STATUS_CLS.pending}`}>{s.status === "paid" ? "Paid" : s.status === "overdue" ? "Overdue" : s.status === "partial" ? "Partial" : "Pending"}</span></td>
                     <td className="px-4 py-3.5">
                       {s.status !== "paid" && (
@@ -99,7 +101,7 @@ const CreditSales = () => {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </DataTable>
           </div>
         )}
         {!loading && filtered.length === 0 && <EmptyState icon={CreditCard} title="No credit sales found" />}

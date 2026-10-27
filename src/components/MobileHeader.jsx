@@ -1,3 +1,4 @@
+import { companyName } from "../utils/company";
 import React from "react";
 import { ChevronLeft, Bell } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -37,7 +38,7 @@ const MobileHeader = () => {
           <>
             <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.brandName || settings?.shopName} size="w-7 h-7" />
             <span className="font-bold text-slate-900 dark:text-white text-sm truncate">
-              {settings?.brandName || settings?.shopName || "AgriNest"}
+              {companyName(settings)}
             </span>
           </>
         ) : (

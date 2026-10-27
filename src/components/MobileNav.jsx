@@ -1,3 +1,4 @@
+import { MENU_GROUPS } from "../constants/menuGroups";
 import React, { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, BarChart3,
@@ -23,81 +24,13 @@ const BOTTOM_TABS = [
 ];
 
 /* ─── All sections shown in the "More" sheet ─── */
-const MORE_SECTIONS = [
-  {
-    label: "Sales",
-    color: "emerald",
-    items: [
-      { id: "invoices",     label: "Invoices",      icon: FileText,    path: "/invoices",     permission: "pos"       },
-      { id: "sales/credit", label: "Credit Sales",  icon: CreditCard,  path: "/sales/credit", permission: "pos"       },
-    ],
-  },
-  {
-    label: "Inventory",
-    color: "orange",
-    items: [
-      { id: "stock",                  label: "Stock Levels",   icon: Layers,        path: "/stock",                  permission: "products" },
-      { id: "inventory/batch-expiry", label: "Batch & Expiry", icon: Calendar,      path: "/inventory/batch-expiry", permission: "products" },
-      { id: "inventory/bundles",      label: "Bundles",        icon: PackagePlus,   path: "/inventory/bundles",      permission: "products" },
-      { id: "inventory/dead-stock",   label: "Smart Alerts",   icon: Zap,           path: "/inventory/dead-stock",   permission: "products" },
-    ],
-  },
-  {
-    label: "Purchases",
-    color: "violet",
-    items: [
-      { id: "purchases/orders",    label: "Purchase Orders",  icon: ShoppingBag,    path: "/purchases/orders",    permission: "stock" },
-      { id: "purchases/grn",       label: "Goods Receiving",  icon: ClipboardCheck, path: "/purchases/grn",       permission: "stock" },
-      { id: "purchases/returns",   label: "Returns",          icon: RotateCcw,      path: "/purchases/returns",   permission: "stock" },
-      { id: "purchases/suppliers", label: "Suppliers",        icon: Building2,      path: "/purchases/suppliers", permission: "stock" },
-    ],
-  },
-  {
-    label: "Customers",
-    color: "cyan",
-    items: [
-      { id: "customers/dues",    label: "Customer Dues",    icon: Wallet,  path: "/customers/dues",    permission: "customers" },
-      { id: "customers/history", label: "Purchase History", icon: History, path: "/customers/history", permission: "customers" },
-      { id: "customers/workspace", label: "Farmer Workspace", icon: Users, path: "/customers/workspace", permission: "customers" },
-      { id: "customers/loyalty", label: "Loyalty Program",  icon: Award,   path: "/customers/loyalty", permission: "customers" },
-    ],
-  },
-  {
-    label: "Crop Support",
-    color: "green",
-    items: [
-      { id: "recommendations/diagnosis", label: "Pest Diagnosis",      icon: Bug,         path: "/recommendations/diagnosis",  permission: "products" },
-      { id: "recommendations/dosage",    label: "Dosage Calculator",  icon: Beaker,      path: "/recommendations/dosage",     permission: "products" },
-      { id: "recommendations/weather",   label: "Weather Advisory",   icon: Cloud,       path: "/recommendations/weather",    permission: "products" },
-      { id: "recommendations/history",   label: "Advisory History",   icon: History,     path: "/recommendations/history",    permission: "products" },
-      { id: "recommendations/calendar",  label: "Crop Calendar",      icon: Calendar,    path: "/recommendations/calendar",   permission: "products" },
-      { id: "recommendations/print",     label: "Print Advisory",     icon: Printer,     path: "/recommendations/print",      permission: "products" },
-      { id: "recommendations/ai-stats",  label: "Advisory Activity",   icon: TrendingUp,  path: "/recommendations/ai-stats",   permission: "reports"  },
-    ],
-  },
-  {
-    label: "Reports",
-    color: "purple",
-    items: [
-      { id: "reports",           label: "Sales Report",     icon: BarChart3,  path: "/reports",           permission: "reports" },
-      { id: "reports/profit",    label: "Profit Analysis",  icon: DollarSign, path: "/reports/profit",    permission: "reports" },
-      { id: "reports/margin",    label: "Margin Analysis",  icon: PieChart,   path: "/reports/margin",    permission: "reports" },
-      { id: "reports/inventory", label: "Inventory Report", icon: Package,    path: "/reports/inventory", permission: "reports" },
-      { id: "reports/aging",     label: "Invoice Aging",    icon: Clock,      path: "/reports/aging",     permission: "reports" },
-    ],
-  },
-  {
-    label: "Administration",
-    color: "indigo",
-    items: [
-      { id: "assistant", label: "Shop Assistant", icon: Zap, path: "/assistant", permission: "assistant:use" },
-      { id: "staff/roles", label: "Roles & Access", icon: Shield, path: "/staff/roles", permission: "users", ownerOnly: true },
-      { id: "staff",    label: "Staff Hub",    icon: Shield,   path: "/staff",    permission: "users"    },
-      { id: "shops",    label: "My Shop",      icon: Building2,path: "/shops",    permission: "settings" },
-      { id: "settings", label: "App Settings", icon: Settings, path: "/settings", permission: "settings" },
-    ],
-  },
-];
+const SECTION_COLORS = { dashboard: 'indigo', sales: 'emerald', inventory: 'orange', purchases: 'violet', 'customers-group': 'cyan', recommendations: 'green', 'reports-group': 'purple' };
+const MORE_SECTIONS = MENU_GROUPS.map(group => ({
+  label: group.label, color: SECTION_COLORS[group.id] || 'indigo',
+  items: group.children.filter(child => !BOTTOM_TABS.some(tab => tab.path === `/${child.id}`)).map(child => ({
+    ...child, path: `/${child.id}`, permission: group.permission, ownerOnly: child.id === 'staff/roles',
+  })),
+})).filter(section => section.items.length);
 
 const COLOR_MAP = {
   emerald: { bg: "bg-emerald-100 dark:bg-emerald-900/30", icon: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
@@ -143,7 +76,7 @@ const MobileNav = () => {
   const isActive = (path) => {
     if (!path) return false;
     if (path === "/dashboard") return currentPath === "/dashboard" || currentPath === "/";
-    return currentPath.startsWith(path);
+    return currentPath === path || currentPath.startsWith(`${path}/`);
   };
 
   // Is "More" active — any non-bottom-tab route
@@ -157,7 +90,7 @@ const MobileNav = () => {
     actions.showToast({
       message: "Are you sure you want to logout?",
       type: "warning", position: "center", isConfirm: true,
-      onConfirm: () => { 
+      onConfirm: () => {
         actions.logout(navigate);
       },
     });

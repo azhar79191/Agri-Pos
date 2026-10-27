@@ -1,3 +1,4 @@
+import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useMemo, useEffect } from "react";
 import { Package, TrendingUp, TrendingDown, AlertTriangle, Archive, Zap, BarChart2, Loader2, ShoppingBag, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -94,11 +95,11 @@ const DeadStockAlerts = () => {
             ))}
           </div>
 
-          <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
+          <FilterBar label="Stock alert filters" className="w-fit">
             {[{ id: "all", label: "All" }, { id: "fast", label: "Fast Moving" }, { id: "dead", label: "Dead Stock" }, { id: "overstock", label: "Overstock" }].map(t => (
               <button key={t.id} onClick={() => setFilter(t.id)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === t.id ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500"}`}>{t.label}</button>
             ))}
-          </div>
+          </FilterBar>
 
           {filtered.length === 0 ? (
             <EmptyState icon={Package} title="No items match this filter" />

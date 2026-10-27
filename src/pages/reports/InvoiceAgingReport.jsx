@@ -1,3 +1,4 @@
+import { companyName } from "../../utils/company";
 import React, { useMemo } from "react";
 import { Clock, AlertTriangle, DollarSign, TrendingDown, Phone, FileText, Loader2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -176,7 +177,7 @@ const InvoiceAgingReport = () => {
                       {row.phone && (
                         <a
                           href={`https://wa.me/${row.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                            `Assalam o Alaikum ${row.customer},\n\nThis is a reminder that Invoice *${row.invoiceNumber}* of *${settings.currency} ${row.balance?.toFixed(2)}* is overdue by ${row.daysOverdue} day(s).\n\nPlease arrange payment at your earliest convenience.\n\nThank you,\n${settings.shopName}`
+                            `Assalam o Alaikum ${row.customer},\n\nThis is a reminder that Invoice *${row.invoiceNumber}* of *${settings.currency} ${row.balance?.toFixed(2)}* is overdue by ${row.daysOverdue} day(s).\n\nPlease arrange payment at your earliest convenience.\n\nThank you,\n${companyName(settings)}`
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"

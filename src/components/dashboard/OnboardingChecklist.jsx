@@ -1,3 +1,5 @@
+import { useApp } from "../../context/AppContext";
+import { companyName } from "../../utils/company";
 import React, { useState, useEffect } from "react";
 import { CheckCircle2, Circle, ChevronRight, X, Rocket, Package, ShoppingCart, Users, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +54,8 @@ const isDismissed = () => localStorage.getItem(CHECKLIST_KEY + "_dismissed") ===
 const setDismissed = () => localStorage.setItem(CHECKLIST_KEY + "_dismissed", "1");
 
 const OnboardingChecklist = ({ dashboardData }) => {
-  const navigate              = useNavigate();
+  const { state: { settings } } = useApp();
+  const navigate = useNavigate();
   const [done, setDone]       = useState(loadDone);
   const [visible, setVisible] = useState(!isDismissed());
 
@@ -92,7 +95,7 @@ const OnboardingChecklist = ({ dashboardData }) => {
           </div>
           <div>
             <p className="text-sm font-bold text-slate-900 dark:text-white">
-              {allDone ? "🎉 You're all set!" : "Get Started with AgriNest"}
+              {allDone ? "🎉 You're all set!" : `Get Started with ${companyName(settings)}`}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {allDone ? "Your shop is fully configured and ready" : `${completedCount} of ${STEPS.length} steps completed`}

@@ -1,3 +1,4 @@
+import EmptyState from "../components/ui/EmptyState";
 import React, { useState } from "react";
 import { User, Mail, Phone, MapPin, Lock, Eye, EyeOff, Camera, Save, Shield, Building2, Calendar, CheckCircle } from "lucide-react";
 import ModernButton from "../components/ui/ModernButton";
@@ -238,11 +239,7 @@ const ProfileSettings = () => {
               <p className="text-xs text-slate-400 text-center">To edit shop details, go to Settings → My Shop</p>
             </div>
           ) : (
-            <div className="text-center py-10 text-slate-500 dark:text-slate-400">
-              <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>No shop assigned to your account</p>
-              <p className="text-xs mt-1">Contact your administrator</p>
-            </div>
+            <EmptyState title={<>No shop assigned to your account</>} description={<>Contact your administrator</>} />
           )}
         </div>
       )}

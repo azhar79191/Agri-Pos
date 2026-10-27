@@ -1,3 +1,5 @@
+import DataTable from "../../components/ui/DataTable";
+import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useCallback } from "react";
 import { ClipboardCheck, AlertCircle, Loader2, ChevronDown, Search, Truck, CheckCircle, Package } from "lucide-react";
 import { useApp } from "../../context/AppContext";
@@ -27,7 +29,7 @@ const DetailModal = ({ po, isOpen, onClose, currency }) => (
           ))}
         </div>
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <table className="w-full text-sm">
+          <DataTable className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-800">
               <tr>{["Product", "Qty", "Unit Price", "Subtotal"].map((h) => <th key={h} className={`px-4 py-2.5 text-xs font-semibold text-slate-500 ${h === "Product" ? "text-left" : "text-right"}`}>{h}</th>)}</tr>
             </thead>
@@ -41,7 +43,7 @@ const DetailModal = ({ po, isOpen, onClose, currency }) => (
                 </tr>
               ))}
             </tbody>
-          </table>
+          </DataTable>
         </div>
         {po.notes && (
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
@@ -98,13 +100,13 @@ const GoodsReceiving = () => {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input onChange={(e) => setFilter("search", e.target.value)} placeholder="Search by PO # or supplier..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/30" />
+          <input aria-label="Search by PO # or supplier" onChange={(e) => setFilter("search", e.target.value)} placeholder="Search by PO # or supplier..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/30" />
         </div>
         <div className="relative">
-          <select value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/30">
+          <select aria-label="All Status" value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/30">
             <option value="all">All Status</option>
             <option value="Sent">Awaiting Receipt</option>
             <option value="Partially Received">Partially Received</option>
@@ -112,7 +114,7 @@ const GoodsReceiving = () => {
           </select>
           <ChevronDown className="absolute right-[200px] sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
-      </div>
+      </FilterBar>
 
       {loading && <div className="flex items-center justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-emerald-500" /></div>}
       {!loading && error && (

@@ -1,3 +1,6 @@
+import EmptyState from "../components/ui/EmptyState";
+import FilterBar from "../components/ui/FilterBar";
+import DataTable from "../components/ui/DataTable";
 import React, { useState } from "react";
 import { Search, FileText, Receipt, Clock, CheckCircle, AlertCircle, X, Calendar, User, DollarSign, ChevronDown, Activity } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -81,14 +84,14 @@ const StatusManagementPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input type="text" placeholder="Search by ID or customer..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+          <input aria-label="Search by ID or customer" type="text" placeholder="Search by ID or customer..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="relative">
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
+          <select aria-label="All Status" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
             <option value="all">All Status</option>
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
@@ -98,19 +101,19 @@ const StatusManagementPage = () => {
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
         <div className="relative">
-          <select value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
+          <select aria-label="All Types" value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
             <option value="all">All Types</option>
             <option value="invoice">Invoices</option>
             <option value="transaction">Transactions</option>
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
-      </div>
+      </FilterBar>
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full table-premium">
+          <DataTable emptyState={false} className="w-full table-premium">
             <thead>
               <tr>
                 {["ID & Type", "Customer", "Date", "Amount", "Status", "Actions"].map(h => (
@@ -145,7 +148,7 @@ const StatusManagementPage = () => {
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />{fmtDate(item.date)}
                       </div>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td data-sort-value={item.grandTotal} className="px-4 py-3.5">
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">{fmt(item.grandTotal)}</span>
                     </td>
                     <td className="px-4 py-3.5">
@@ -160,17 +163,13 @@ const StatusManagementPage = () => {
                 );
               })}
             </tbody>
-          </table>
+          </DataTable>
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="text-center py-14">
-            <Activity className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="font-semibold text-slate-500 dark:text-slate-400">No items found</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+          <EmptyState title={<>No items found</>} description={<>
               {searchTerm || filterStatus !== "all" || filterType !== "all" ? "Try adjusting your filters" : "No invoices or transactions available"}
-            </p>
-          </div>
+            </>} />
         )}
       </div>
     </div>

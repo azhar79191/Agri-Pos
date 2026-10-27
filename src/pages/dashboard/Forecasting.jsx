@@ -1,3 +1,4 @@
+import FilterBar from "../../components/ui/FilterBar";
 import React, { useState } from "react";
 import { TrendingUp, Loader2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -29,7 +30,7 @@ const Forecasting = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">Trend analysis and revenue projections</p>
         </div>
       </div>
-      <DateRangePicker value={dateRange} onChange={setDateRange} />
+      <FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
 
       {data.error ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800"><p>{data.error}</p><button type="button" onClick={data.retry} className="mt-2 min-h-11 underline">Retry forecast</button></div> : data.loading ? (
         <div className="flex items-center justify-center py-16 gap-2 text-slate-400">

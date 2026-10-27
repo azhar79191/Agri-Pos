@@ -1,3 +1,6 @@
+import EmptyState from "../components/ui/EmptyState";
+import FilterBar from "../components/ui/FilterBar";
+import DataTable from "../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
 import { Download, TrendingUp, Package, AlertTriangle, DollarSign, ShoppingCart, BarChart3, PieChart as PieIcon, ChevronDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
@@ -88,7 +91,7 @@ const Reports = () => {
       </div>
 
       {/* Tabs + date range */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+      <FilterBar label="Report filters" className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
           {REPORT_TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setReportType(id)}
@@ -98,14 +101,14 @@ const Reports = () => {
           ))}
         </div>
         <div className="relative ml-auto">
-          <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className={selectCls}>
+          <select aria-label="Report period" value={dateRange} onChange={(e) => setDateRange(e.target.value)} className={selectCls}>
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
-      </div>
+      </FilterBar>
 
       {/* Summary stats */}
       {reportType !== "inventory" && (
@@ -180,7 +183,7 @@ const Reports = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest revenue in selected period</p>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full table-premium">
+            <DataTable className="w-full table-premium">
               <thead>
                 <tr>{["#", "Product Name", "Qty Sold", "Revenue"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
               </thead>
@@ -192,12 +195,12 @@ const Reports = () => {
                     </td>
                     <td className="px-4 py-3.5 font-semibold text-slate-900 dark:text-white text-sm">{p.productName}</td>
                     <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300">{p.totalQuantity}</td>
-                    <td className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.totalRevenue, settings.currency)}</td>
+                    <td data-sort-value={p.totalRevenue} className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.totalRevenue, settings.currency)}</td>
                   </tr>
                 ))}
                 {topProducts.length === 0 && <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">No sales data for selected period</td></tr>}
               </tbody>
-            </table>
+            </DataTable>
           </div>
         </div>
       )}
@@ -226,7 +229,7 @@ const Reports = () => {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Products that need restocking</p>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full table-premium">
+              <DataTable className="w-full table-premium">
                 <thead>
                   <tr>{["Product Name", "Category", "Stock Level", "Price"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
                 </thead>
@@ -240,12 +243,12 @@ const Reports = () => {
                           {p.stock} {getStockStatus(p.stock)}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.price, settings.currency)}</td>
+                      <td data-sort-value={p.price} className="px-4 py-3.5 font-bold text-blue-600 dark:text-blue-400">{formatCurrency(p.price, settings.currency)}</td>
                     </tr>
                   ))}
-                  {(inventoryData.lowStock || []).length === 0 && <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm">All inventory levels are good!</td></tr>}
+                  {(inventoryData.lowStock || []).length === 0 && <tr><td colSpan={4} className="text-center py-12 text-slate-400 text-sm"><EmptyState title="All inventory levels are good" description="No low-stock products to display." /></td></tr>}
                 </tbody>
-              </table>
+              </DataTable>
             </div>
           </div>
         </div>

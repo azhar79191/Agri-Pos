@@ -1,3 +1,4 @@
+import EmptyState from "../../components/ui/EmptyState";
 import React, { useState, useEffect } from "react";
 import { Users, Plus, X, Eye, EyeOff, Loader2, Shield, UserCheck, ShoppingCart } from "lucide-react";
 import ShopCard from "./ShopCard";
@@ -65,11 +66,7 @@ const TeamPanel = ({ shopId }) => {
         ) : (
           <div className="space-y-2">
             {users.length === 0 && !showForm && (
-              <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                <Users className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">No team members yet</p>
-                <p className="text-xs text-slate-400 mt-1">Add managers and cashiers to your shop</p>
-              </div>
+              <EmptyState title={<>No team members yet</>} description={<>Add managers and cashiers to your shop</>} />
             )}
 
             {users.map(u => {
