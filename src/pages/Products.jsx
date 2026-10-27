@@ -1,3 +1,4 @@
+import ListFeedback from "../components/ui/ListFeedback";
 import PendingInventoryOperations from "../components/PendingInventoryOperations";
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Download, Package, Tag } from "lucide-react";
@@ -25,7 +26,7 @@ import {
 const LIMIT = 15;
 
 const Products = () => {
-  const { products, brands: shopBrands, shopCategories, loading, fetchProducts } = useProducts();
+  const { products, brands: shopBrands, shopCategories, loading, error, fetchProducts } = useProducts();
   const { state, actions } = useApp();
 
   const {
@@ -39,6 +40,9 @@ const Products = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [page, setPage]                   = useState(1);
   const [pagination, setPagination]       = useState({ total: 0, pages: 1 });
+  const [requested, setRequested] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
   const [selected, setSelected]           = useState(new Set());
   const [showLabelPrinter, setShowLabelPrinter] = useState(false);
 
@@ -46,11 +50,13 @@ const Products = () => {
   const selectAll    = () => setSelected(new Set(filteredProducts.map((p) => p._id || p.id)));
   const clearSelect  = () => setSelected(new Set());
 
+  const reloadList = () => { setRequested(true); return fetchProducts({ page, limit: LIMIT, search: searchTerm, category: filterCategory }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
   useEffect(() => {
-    fetchProducts({ page, limit: LIMIT }).then((res) => {
-      if (res?.data?.pagination) setPagination(res.data.pagination);
-    });
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+    setSelected(new Set());
+    const timer = setTimeout(reloadList, 250);
+    return () => clearTimeout(timer);
+  }, [page, searchTerm, filterCategory]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
@@ -59,17 +65,11 @@ const Products = () => {
 
   const categoryOptions = allCategories.map((c) => ({ value: c, label: c }));
 
-  const filteredProducts = useMemo(() =>
-    products.filter((p) =>
-      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (!filterCategory || p.category === filterCategory)
-    ),
-    [products, searchTerm, filterCategory]
-  );
+  const filteredProducts = products;
 
   const stockStats = useMemo(() => ({
     total: products.length,
-    low:   products.filter((p) => p.stock > 0 && p.stock <= (p.minStockLevel || 5)).length,
+    low:   products.filter((p) => p.stock > 0 && p.stock <= (p.minStockLevel ?? 5)).length,
     out:   products.filter((p) => p.stock <= 0).length,
   }), [products]);
 
@@ -77,9 +77,9 @@ const Products = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <PendingInventoryOperations pathPrefix="/products" onRecovered={() => { actions.hideToast(); return fetchProducts({ page, limit: LIMIT }); }} />
+      <PendingInventoryOperations pathPrefix="/products" onRecovered={() => { actions.hideToast(); return reloadList(); }} />
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="workspace-hero flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
             <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -89,10 +89,10 @@ const Products = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400">{pagination.total} products in inventory</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <ModernButton variant="outline" onClick={() => exportProducts(products, state?.settings?.currency)} icon={Download} size="sm">Export</ModernButton>
+        <div className="flex flex-wrap gap-2">
+          <ModernButton variant="outline" onClick={() => exportProducts(products, state?.settings?.currency)} disabled={loading || !!error} icon={Download} size="sm">Export page</ModernButton>
           <ModernButton variant="outline" onClick={() => setShowLabelPrinter(true)} icon={Tag} size="sm">Print Labels</ModernButton>
-          <ModernButton onClick={openAdd} icon={Plus}>Add Product</ModernButton>
+          <ModernButton disabled={!actions.hasPermission("products:create")} onClick={openAdd} icon={Plus}>Add Product</ModernButton>
         </div>
       </div>
 
@@ -100,20 +100,22 @@ const Products = () => {
 
       <ProductFilters
         searchTerm={searchTerm}
-        onSearchChange={(e) => setSearchTerm(e.target.value)}
+        onSearchChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
         filterCategory={filterCategory}
-        onCategoryChange={(e) => setFilterCategory(e.target.value)}
+        onCategoryChange={(e) => { setFilterCategory(e.target.value); setPage(1); }}
         categoryOptions={categoryOptions}
       />
 
+      <p className="text-xs text-slate-500 dark:text-slate-400">Summary cards and exports describe the loaded page. Search checks the full shop directory.</p>
+      {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {loading ? <TableSkeleton rows={LIMIT} cols={6} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={6} /> : (
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
                 <tr>
-                  <th className="w-10"><input type="checkbox" checked={selected.size === filteredProducts.length && filteredProducts.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
+                  <th className="w-10"><input type="checkbox" aria-label="Select all products on this page" checked={selected.size === filteredProducts.length && filteredProducts.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
                   {["Product", "Category", "Brand", "Unit", "Price", "Stock", "Actions"].map((h) => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
@@ -122,22 +124,16 @@ const Products = () => {
                   <ProductRow
                     key={product._id || product.id}
                     product={product}
-                    onEdit={(p) => openEdit(p, shopBrands)}
-                    onDelete={setDeleteConfirm}
-                    currency="Rs."
+                    onEdit={actions.hasPermission("products:edit") ? (p) => openEdit(p, shopBrands) : null}
+                    onDelete={actions.hasPermission("products:delete") ? setDeleteConfirm : null}
+                    currency={state.settings.currency}
                     selected={selected.has(product._id || product.id)}
                     onSelect={() => toggleSelect(product._id || product.id)}
                   />
                 ))}
               </tbody>
             </table>
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-16">
-                <Package className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No products found</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Try adjusting your search or filters</p>
-              </div>
-            )}
+            <ListFeedback empty={filteredProducts.length === 0} title={searchTerm || filterCategory ? 'No matching products' : 'No active products yet'} description={searchTerm || filterCategory ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm || filterCategory ? () => { setSearchTerm(""); setFilterCategory(""); setPage(1); } : undefined} />
           </div>
         )}
         <div className="border-t border-slate-100 dark:border-slate-800">
@@ -154,7 +150,7 @@ const Products = () => {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Product Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Product Name" required />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select label="Category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value, subUnit: "" })} options={categoryOptions} placeholder="Select Category" />
             {shopBrands.length > 0 ? (
               <Select
@@ -170,7 +166,7 @@ const Products = () => {
           {formData.brand === "__other__" && (
             <Input label="New Brand Name" value={formData.customBrand || ""} onChange={(e) => setFormData({ ...formData, customBrand: e.target.value })} placeholder="e.g. Syngenta, Bayer..." required />
           )}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select label="Unit" value={formData.unit} onChange={(e) => setFormData({ ...formData, unit: e.target.value, subUnit: "" })} options={UNIT_OPTIONS} placeholder="Select Unit" />
             {subUnitOptions.length > 0 && (
               <Select
@@ -181,11 +177,11 @@ const Products = () => {
               />
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Sale Price (Rs.)" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} placeholder="Price" required />
             <Input label="Cost Price (Rs.)" type="number" value={formData.costPrice} onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })} placeholder="Cost Price" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Stock Quantity" type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} placeholder="Stock" required />
             <Input label="Min Stock Level" type="number" value={formData.minStockLevel} onChange={(e) => setFormData({ ...formData, minStockLevel: e.target.value })} placeholder="5" />
           </div>
@@ -242,11 +238,19 @@ const Products = () => {
         onSelectAll={selectAll}
         onClearAll={clearSelect}
         onExport={() => exportProducts(filteredProducts.filter((p) => selected.has(p._id || p.id)), state?.settings?.currency)}
-        onDelete={async () => {
-          await Promise.all([...selected].map((id) => deleteProduct(id).catch(() => {})));
-          clearSelect();
-          fetchProducts({ page, limit: LIMIT });
-        }}
+        busy={bulkBusy}
+        deleteLabel="Archive"
+        onDelete={actions.hasPermission("products:delete") ? async () => {
+          if (!window.confirm(`Archive ${selected.size} selected product records? History will be retained.`)) return;
+          setBulkBusy(true);
+          const ids = [...selected];
+          const results = await Promise.allSettled(ids.map(id => deleteProduct(id)));
+          const failed = ids.filter((id, index) => results[index].status === 'rejected');
+          setSelected(new Set(failed));
+          setBulkMessage(`${ids.length - failed.length} archived. ${failed.length} could not be confirmed; refresh and review before retrying.`);
+          await reloadList();
+          setBulkBusy(false);
+        } : null}
       />
 
       {showLabelPrinter && (

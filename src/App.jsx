@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, Component, useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
+import AccessBoundary from "./components/AccessBoundary";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MobileNav from "./components/MobileNav";
@@ -47,6 +48,7 @@ const CreditSales       = lazy(() => import("./pages/sales/CreditSales"));
 const CustomerDues      = lazy(() => import("./pages/customers/CustomerDues"));
 
 // Staff Hub — unified
+const Roles = lazy(() => import("./pages/staff/Roles"));
 const StaffHub          = lazy(() => import("./pages/staff/StaffHub"));
 
 // New modules — Phase 3: Intelligence
@@ -122,11 +124,11 @@ const AppLayout = () => {
         <MobileHeader />
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 mt-14 lg:mt-0 pb-safe-nav lg:pb-6">
-          <div className="max-w-7xl mx-auto page-enter">
+        <main className="workspace-main flex-1 overflow-y-auto p-4 lg:p-6 mt-14 lg:mt-0 pb-safe-nav lg:pb-6">
+          <div className="workspace-shell max-w-7xl mx-auto page-enter">
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
-                <Routes>
+                <AccessBoundary><Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/products" element={<Products />} />
@@ -167,6 +169,7 @@ const AppLayout = () => {
                   <Route path="/reports/inventory" element={<InventoryReports />} />
                   <Route path="/reports/aging" element={<InvoiceAgingReport />} />
                   <Route path="/demo" element={<DemoPOS />} />
+                  <Route path="/staff/roles" element={<Roles />} />
                   <Route path="/staff" element={<StaffHub />} />
                   <Route path="/staff/sales-reps" element={<StaffHub />} />
                   <Route path="/staff/audit-logs" element={<StaffHub />} />
@@ -175,7 +178,7 @@ const AppLayout = () => {
                   <Route path="/staff/audit" element={<StaffHub />} />
                   <Route path="/staff/overview" element={<StaffHub />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
+                </Routes></AccessBoundary>
               </Suspense>
             </ErrorBoundary>
           </div>

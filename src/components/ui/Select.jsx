@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 import { ChevronDown } from "lucide-react";
 
 const Select = forwardRef(({
@@ -6,18 +6,21 @@ const Select = forwardRef(({
   containerClassName = "", labelClassName = "",
   placeholder = "Select an option", ...props
 }, ref) => {
+  const generatedId = useId();
+  const fieldId = props.id || generatedId;
   const base = "select-premium";
   const errorStyles = error ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500" : "";
 
   return (
     <div className={containerClassName}>
       {label && (
-        <label className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
+        <label htmlFor={fieldId} className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
           {label}{props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         <select
+          id={fieldId} aria-invalid={error ? true : undefined}
           ref={ref}
           className={[base, errorStyles, "pr-10", className].filter(Boolean).join(" ")}
           {...props}

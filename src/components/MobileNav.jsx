@@ -90,6 +90,7 @@ const MORE_SECTIONS = [
     label: "Administration",
     color: "indigo",
     items: [
+      { id: "staff/roles", label: "Roles & Access", icon: Shield, path: "/staff/roles", permission: "users", ownerOnly: true },
       { id: "staff",    label: "Staff Hub",    icon: Shield,   path: "/staff",    permission: "users"    },
       { id: "shops",    label: "My Shop",      icon: Building2,path: "/shops",    permission: "settings" },
       { id: "settings", label: "App Settings", icon: Settings, path: "/settings", permission: "settings" },
@@ -279,7 +280,7 @@ const MobileNav = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 py-3 space-y-5">
             {MORE_SECTIONS.map((section) => {
-              const visibleItems = section.items.filter(item => hasPermission(item.permission));
+              const visibleItems = section.items.filter(item => hasPermission(item.permission) && (!item.ownerOnly || rawRole === "admin"));
               if (!visibleItems.length) return null;
               const colors = COLOR_MAP[section.color] || COLOR_MAP.indigo;
 

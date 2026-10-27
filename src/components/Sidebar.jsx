@@ -9,7 +9,7 @@ const ICON_COLORS = {
   dashboard:{"bg":"bg-blue-100","icon":"text-blue-600"},
   sales:{"bg":"bg-emerald-100","icon":"text-emerald-600"},
   inventory:{"bg":"bg-orange-100","icon":"text-orange-600"},
-  purchases:{"bg":"bg-violet-100","icon":"text-violet-600"},
+  purchases:{"bg":"bg-blue-100","icon":"text-blue-600"},
   "customers-group":{"bg":"bg-cyan-100","icon":"text-cyan-600"},
   recommendations:{"bg":"bg-green-100","icon":"text-green-600"},
   "reports-group":{"bg":"bg-purple-100","icon":"text-purple-600"},
@@ -85,10 +85,10 @@ const Sidebar = () => {
                 const a = isActive(cid) || location.pathname.startsWith(`/${cid}`);
                 return (
                   <button key={group.id} onClick={() => go(cid)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative ${a?"bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400":"text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
-                    {a && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-violet-600" />}
-                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${a?"bg-violet-100 dark:bg-violet-900/40":c.bg+" dark:bg-slate-800"}`}>
-                      <G className={`w-4 h-4 ${a?"text-violet-600 dark:text-violet-400":c.icon}`} />
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative ${a?"bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400":"text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
+                    {a && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-blue-600" />}
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${a?"bg-blue-100 dark:bg-blue-900/40":c.bg+" dark:bg-slate-800"}`}>
+                      <G className={`w-4 h-4 ${a?"text-blue-600 dark:text-blue-400":c.icon}`} />
                     </span>
                     <span className="flex-1 text-left">{group.label}</span>
                   </button>
@@ -96,25 +96,25 @@ const Sidebar = () => {
               })() : (
                 <div className="space-y-0.5">
                   <button onClick={() => toggle(group.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative ${ga?"bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400":"text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
-                    {ga && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-violet-600" />}
-                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${ga?"bg-violet-100 dark:bg-violet-900/40":c.bg+" dark:bg-slate-800"}`}>
-                      <G className={`w-4 h-4 ${ga?"text-violet-600 dark:text-violet-400":c.icon}`} />
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all relative ${ga?"bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400":"text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
+                    {ga && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r-full bg-blue-600" />}
+                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${ga?"bg-blue-100 dark:bg-blue-900/40":c.bg+" dark:bg-slate-800"}`}>
+                      <G className={`w-4 h-4 ${ga?"text-blue-600 dark:text-blue-400":c.icon}`} />
                     </span>
                     <span className="flex-1 text-left">{group.label}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform flex-shrink-0 ${open?"rotate-180":""} ${ga?"text-violet-500":"text-slate-400"}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform flex-shrink-0 ${open?"rotate-180":""} ${ga?"text-blue-500":"text-slate-400"}`} />
                   </button>
                   <div className={`overflow-hidden transition-all duration-200 ${open?"max-h-96 opacity-100":"max-h-0 opacity-0"}`}>
                     <div className="ml-5 pl-4 border-l border-slate-100 dark:border-slate-800 space-y-0.5 py-0.5">
-                      {group.children.map(child => {
+                      {group.children.filter(child => child.id !== "staff/roles" || currentUser?.role === "admin").map(child => {
                         const CI = child.icon;
                         const a = isActive(child.id);
                         return (
                           <button key={child.id} onClick={() => go(child.id)}
-                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${a?"bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400":"text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
-                            <CI className={`w-3.5 h-3.5 flex-shrink-0 ${a?"text-violet-600 dark:text-violet-400":"text-slate-400"}`} />
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${a?"bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400":"text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"}`}>
+                            <CI className={`w-3.5 h-3.5 flex-shrink-0 ${a?"text-blue-600 dark:text-blue-400":"text-slate-400"}`} />
                             <span className="whitespace-nowrap">{child.label}</span>
-                            {a && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0" />}
+                            {a && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
                           </button>
                         );
                       })}

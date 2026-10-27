@@ -122,7 +122,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, phone, role…"
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/30 transition-all" />
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
           </div>
         </div>
 
@@ -444,17 +444,17 @@ const SuperAdminDashboard = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 space-y-6">
+    <div className="platform-workspace workspace-shell min-h-screen p-4 sm:p-8 space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="workspace-hero flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Super Admin</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Platform management · AgriNest POS</p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Platform control center</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Shop approvals, subscriptions and access · AgriNest POS</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -490,7 +490,7 @@ const SuperAdminDashboard = () => {
 
       {/* Plan breakdown */}
       {stats?.planBreakdown && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {PLANS.map(p => (
             <div key={p.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
               <p.icon className="w-5 h-5 text-slate-400 flex-shrink-0" />
@@ -506,7 +506,7 @@ const SuperAdminDashboard = () => {
       {/* Filters + search */}
       <div className="flex flex-col sm:flex-row gap-3">
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search shops or owner email..."
-          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/30 transition-all" />
+          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
           {["all","pending","active","suspended"].map(f => (
             <button key={f} onClick={() => setFilter(f)}

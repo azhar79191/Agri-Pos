@@ -72,10 +72,11 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
 
               {/* Shop info */}
               <div className="text-center mb-5">
-                {settings.shopLogo && (
-                  <img src={settings.shopLogo} alt={settings.shopName} className="w-14 h-14 object-contain mx-auto mb-2" />
+                {(settings.brandLogo || settings.shopLogo) && (
+                  <img src={settings.brandLogo || settings.shopLogo} alt={settings.brandName || settings.shopName} className="w-14 h-14 object-contain mx-auto mb-2" />
                 )}
-                <h2 className="text-xl font-bold text-gray-900">{settings.shopName}</h2>
+                <h2 className="text-xl font-bold text-gray-900">{settings.brandName || settings.shopName}</h2>
+                {settings.brandTagline && <p className="text-xs text-gray-500">{settings.brandTagline}</p>}
                 <p className="text-xs text-gray-500">{settings.address}</p>
                 <p className="text-xs text-gray-500">{settings.phone}</p>
                 <div className="mt-3 border-t border-b border-gray-200 py-2">

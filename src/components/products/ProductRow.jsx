@@ -12,12 +12,12 @@ const categoryColors = {
 };
 
 const ProductRow = ({ product, onEdit, onDelete, currency, selected, onSelect }) => {
-  const stockStatus = product.stock <= 0 ? "out" : product.stock <= (product.minStockLevel || 5) ? "low" : "good";
+  const stockStatus = product.stock <= 0 ? "out" : product.stock <= (product.minStockLevel ?? 5) ? "low" : "good";
 
   return (
     <tr className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors">
       <td className="px-4 py-3">
-        <input type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
+        <input aria-label={`Select ${product.name}`} type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -56,19 +56,20 @@ const ProductRow = ({ product, onEdit, onDelete, currency, selected, onSelect })
         </span>
       </td>
       <td className="px-4 py-3">
-        <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-          <button
-            className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/15 transition-colors"
+        <div className="flex gap-1  transition-opacity">
+          {onEdit && <button
+            aria-label={`Edit ${product.name}`}
+            className="min-h-11 min-w-11 p-1.5 rounded-md text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/15 transition-colors"
             onClick={() => onEdit(product)}
           >
             <Edit2 size={15} />
-          </button>
-          <button 
-            className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors" 
+          </button>}
+          {onDelete && <button aria-label={`Archive ${product.name}`}
+            className="min-h-11 min-w-11 p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors"
             onClick={() => onDelete(product)}
           >
             <Trash2 size={15} />
-          </button>
+          </button>}
         </div>
       </td>
     </tr>

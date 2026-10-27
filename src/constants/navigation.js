@@ -33,6 +33,7 @@ export const PAGE_TITLES = {
   "reports/aging":            "Invoice Aging Report",
   "users":                    "User Management",
   "staff/sales-reps":         "Sales Representatives",
+  "staff/roles": "Roles & Access",
   "staff/audit-logs":         "Audit Logs",
   "shops":                    "My Shop",
   "settings":                 "Settings",

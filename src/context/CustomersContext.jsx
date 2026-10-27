@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import {
   getCustomers, getCustomer, createCustomer, updateCustomer,
   deleteCustomer, updateCustomerCredit,
@@ -9,25 +9,28 @@ const CustomersContext = createContext();
 export function CustomersProvider({ children }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const requestVersion = useRef(0);
   const [error, setError] = useState(null);
   useEffect(() => {
-    const reset = () => { setCustomers([]); setError(null); };
+    const reset = () => { requestVersion.current++; setLoading(false); setCustomers([]); setError(null); };
     window.addEventListener("business-session-reset", reset);
     return () => window.removeEventListener("business-session-reset", reset);
   }, []);
 
   const fetchCustomers = useCallback(async (params) => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
     try {
       const res = await getCustomers(params);
+      if (version !== requestVersion.current) return;
       const data = res.data.data;
       setCustomers(Array.isArray(data) ? data : data?.customers ?? data?.docs ?? []);
       return res.data;
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch customers");
+      if (version === requestVersion.current) setError(err.response?.data?.message || "Failed to fetch customers");
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
   }, []);
 

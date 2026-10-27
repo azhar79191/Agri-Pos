@@ -10,19 +10,19 @@ const PX_MAP = { "w-7": 28, "w-8": 32, "w-9": 36, "w-10": 40, "w-12": 48, "w-14"
  * @param {string} size  - Tailwind size classes e.g. "w-8 h-8"
  */
 const ShopLogo = ({ logo, name, size = "w-8 h-8" }) => {
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useState(null);
   const sizeKey = size.split(" ").find((c) => c.startsWith("w-"));
   const px = PX_MAP[sizeKey] || 32;
 
   return (
     <div className={`${size} rounded-lg flex-shrink-0 overflow-hidden bg-white`}>
-      {logo && !imgError ? (
+      {logo && imgError !== logo ? (
         <img
           src={logo}
           alt={name || "Shop"}
           width={px}
           height={px}
-          onError={() => setImgError(true)}
+          onError={() => setImgError(logo)}
           style={{
             width: "100%",
             height: "100%",
@@ -40,7 +40,7 @@ const ShopLogo = ({ logo, name, size = "w-8 h-8" }) => {
       ) : (
         <div
           className="w-full h-full flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #2563eb, #0ea5e9)" }}
+          style={{ background: "linear-gradient(135deg, var(--pos-primary), var(--pos-accent))" }}
         >
           <Sprout className="w-4 h-4 text-white" />
         </div>

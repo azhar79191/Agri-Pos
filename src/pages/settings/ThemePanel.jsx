@@ -10,6 +10,7 @@ const ThemePanel = () => {
 
   return (
     <div className="space-y-6">
+      <div className="card-base p-4 text-sm"><p>Changes apply immediately and are remembered for this shop account in this browser. Set shared company defaults in Branding & Emails.</p><button type="button" onClick={actions.resetAppearance} className="mt-2 min-h-11 font-semibold text-blue-700 underline dark:text-blue-300">Use shop appearance defaults</button></div>
       {/* Accent color */}
       <SettingsCard title="Accent Color" desc="Choose the primary color used across buttons, badges, and highlights">
         <div className="space-y-4">
@@ -18,6 +19,8 @@ const ThemePanel = () => {
               <button
                 key={color}
                 title={label}
+                aria-label={`${label} accent`}
+                aria-pressed={themeColor === color}
                 onClick={() => actions.setThemeColor(color)}
                 className="relative w-9 h-9 rounded-full border-2 transition-all hover:scale-110 focus:outline-none"
                 style={{
@@ -36,6 +39,7 @@ const ThemePanel = () => {
           <div className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700">
             <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Custom color</label>
             <input
+              aria-label="Personal accent color"
               type="color"
               value={themeColor}
               onChange={e => actions.setThemeColor(e.target.value)}
@@ -68,6 +72,7 @@ const ThemePanel = () => {
             </div>
           </div>
           <button
+            aria-label="Dark appearance" role="switch" aria-checked={darkMode}
             onClick={actions.toggleDarkMode}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${darkMode ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-600"}`}
           >

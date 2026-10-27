@@ -42,6 +42,9 @@ const Table = ({
               {columns.map(col => (
                 <th
                   key={col.key}
+                  aria-sort={col.sortable ? sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none' : undefined}
+                  tabIndex={col.sortable ? 0 : undefined}
+                  onKeyDown={event => { if (col.sortable && ['Enter', ' '].includes(event.key)) { event.preventDefault(); handleSort(col); } }}
                   onClick={() => handleSort(col)}
                   className={[
                     "px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-[1] select-none",
@@ -54,7 +57,7 @@ const Table = ({
                     {col.sortable && (
                       <span className={`flex-shrink-0 transition-colors ${
                         sortKey === col.key
-                          ? "text-violet-500 dark:text-violet-400"
+                          ? "text-blue-500 dark:text-blue-400"
                           : "text-slate-400 dark:text-slate-500"
                       }`}>
                         <SortIcon direction={sortKey === col.key ? sortDir : null} />

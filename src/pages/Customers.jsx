@@ -1,3 +1,4 @@
+import ListFeedback from "../components/ui/ListFeedback";
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Users, Download, Search } from "lucide-react";
 import { useCustomers } from "../context/CustomersContext";
@@ -19,8 +20,8 @@ import { deleteCustomer } from "../api/customersApi";
 const LIMIT = 15;
 
 const Customers = () => {
-  const { customers, loading, fetchCustomers } = useCustomers();
-  const { state } = useApp();
+  const { customers, loading, error, fetchCustomers } = useCustomers();
+  const { state, actions } = useApp();
   const { settings } = state;
   const navigate = useNavigate();
 
@@ -35,26 +36,24 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage]             = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  const [requested, setRequested] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState("");
   const [selected, setSelected]     = useState(new Set());
 
   const toggleSelect = (id) => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const selectAll    = () => setSelected(new Set(filteredCustomers.map((c) => c._id)));
   const clearSelect  = () => setSelected(new Set());
 
+  const reloadList = () => { setRequested(true); return fetchCustomers({ page, limit: LIMIT, search: searchTerm }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
   useEffect(() => {
-    fetchCustomers({ page, limit: LIMIT }).then((res) => {
-      if (res?.data?.pagination) setPagination(res.data.pagination);
-    });
-  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
+    setSelected(new Set());
+    const timer = setTimeout(reloadList, 250);
+    return () => clearTimeout(timer);
+  }, [page, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filteredCustomers = useMemo(() =>
-    customers.filter((c) =>
-      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.phone?.includes(searchTerm) ||
-      c.address?.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    [customers, searchTerm]
-  );
+
+  const filteredCustomers = customers;
 
   const totalWalletBalance = useMemo(() => customers.reduce((sum, c) => sum + (c.walletBalance || 0), 0), [customers]);
   const totalCreditBalance = useMemo(() => customers.reduce((sum, c) => sum + (c.creditBalance || 0), 0), [customers]);
@@ -62,7 +61,7 @@ const Customers = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="workspace-hero flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
             <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -72,9 +71,9 @@ const Customers = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400">Manage your customer database</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <ModernButton variant="outline" onClick={() => exportCustomers(customers, settings.currency)} icon={Download} size="sm">Export</ModernButton>
-          <ModernButton onClick={openAdd} icon={Plus}>Add Customer</ModernButton>
+        <div className="flex flex-wrap gap-2">
+          <ModernButton variant="outline" onClick={() => exportCustomers(customers, settings.currency)} disabled={loading || !!error} icon={Download} size="sm">Export page</ModernButton>
+          <ModernButton disabled={!actions.hasPermission("customers:create")} onClick={openAdd} icon={Plus}>Add Customer</ModernButton>
         </div>
       </div>
 
@@ -87,23 +86,25 @@ const Customers = () => {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by name, phone, or address..."
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          style={{ paddingLeft: "2.5rem" }} aria-label="Search customers" placeholder="Search by name, phone, or email..."
           className="input-premium w-full pl-10"
         />
       </div>
 
+      <p className="text-xs text-slate-500 dark:text-slate-400">Summary cards and exports describe the loaded page. Search checks the full shop directory.</p>
+      {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {loading ? <TableSkeleton rows={LIMIT} cols={4} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={4} /> : (
           <div className="overflow-x-auto">
             <table className="w-full table-premium">
               <thead>
                 <tr>
-                  <th className="w-10"><input type="checkbox" checked={selected.size === filteredCustomers.length && filteredCustomers.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
+                  <th className="w-10"><input type="checkbox" aria-label="Select all customers on this page" checked={selected.size === filteredCustomers.length && filteredCustomers.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
                   {["Customer", "Address", "Wallet", "Owes (Credit)", "Actions"].map((h) => <th key={h}>{h}</th>)}
                 </tr>
               </thead>
@@ -112,8 +113,8 @@ const Customers = () => {
                   <CustomerRow
                     key={customer._id}
                     customer={customer}
-                    onEdit={openEdit}
-                    onDelete={setDeleteConfirm}
+                    onEdit={actions.hasPermission("customers:edit") ? openEdit : null}
+                    onDelete={actions.hasPermission("customers:delete") ? setDeleteConfirm : null}
                     onViewStatement={(c) => navigate(`/customers/${c._id}/statement`)}
                     currency={settings.currency}
                     selected={selected.has(customer._id)}
@@ -122,12 +123,7 @@ const Customers = () => {
                 ))}
               </tbody>
             </table>
-            {filteredCustomers.length === 0 && (
-              <div className="text-center py-16">
-                <Users className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-500 font-medium text-sm">No customers found</p>
-              </div>
-            )}
+            <ListFeedback empty={filteredCustomers.length === 0} title={searchTerm ? 'No matching customers' : 'No active customers yet'} description={searchTerm ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm ? () => { setSearchTerm(""); setPage(1); } : undefined} />
           </div>
         )}
         <div className="border-t border-slate-100 dark:border-slate-800">
@@ -152,8 +148,8 @@ const Customers = () => {
           <Input label="Full Name" name="name" value={formData.name} onChange={handleChange} required placeholder="Enter customer name" />
           <Input label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} required placeholder="Enter phone number" />
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Address</label>
-            <textarea name="address" value={formData.address} onChange={handleChange} rows={3} required className="input-premium resize-none" placeholder="Enter complete address..." />
+            <label htmlFor="customer-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Address</label>
+            <textarea id="customer-address" name="address" value={formData.address} onChange={handleChange} rows={3} required className="input-premium resize-none" placeholder="Enter complete address..." />
           </div>
           <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">Manage wallet balances through deposits and payments so every change appears in the customer ledger.</p>
         </form>
@@ -164,7 +160,7 @@ const Customers = () => {
         onClose={() => setDeleteConfirm(null)}
         onConfirm={confirmDelete}
         title="Delete Customer"
-        message={`Are you sure you want to delete "${deleteConfirm?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${deleteConfirm?.name}"? The customer will be archived; financial history is retained.`}
         confirmText="Delete"
         confirmVariant="danger"
       />
@@ -175,11 +171,19 @@ const Customers = () => {
         onSelectAll={selectAll}
         onClearAll={clearSelect}
         onExport={() => exportCustomers(filteredCustomers.filter((c) => selected.has(c._id)), settings.currency)}
-        onDelete={async () => {
-          await Promise.all([...selected].map((id) => deleteCustomer(id).catch(() => {})));
-          clearSelect();
-          fetchCustomers({ page, limit: LIMIT });
-        }}
+        busy={bulkBusy}
+        deleteLabel="Archive"
+        onDelete={actions.hasPermission("customers:delete") ? async () => {
+          if (!window.confirm(`Archive ${selected.size} selected customer records? History will be retained.`)) return;
+          setBulkBusy(true);
+          const ids = [...selected];
+          const results = await Promise.allSettled(ids.map(id => deleteCustomer(id)));
+          const failed = ids.filter((id, index) => results[index].status === 'rejected');
+          setSelected(new Set(failed));
+          setBulkMessage(`${ids.length - failed.length} archived. ${failed.length} could not be confirmed; refresh and review before retrying.`);
+          await reloadList();
+          setBulkBusy(false);
+        } : null}
       />
     </div>
   );

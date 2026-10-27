@@ -5,7 +5,7 @@
 import { normalizeInvoiceItems } from './normalizeInvoiceItems';
 
 export const shareReceiptOnWhatsApp = (transaction, settings, phone = "") => {
-  const shop   = settings?.shopName       || "AgriNest POS";
+  const shop   = settings?.brandName || settings?.shopName || "AgriNest POS";
   const curr   = settings?.currency       || "Rs.";
   const footer = settings?.receiptFooter  || "Thank you for your business!";
   const address = settings?.shopAddress   || "";

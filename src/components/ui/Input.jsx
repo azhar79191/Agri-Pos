@@ -1,10 +1,12 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useId } from "react";
 
 const Input = forwardRef(({
   label, error, helperText, className = "", containerClassName = "",
   labelClassName = "", leftIcon: LeftIcon = null, rightIcon: RightIcon = null,
   type = "text", ...props
 }, ref) => {
+  const generatedId = useId();
+  const fieldId = props.id || generatedId;
   const base = "input-premium";
   const errorStyles = error ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500" : "";
   const iconPadding = LeftIcon ? "pl-10" : "px-4";
@@ -13,7 +15,7 @@ const Input = forwardRef(({
   return (
     <div className={containerClassName}>
       {label && (
-        <label className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
+        <label htmlFor={fieldId} className={`block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ${labelClassName}`}>
           {label}{props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
@@ -24,6 +26,7 @@ const Input = forwardRef(({
           </div>
         )}
         <input
+          id={fieldId} aria-invalid={error ? true : undefined}
           ref={ref} type={type}
           className={[base, errorStyles, iconPadding, rightIconPadding, className].filter(Boolean).join(" ")}
           {...props}

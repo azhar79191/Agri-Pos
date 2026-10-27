@@ -22,9 +22,13 @@ try {
     sessionStorage.setItem('token', 'isolated-browser-fixture');
   }, user);
   const apiRequests = [];
+  const directorySearches = [];
+  let directoryFailure = true;
   let stock = 5;
   const stockAttempts = [];
   const supplier = { _id: 'dddddddddddddddddddddddd', name: 'Test Supplier', outstanding: 120, creditBalance: 0, totalPurchases: 120, paymentTerms: 'Net 30' };
+  const accessRoles = [], staffRole = { _id: 'ffffffffffffffffffffffff', name: 'Inventory staff', email: 'staff@example.test', role: 'cashier' };
+  const roleCommands = [];
   let brandSettings = { shopName: 'Test Agri Shop', brandName: '', brandTagline: '', brandColor: '#047857', brandLogo: '', emailFooter: 'Thank you', actionEmailsEnabled: false };
   const farmerSeasons = [], farmerTasks = [], farmerCommands = [];
   const farmer = { _id: 'eeeeeeeeeeeeeeeeeeeeeeee', name: 'Test Farmer', phone: '03000000000' };
@@ -38,6 +42,11 @@ try {
     const path = url.pathname.replace(/^\/api/, '');
     let data;
     if (path === '/auth/profile') data = { user };
+    else if (path === '/roles') {
+      if (route.request().method() === 'POST') { const command = route.request().postDataJSON(); roleCommands.push(command); accessRoles.push({ ...command, _id: 'role-fixture' }); data = { role: accessRoles.at(-1) }; }
+      else data = { roles: accessRoles, users: [staffRole], permissions: ['dashboard:view', 'products:view', 'products:edit'] };
+    }
+    else if (path === '/roles/role-fixture/assign') { staffRole.customRoleId = 'role-fixture'; data = { userId: staffRole._id }; }
     else if (path === '/settings/email-status') data = { workerEnabled: false, providerConfigured: false, jobs: [] };
     else if (path === '/settings') {
       if (route.request().method() === 'PUT') { Object.assign(brandSettings, route.request().postDataJSON()); Object.assign(user.shop, brandSettings); }
@@ -45,7 +54,10 @@ try {
     }
     else if (path === '/products') {
       apiRequests.push(url.searchParams.get('category'));
-      data = { products: [fixtureProduct()], brands: [], categories: ['Other'], pagination: { pages: 1 } };
+      directorySearches.push(url.searchParams.get('search'));
+      if (url.searchParams.get('search') === 'unavailable' && directoryFailure) { directoryFailure = false; return route.fulfill({ status: 503, json: { success: false, message: 'Directory unavailable - browser fixture' } }); }
+      const found = url.searchParams.get('search') === 'REMOTE-SKU' ? { ...fixtureProduct(), name: 'Remote catalog match', sku: 'REMOTE-SKU' } : fixtureProduct();
+      data = { products: [found], brands: [], categories: ['Other'], pagination: { page: 1, pages: 1, total: 1 } };
     } else if (path === '/customers') data = { customers: [farmer] };
     else if (path.startsWith('/farmer-workspace/')) {
       const isSeason = path.endsWith('/seasons');
@@ -206,8 +218,96 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Brand settings must fit mobile width');
   await page.screenshot({ path: 'artifacts/branding-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.getByLabel('Settings section', { exact: true }).selectOption('theme');
+  const oldAccentSurface = await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).evaluate(element => getComputedStyle(element).color);
+  await page.getByRole('button', { name: 'Rose accent', exact: true }).click();
+  assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--brand-500')), '244 63 94');
+  const newAccentSurface = await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).evaluate(element => getComputedStyle(element).color);
+  assert.notEqual(oldAccentSurface, newAccentSurface, 'Theme selection must visibly change existing primary surfaces');
+  await page.getByRole('switch', { name: 'Dark appearance', exact: true }).click();
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
+  await page.reload();
+  await page.getByLabel('Settings section', { exact: true }).selectOption('theme');
+  await page.getByRole('button', { name: 'Rose accent', exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#f43f5e');
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
+  await page.screenshot({ path: 'artifacts/theme-dark-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.evaluate(() => localStorage.setItem('appearance:color:other-shop:other-user', '#123456'));
+  await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).click();
+  assert.equal(await page.evaluate(() => localStorage.getItem('appearance:color:other-shop:other-user')), '#123456', 'Reset must not clear another company account appearance');
+  assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#047857');
+  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), false);
+  await page.goto(`${origin}/staff/roles`);
+  await page.getByRole('heading', { name: 'Roles and access', exact: true }).waitFor();
+  await page.getByLabel('Role name', { exact: true }).fill('Inventory assistant');
+  await page.getByRole('group', { name: 'products', exact: true }).getByLabel('view', { exact: true }).check();
+  await page.getByRole('button', { name: 'Create role', exact: true }).click();
+  await page.getByRole('heading', { name: 'Inventory assistant', exact: true }).waitFor();
+  assert.deepEqual(roleCommands[0].permissions, ['products:view']);
+  await page.getByLabel('Staff member', { exact: true }).selectOption(staffRole._id);
+  await page.getByLabel('Access role', { exact: true }).selectOption('role-fixture');
+  await page.getByRole('button', { name: 'Assign role', exact: true }).click();
+  await page.getByRole('button', { name: 'Restore standard cashier role', exact: true }).waitFor();
+  assert.equal(staffRole.customRoleId, 'role-fixture');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Role editor must fit mobile width');
+  await page.screenshot({ path: 'artifacts/roles-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'artifacts/roles-desktop.png', fullPage: true, animations: 'disabled' });
+  await page.goto(`${origin}/products`);
+  await page.getByRole('heading', { name: 'Products', exact: true }).waitFor();
+  await page.getByLabel('Search products', { exact: true }).fill('REMOTE-SKU');
+  await page.getByText('Remote catalog match', { exact: true }).waitFor();
+  assert(directorySearches.includes('REMOTE-SKU'), 'Directory search must reach the backend');
+  await page.getByLabel('Search products', { exact: true }).fill('unavailable');
+  await page.getByRole('heading', { name: 'This list could not be loaded', exact: true }).waitFor();
+  assert.equal(await page.getByText('No matching products', { exact: true }).count(), 0, 'API failures must not look like empty searches');
+  await page.getByRole('button', { name: 'Retry loading', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit Test Seed', exact: true }).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Product directory must fit mobile width');
+  await page.getByLabel('Select Test Seed', { exact: true }).check();
+  await page.getByRole('region', { name: 'Selected records actions', exact: true }).waitFor();
+  const bulkBounds = await page.getByRole('region', { name: 'Selected records actions', exact: true }).boundingBox();
+  assert(bulkBounds && bulkBounds.x >= 0 && bulkBounds.x + bulkBounds.width <= 390, 'Every bulk action must remain inside the mobile viewport');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Bulk toolbar must fit mobile width');
+  await page.screenshot({ path: 'artifacts/products-directory-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.goto(`${origin}/customers`);
+  await page.getByRole('heading', { name: 'Customers', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Edit Test Farmer', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Add Customer', exact: true }).click();
+  await page.getByRole('dialog').getByLabel('Full Name').fill('New farmer');
+  await page.getByRole('dialog').getByLabel('Address', { exact: true }).fill('Village address');
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Customer directory must fit mobile width');
+  await page.screenshot({ path: 'artifacts/customers-directory-mobile.png', fullPage: true, animations: 'disabled' });
+  const platformContext = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
+  await platformContext.addInitScript(() => {
+    const user = { _id: 'platform-fixture', name: 'Platform Admin', role: 'superadmin', permissions: ['superadmin:all'], isActive: true, shop: null };
+    localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('posUser', JSON.stringify(user)); sessionStorage.setItem('token', 'platform-fixture');
+  });
+  await platformContext.routeWebSocket('**/*', socket => socket.close());
+  await platformContext.route('**/*', async route => {
+    const url = new URL(route.request().url());
+    if (url.origin === origin && route.request().resourceType() === 'document') return route.continue();
+    const path = url.pathname.replace(/^\/api/, '');
+    if (path === '/auth/profile') return route.fulfill({ json: { success: true, data: { user: { _id: 'platform-fixture', name: 'Platform Admin', role: 'superadmin', permissions: ['superadmin:all'], isActive: true, shop: null } } } });
+    if (path === '/superadmin/stats') return route.fulfill({ json: { success: true, data: { totalShops: 0, approvedShops: 0, pendingShops: 0, totalUsers: 1, planBreakdown: {} } } });
+    if (path === '/superadmin/shops') return route.fulfill({ json: { success: true, data: { shops: [] } } });
+    return url.origin === origin ? route.continue() : route.abort();
+  });
+  const platformPage = await platformContext.newPage();
+  platformPage.on('pageerror', error => pageErrors.push(error.message));
+  await platformPage.goto(`${origin}/`);
+  await platformPage.getByRole('heading', { name: 'Platform control center', exact: true }).waitFor();
+  await platformPage.getByText('No shops found', { exact: true }).waitFor();
+  await platformPage.screenshot({ path: 'artifacts/platform-desktop.png', fullPage: true, animations: 'disabled' });
+  await platformPage.setViewportSize({ width: 390, height: 844 });
+  assert.equal(await platformPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Platform overview must fit mobile width');
+  await platformPage.screenshot({ path: 'artifacts/platform-mobile.png', fullPage: true, animations: 'disabled' });
+  await platformContext.close();
   assert.deepEqual(pageErrors, []);
-  console.log('Browser smoke passed: POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, and branding settings.');
+  console.log('Browser smoke passed: POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, branding settings, role creation/assignment, platform desktop/mobile, live theme/dark-mode persistence, and directory search/retry/mobile controls.');
 } catch (error) {
   if (page) {
     await mkdir('artifacts', { recursive: true });

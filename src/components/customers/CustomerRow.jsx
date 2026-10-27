@@ -16,7 +16,7 @@ const CustomerRow = ({ customer, onEdit, onDelete, onViewStatement, currency, se
   return (
     <tr className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors">
       <td className="px-4 py-3">
-        <input type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
+        <input aria-label={`Select ${customer.name}`} type="checkbox" checked={selected} onChange={onSelect} className="rounded" onClick={(e) => e.stopPropagation()} />
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -50,14 +50,14 @@ const CustomerRow = ({ customer, onEdit, onDelete, onViewStatement, currency, se
         ) : <span className="text-xs text-slate-400">—</span>}
       </td>
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1  transition-opacity">
           <button onClick={() => onViewStatement(customer)} className="flex items-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <FileText className="w-3.5 h-3.5" />Statement
           </button>
-          <button onClick={() => onEdit(customer)} className="p-1.5 rounded-md text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/15 transition-colors">
+          <button aria-label={`Edit ${customer.name}`} onClick={() => onEdit?.(customer)} hidden={!onEdit} className="min-h-11 min-w-11 p-1.5 rounded-md text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/15 transition-colors">
             <Edit2 size={14} />
           </button>
-          <button onClick={() => onDelete(customer)} className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors">
+          <button aria-label={`Archive ${customer.name}`} onClick={() => onDelete?.(customer)} hidden={!onDelete} className="min-h-11 min-w-11 p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/15 transition-colors">
             <Trash2 size={14} />
           </button>
         </div>

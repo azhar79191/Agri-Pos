@@ -83,9 +83,10 @@ export const MENU_GROUPS = [
   },
   {
     id: "staff", label: "Staff Hub", icon: Shield, permission: "users",
-    single: true,
+    single: false,
     children: [
-      { id: "staff", label: "Staff Hub", icon: Shield },
+      { id: "staff", label: "Team overview", icon: Shield },
+      { id: "staff/roles", label: "Roles & Access", icon: Shield },
     ],
   },
   {

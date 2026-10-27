@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import {
   getProducts, getProduct, createProduct,
   updateProduct, deleteProduct, getLowStockProducts,
@@ -11,27 +11,30 @@ export function ProductsProvider({ children }) {
   const [brands, setBrands] = useState([]);
   const [shopCategories, setShopCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const requestVersion = useRef(0);
   const [error, setError] = useState(null);
   useEffect(() => {
-    const reset = () => { setProducts([]); setBrands([]); setShopCategories([]); setError(null); };
+    const reset = () => { requestVersion.current++; setLoading(false); setProducts([]); setBrands([]); setShopCategories([]); setError(null); };
     window.addEventListener("business-session-reset", reset);
     return () => window.removeEventListener("business-session-reset", reset);
   }, []);
 
   const fetchProducts = useCallback(async (params) => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
     try {
       const res = await getProducts({ isActive: true, ...params });
+      if (version !== requestVersion.current) return;
       const data = res.data.data;
       setProducts(Array.isArray(data) ? data : data?.products ?? data?.docs ?? []);
       if (Array.isArray(data?.brands)) setBrands(data.brands);
       if (Array.isArray(data?.categories)) setShopCategories(data.categories);
       return res.data;
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch products");
+      if (version === requestVersion.current) setError(err.response?.data?.message || "Failed to fetch products");
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
   }, []);
 

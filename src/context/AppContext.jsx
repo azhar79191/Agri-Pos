@@ -1,3 +1,4 @@
+import { applyTheme } from "../utils/theme";
 import { scopedStorageKey } from "../utils/browserScope";
 import React, { createContext, useContext, useReducer, useEffect, useMemo, useRef } from "react";
 import { hasPermission } from "../data/users";
@@ -11,15 +12,15 @@ const _savedUser = (() => {
   try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
 })();
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
-const _savedDarkMode = localStorage.getItem("posDarkMode") === "true";
-const _savedThemeColor = localStorage.getItem("posThemeColor") || "#10b981";
+const _savedDarkMode = (localStorage.getItem(scopedStorageKey("appearance:dark")) ?? String(_savedShop?.theme === "dark")) === "true";
+const _savedThemeColor = localStorage.getItem(scopedStorageKey("appearance:color")) || _savedShop?.brandColor || "#047857";
 const _savedCart = (() => {
   try { return JSON.parse(sessionStorage.getItem(scopedStorageKey("posCart")) || "[]"); } catch { return []; }
 })();
 
 // Apply dark class and theme color before React renders
 if (_savedDarkMode) document.documentElement.classList.add("dark");
-document.documentElement.style.setProperty("--pos-primary", _savedThemeColor);
+applyTheme(_savedThemeColor);
 
 const initialState = {
   currentUser: _savedUser || null,
@@ -38,6 +39,7 @@ const initialState = {
     address:           _savedShop?.address        || "",
     phone:             _savedShop?.phone          || "",
     email:             _savedShop?.email          || "",
+    theme: _savedShop?.theme || "light",
     brandName: _savedShop?.brandName || "", brandTagline: _savedShop?.brandTagline || "", brandLogo: _savedShop?.brandLogo || "", brandColor: _savedShop?.brandColor || "",
     shopLogo:          _savedShop?.logo           || "",
     receiptFooter:     _savedShop?.receiptFooter  || "Thank you for your purchase!",
@@ -120,19 +122,18 @@ export function AppProvider({ children }) {
 
   // Dark mode side-effect
   useEffect(() => {
-    localStorage.setItem("posDarkMode", state.darkMode);
     document.documentElement.classList.toggle("dark", state.darkMode);
   }, [state.darkMode]);
 
   // Theme color side-effect
   useEffect(() => {
-    localStorage.setItem("posThemeColor", state.themeColor);
-    document.documentElement.style.setProperty("--pos-primary", state.themeColor);
+    applyTheme(state.themeColor);
   }, [state.themeColor]);
   useEffect(() => {
     document.title = state.settings.brandName || state.settings.shopName || 'Agri-POS';
-    if (state.settings.brandColor) dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor });
-  }, [state.settings.brandName, state.settings.shopName, state.settings.brandColor]);
+    if (state.settings.brandColor && !localStorage.getItem(scopedStorageKey("appearance:color"))) dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor });
+    if (!localStorage.getItem(scopedStorageKey('appearance:dark'))) dispatch({ type: A.SET_DARK_MODE, payload: state.settings.theme === 'dark' });
+  }, [state.settings.brandName, state.settings.shopName, state.settings.brandColor, state.settings.theme]);
 
   // Persist user
   useEffect(() => {
@@ -172,7 +173,7 @@ export function AppProvider({ children }) {
         if (!fresh) return;
         const shop = fresh.shop;
         if (shop && typeof shop === 'object') dispatch({ type: A.UPDATE_SETTINGS, payload: {
-          brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', brandColor: shop.brandColor || '',
+          theme: shop.theme || "light", brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', brandColor: shop.brandColor || '',
         } });
         // Only update if permissions actually changed
         const current = stateRef.current.currentUser;
@@ -196,10 +197,12 @@ export function AppProvider({ children }) {
       localStorage.removeItem("posSettings");
       localStorage.setItem("user", JSON.stringify(preloadedUser));
       const shop = preloadedUser.shop;
+      dispatch({ type: A.SET_THEME_COLOR, payload: localStorage.getItem(scopedStorageKey("appearance:color")) || shop?.brandColor || "#047857" });
+      dispatch({ type: A.SET_DARK_MODE, payload: (localStorage.getItem(scopedStorageKey("appearance:dark")) ?? String(shop?.theme === "dark")) === "true" });
       dispatch({
         type: A.UPDATE_SETTINGS,
         payload: shop && typeof shop === "object" ? {
-          brandName: shop.brandName || "", brandTagline: shop.brandTagline || "", brandLogo: shop.brandLogo || "", brandColor: shop.brandColor || "",
+          theme: shop.theme || "light", brandName: shop.brandName || "", brandTagline: shop.brandTagline || "", brandLogo: shop.brandLogo || "", brandColor: shop.brandColor || "",
           shopName: shop.name || "", taxRate: shop.taxRate ?? 5,
           currency: shop.currency || "Rs.", address: shop.address || "",
           phone: shop.phone || "", email: shop.email || "",
@@ -266,8 +269,13 @@ export function AppProvider({ children }) {
     createInvoice: (t) => t,
 
     updateSettings: (settings) => dispatch({ type: A.UPDATE_SETTINGS, payload: settings }),
-    toggleDarkMode: () => dispatch({ type: A.SET_DARK_MODE, payload: !stateRef.current.darkMode }),
-    setThemeColor: (color) => dispatch({ type: A.SET_THEME_COLOR, payload: color }),
+    toggleDarkMode: () => { const value = !stateRef.current.darkMode; localStorage.setItem(scopedStorageKey("appearance:dark"), String(value)); dispatch({ type: A.SET_DARK_MODE, payload: value }); },
+    resetAppearance: () => {
+      localStorage.removeItem(scopedStorageKey('appearance:color')); localStorage.removeItem(scopedStorageKey('appearance:dark'));
+      dispatch({ type: A.SET_THEME_COLOR, payload: stateRef.current.settings.brandColor || '#047857' });
+      dispatch({ type: A.SET_DARK_MODE, payload: stateRef.current.settings.theme === 'dark' });
+    },
+    setThemeColor: (color) => { localStorage.setItem(scopedStorageKey("appearance:color"), color); dispatch({ type: A.SET_THEME_COLOR, payload: color }); },
 
     showToast: (toast) => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);

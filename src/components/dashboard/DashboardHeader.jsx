@@ -21,7 +21,7 @@ const DashboardHeader = ({
   };
 
   return (
-    <div className="card-base p-6 animate-fade-up">
+    <div className="workspace-hero animate-fade-up">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         <div>
           <div className="flex items-center gap-2 mb-3">

@@ -3,9 +3,9 @@ import { Users, Wallet } from "lucide-react";
 
 const CustomerStatsCards = ({ totalCustomers, totalWallet, totalCredit, currency }) => {
   const stats = [
-    { label: "Total Customers", value: totalCustomers, icon: Users, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/15" },
-    { label: "Total Wallet", value: totalWallet, icon: Wallet, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/15" },
-    { label: "Total Credit", value: totalCredit, icon: Wallet, cls: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/15" },
+    { label: "Customers on page", value: totalCustomers, icon: Users, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/15" },
+    { label: "Wallet on page", value: totalWallet, icon: Wallet, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/15" },
+    { label: "Credit on page", value: totalCredit, icon: Wallet, cls: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/15" },
   ];
 
   return (

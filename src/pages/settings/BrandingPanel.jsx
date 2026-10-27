@@ -20,7 +20,7 @@ export default function BrandingPanel() {
   const save = async event => {
     event.preventDefault(); setBusy(true); setError(''); setMessage('');
     try {
-      const payload = Object.fromEntries(['brandName', 'brandTagline', 'brandLogo', 'brandColor', 'emailFooter', 'actionEmailsEnabled'].map(key => [key, form[key]]));
+      const payload = Object.fromEntries(['brandName', 'brandTagline', 'brandLogo', 'brandColor', 'emailFooter', 'actionEmailsEnabled', 'theme'].map(key => [key, form[key]]));
       const response = await updateSettings(payload);
       const saved = response.data.data.settings;
       setForm(saved); actions.updateSettings(saved); actions.setThemeColor(saved.brandColor || '#047857');
@@ -34,6 +34,7 @@ export default function BrandingPanel() {
     {message && <p role="status" className="mb-4 text-sm">{message}</p>}
     {!form ? <p>Loading brand settings…</p> : <form onSubmit={save} className="space-y-5">
       {[['brandName', 'Brand name', 100], ['brandTagline', 'Tagline', 160], ['brandLogo', 'Logo image URL (HTTPS)', 1000], ['emailFooter', 'Email footer', 500]].map(([key, label, maxLength]) => <label key={key} className="block text-sm font-medium">{label}<input type={key === 'brandLogo' ? 'url' : 'text'} maxLength={maxLength} className={input} value={form[key] || ''} onChange={e => setForm(current => ({ ...current, [key]: e.target.value }))} /></label>)}
+      <label className="block text-sm font-medium">Company appearance<select aria-label="Company appearance" className={input} value={form.theme || "light"} onChange={e => setForm(current => ({ ...current, theme: e.target.value }))}><option value="light">Light</option><option value="dark">Dark</option></select></label>
       <label className="block text-sm font-medium">Brand accent<input type="color" className="ml-3 h-11 w-16 align-middle" value={form.brandColor || '#047857'} onChange={e => setForm(current => ({ ...current, brandColor: e.target.value }))} /></label>
       <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 h-5 w-5" checked={!!form.actionEmailsEnabled} onChange={e => setForm(current => ({ ...current, actionEmailsEnabled: e.target.checked }))} />Enable action confirmations to the signed-in staff member’s account email. Customer marketing emails are separate.</label>
       <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700"><div className="p-5 text-white" style={{ background: form.brandColor || '#047857' }}>{form.brandLogo && /^https:\/\//i.test(form.brandLogo) && <img src={form.brandLogo} alt="Brand logo preview" className="mb-3 h-12 max-w-full object-contain" />}<h3 className="text-xl font-bold text-white">{form.brandName || form.shopName}</h3><p className="mt-1 text-sm">{form.brandTagline}</p></div><div className="space-y-3 p-5"><p className="font-semibold">Action confirmation preview</p><p className="text-sm">Hello, your action was recorded successfully.</p><p className="text-xs text-slate-500">{form.emailFooter}</p></div></div>

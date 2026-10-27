@@ -5,16 +5,19 @@ const ProductFilters = ({ searchTerm, onSearchChange, filterCategory, onCategory
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       <div className="relative flex-1">
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
+          aria-label="Search products"
+          style={{ paddingLeft: "2.5rem" }}
           value={searchTerm}
           onChange={onSearchChange}
-          placeholder="Search products by name..."
+          placeholder="Search by name, SKU, or barcode..."
           className="input-premium w-full pl-10"
         />
       </div>
       <div className="relative">
         <select
+          aria-label="Product category"
           value={filterCategory}
           onChange={onCategoryChange}
           className="select-premium pr-9"

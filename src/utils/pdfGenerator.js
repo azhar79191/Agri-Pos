@@ -1,3 +1,4 @@
+import { themePalette } from './theme';
 // Lazy-loaded PDF generator — jsPDF only loads when first PDF is requested
 import { normalizeInvoiceItems } from './normalizeInvoiceItems';
 
@@ -11,13 +12,14 @@ const buildDoc = async (invoice, settings) => {
   const pageW = doc.internal.pageSize.getWidth();
   const currency = settings?.currency || 'Rs.';
 
+  const brand = themePalette(settings?.brandColor);
   // Header
-  doc.setFillColor(16, 185, 129);
+  doc.setFillColor(...brand.rgb);
   doc.rect(0, 0, pageW, 38, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(...(brand.foreground === '#ffffff' ? [255, 255, 255] : [16, 34, 27]));
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(settings?.shopName || 'AgriNest POS', 14, 16);
+  doc.text(settings?.brandName || settings?.shopName || 'AgriNest POS', 14, 16);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   if (settings?.address) doc.text(settings.address, 14, 23);
@@ -69,9 +71,9 @@ const buildDoc = async (invoice, settings) => {
       `${currency} ${item.price.toFixed(2)}`,
       `${currency} ${item.total.toFixed(2)}`,
     ]),
-    headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+    headStyles: { fillColor: brand.rgb, textColor: brand.foreground === '#ffffff' ? 255 : [16, 34, 27], fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
-    alternateRowStyles: { fillColor: [245, 255, 250] },
+    alternateRowStyles: { fillColor: brand.shades[50] },
     columnStyles: { 0: { cellWidth: 8, halign: 'center' }, 3: { halign: 'center' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
     margin: { left: 14, right: 14 },
     styles: { cellPadding: 3 },

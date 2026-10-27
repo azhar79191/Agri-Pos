@@ -1117,3 +1117,42 @@ img {
     max-height: calc(96vh - 80px);
   }
 }
+
+
+/* Shared workspace visual system: operational pages and platform administration. */
+:root { --workspace-canvas: #f3f6f7; --workspace-ink: #152b32; --workspace-line: #dce5e7; }
+.workspace-main, .platform-workspace { background: var(--workspace-canvas); }
+.dark .workspace-main, .dark .platform-workspace { background: #0b141b; }
+.workspace-shell { color: var(--workspace-ink); }
+.dark .workspace-shell { color: #e3edf0; }
+.workspace-shell .card-base { border: 1px solid var(--workspace-line); border-radius: 18px; background: white; box-shadow: 0 3px 16px rgb(15 40 45 / 3%); }
+.dark .workspace-shell .card-base { background: #111f29; border-color: #293c48; }
+.workspace-hero { padding: clamp(20px, 3vw, 32px); border: 1px solid #cbdedb; border-radius: 22px; background: linear-gradient(120deg, #edf8f3, #ffffff); }
+.dark .workspace-hero { background: linear-gradient(120deg, #102f2a, #14212b); border-color: #2c4945; }
+.workspace-hero h1 { margin-top: 6px; font-size: clamp(24px, 3vw, 34px); font-weight: 750; letter-spacing: -.035em; line-height: 1.2; }
+.workspace-hero > p:last-child { margin-top: 10px; max-width: 720px; font-size: 14px; line-height: 1.7; color: #536b72; }
+.dark .workspace-hero > p:last-child { color: #abc1c8; }
+.workspace-eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; font-weight: 700; color: #137357; }
+.dark .workspace-eyebrow { color: #7dddbb; }
+.ui-button-primary { background: var(--pos-primary, #047857); color: white; box-shadow: 0 2px 4px rgb(12 51 42 / 12%); }
+.ui-button-primary:hover { filter: brightness(.92); }
+.ui-button-primary:disabled { opacity: .45; cursor: not-allowed; }
+.workspace-shell input:focus-visible, .workspace-shell select:focus-visible, .workspace-shell textarea:focus-visible, .workspace-shell button:focus-visible, .workspace-shell a:focus-visible { outline: 2px solid var(--pos-primary, #047857); outline-offset: 3px; }
+.workspace-shell table th { font-size: 11px; letter-spacing: .055em; text-transform: uppercase; }
+.workspace-shell table td { vertical-align: middle; }
+.platform-workspace { max-width: 1600px; margin: auto; }
+@media (prefers-reduced-motion: reduce) { .workspace-shell *, .workspace-shell *::before, .workspace-shell *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+
+/* Brand-aware primary controls. Status colors remain semantic. */
+:root { --pos-primary-foreground: #fff; --pos-primary-rgb: 4 120 87; }
+.ui-button-primary { color: var(--pos-primary-foreground); }
+.workspace-hero { border-color: rgb(var(--brand-200)); background: linear-gradient(120deg, rgb(var(--brand-50)), #fff); }
+.dark .workspace-hero { border-color: rgb(var(--brand-800)); background: linear-gradient(120deg, rgb(var(--brand-950)), #14212b); }
+.workspace-eyebrow { color: rgb(var(--brand-700)); }
+.dark .workspace-eyebrow { color: rgb(var(--brand-300)); }
+input:not(.input-premium):focus, select:not(.select-premium):focus, textarea:focus { box-shadow: 0 0 0 3px rgb(var(--pos-primary-rgb) / .14) !important; }
+
+.workspace-main { min-width: 0; }
+
+.input-premium.pl-10 { padding-left: 2.5rem; }
