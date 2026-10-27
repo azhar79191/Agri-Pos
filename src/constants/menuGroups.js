@@ -14,7 +14,6 @@ import {
  * `single: true` renders the group as a flat button with no dropdown.
  */
 export const MENU_GROUPS = [
-  { id: "assistant", label: "Business Assistant", icon: Activity, permission: "assistant:use", single: true, children: [{ id: "assistant", label: "Business Assistant", icon: Activity }] },
   {
     id: "dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard",
     children: [
@@ -38,7 +37,7 @@ export const MENU_GROUPS = [
       { id: "stock",                  label: "Stock Levels",  icon: Layers },
       { id: "inventory/batch-expiry", label: "Batch & Expiry",icon: Calendar },
       { id: "inventory/bundles",      label: "Bundles",       icon: PackagePlus },
-      { id: "inventory/dead-stock",   label: "Smart Alerts",  icon: Zap },
+      { id: "inventory/dead-stock",   label: "Dead Stock Alerts",  icon: Zap },
     ],
   },
   {
@@ -61,13 +60,13 @@ export const MENU_GROUPS = [
     ],
   },
   {
-    id: "recommendations", label: "Crop Advisory", icon: Bug, permission: "ai:use",
+    id: "recommendations", label: "Crop Support", icon: Bug, permission: "ai:use",
     children: [
-      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis", icon: Bug },
+      { id: "recommendations/diagnosis", label: "Pest Diagnosis", icon: Bug },
       { id: "recommendations/dosage",    label: "Dosage Calculator", icon: Beaker },
       { id: "recommendations/weather",   label: "Weather Advisory",  icon: Cloud },
       { id: "recommendations/history",   label: "Advisory History",  icon: History },
-      { id: "recommendations/ai-stats",  label: "AI Statistics",     icon: Activity },
+      { id: "recommendations/ai-stats",  label: "Advisory Activity", icon: Activity },
       { id: "recommendations/calendar",  label: "Crop Calendar",     icon: Calendar },
       { id: "recommendations/print",     label: "Print Advisory",    icon: Printer },
     ],
@@ -82,6 +81,7 @@ export const MENU_GROUPS = [
       { id: "reports/aging",     label: "Invoice Aging",    icon: Clock },
     ],
   },
+  { id: "assistant", label: "Shop Assistant", icon: Activity, permission: "assistant:use", single: true, children: [{ id: "assistant", label: "Shop Assistant", icon: Activity }] },
   {
     id: "staff", label: "Staff Hub", icon: Shield, permission: "users",
     single: false,

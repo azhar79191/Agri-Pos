@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
-  ShoppingCart, Package, AlertTriangle, Users, DollarSign,
+  Package, AlertTriangle, Users, DollarSign,
   BarChart3, ArrowRight, Zap, Clock, CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +33,7 @@ const Dashboard = () => {
 
   const canPOS      = actions.hasPermission("pos");
   const canProducts = actions.hasPermission("products");
+  const canCustomers = actions.hasPermission("customers");
   const canReports  = actions.hasPermission("reports");
 
   const loadData = async () => {
@@ -70,6 +71,7 @@ const Dashboard = () => {
     await loadData();
   };
 
+  const hasDashboardData = Boolean(dashboardData);
   const todaySales     = dashboardData?.todaySales?.total || 0;
   const salesTrend     = dashboardData?.todaySales?.percentChange;
   const totalProducts  = dashboardData?.products?.total || 0;
@@ -93,14 +95,6 @@ const Dashboard = () => {
   }, [dashboardData]);
 
   const totalSalesInChart = salesChartData.reduce((s, d) => s + d.sales, 0);
-
-  const [timeStr, setTimeStr] = useState(() => new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }));
-
-  useEffect(() => {
-    const tick = () => setTimeStr(new Date().toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" }));
-    const id = setInterval(tick, 60000);
-    return () => clearInterval(id);
-  }, []);
 
   const columns = [
     {
@@ -161,24 +155,21 @@ const Dashboard = () => {
       <DashboardHeader
         currentUser={currentUser}
         settings={settings}
-        timeStr={timeStr}
-        todaySales={todaySales}
-        totalProducts={totalProducts}
-        totalCustomers={totalCustomers}
         lowStock={lowStock}
         expiringProducts={expiringProducts}
         refreshing={refreshing}
         onRefresh={handleRefresh}
         onNavigate={navigate}
+        canPOS={canPOS}
       />
 
       {loadError && <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">{loadError}<button type="button" disabled={refreshing} onClick={handleRefresh} className="ml-3 min-h-11 px-3 font-semibold underline disabled:opacity-50">Retry</button></div>}
       <p role="status" className="text-xs text-slate-500 dark:text-slate-400">{refreshing ? "Updating shop overview?" : lastUpdated ? `Overview updated ${lastUpdated.toLocaleTimeString("en-PK", { hour: "2-digit", minute: "2-digit" })}` : "Overview has not loaded yet"}</p>
       <DailyWorkspace hasPermission={actions.hasPermission} onNavigate={navigate} lowStock={lowStock} available={!!dashboardData} />
       <div className="flex flex-wrap gap-2">
-        {canPOS      && <QuickActionButton icon={ShoppingCart} label="New Sale"    sub="Open POS"         color="blue"    onClick={() => navigate("/pos")}      delay={0} />}
-        {canProducts && <QuickActionButton icon={Package}      label="Products"    sub="Manage inventory" color="slate"   onClick={() => navigate("/products")} delay={80} />}
-        {canReports  && <QuickActionButton icon={BarChart3}    label="Reports"     sub="View analytics"   color="emerald" onClick={() => navigate("/reports")}  delay={160} />}
+        {canProducts && <QuickActionButton icon={Package} label="Products" sub="Manage the catalog" onClick={() => navigate("/products")} delay={0} />}
+        {canCustomers && <QuickActionButton icon={Users} label="Farmers" sub="Keep customer records close" onClick={() => navigate("/customers/workspace")} delay={80} />}
+        {canReports && <QuickActionButton icon={BarChart3} label="Reports" sub="See how the shop is doing" onClick={() => navigate("/reports")} delay={160} />}
       </div>
       {!loading && !refreshing && dashboardData && totalProducts === 0 && totalCustomers === 0 && todaySales === 0 && (
         <OnboardingChecklist dashboardData={dashboardData} />
@@ -187,17 +178,17 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Today's Sales" color="blue" icon={DollarSign} delay={0}
-          value={<Counter prefix={`${settings.currency} `} value={todaySales} />}
-          trend={salesTrend !== undefined ? (salesTrend >= 0 ? "up" : "down") : null}
+          value={hasDashboardData ? <Counter prefix={`${settings.currency} `} value={todaySales} /> : "—"}
+          trend={hasDashboardData && salesTrend !== undefined ? (salesTrend >= 0 ? "up" : "down") : null}
           trendLabel={salesTrend !== undefined ? `${Math.abs(salesTrend).toFixed(1)}%` : ""}
         />
-        <StatCard title="Total Products" color="purple" icon={Package} delay={80} value={<Counter value={totalProducts} />} subtitle="In inventory" />
+        <StatCard title="Total Products" color="purple" icon={Package} delay={80} value={hasDashboardData ? <Counter value={totalProducts} /> : "—"} subtitle={hasDashboardData ? "In inventory" : "Waiting for data"} />
         <StatCard
-          title="Low Stock Items" color={lowStock > 0 ? "amber" : "emerald"} icon={AlertTriangle} delay={160}
-          value={<Counter value={lowStock} />}
-          subtitle={lowStock > 0 ? "Needs attention" : "All good"}
+          title="Low Stock Items" color={!hasDashboardData ? "blue" : lowStock > 0 ? "amber" : "emerald"} icon={AlertTriangle} delay={160}
+          value={hasDashboardData ? <Counter value={lowStock} /> : "—"}
+          subtitle={!hasDashboardData ? "Waiting for data" : lowStock > 0 ? "Needs attention" : "All good"}
         />
-        <StatCard title="Total Customers" color="emerald" icon={Users} delay={240} value={<Counter value={totalCustomers} />} subtitle="Registered" />
+        <StatCard title="Total Customers" color="emerald" icon={Users} delay={240} value={hasDashboardData ? <Counter value={totalCustomers} /> : "—"} subtitle={hasDashboardData ? "Registered" : "Waiting for data"} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -213,7 +204,12 @@ const Dashboard = () => {
           </div>
           <Button variant="outline" size="sm" icon={ArrowRight} onClick={() => navigate("/invoices")}>View All</Button>
         </div>
-        <Table columns={columns} data={recentInvoices} loading={loading} emptyMessage="No transactions yet — start a sale from POS" />
+        <Table
+          columns={columns}
+          data={recentInvoices}
+          loading={loading}
+          emptyMessage={hasDashboardData ? "No transactions yet — your next sale will show here." : "Transaction history will appear here once the shop overview is available."}
+        />
       </div>
 
     </div>

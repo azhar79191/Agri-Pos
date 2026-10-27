@@ -63,7 +63,7 @@ const Header = () => {
 
   return (
     <>
-    <header className="h-14 flex items-center justify-between px-4 lg:px-5 sticky top-0 z-50 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-700/50 shadow-sm">
+    <header className="app-topbar h-14 flex items-center justify-between px-4 lg:px-5 sticky top-0 z-50 border-b">
 
       {/* Left — title + breadcrumb */}
       <div className="flex min-w-0 items-center gap-4">

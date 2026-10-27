@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText, Search, Download, CheckCircle, Clock,
-  Wifi, WifiOff, RefreshCw, ChevronDown, RotateCcw, Trash2, X, TrendingUp,
+  Wifi, WifiOff, RefreshCw, RotateCcw, Trash2, X, TrendingUp,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useInvoices } from "../hooks/useInvoices";
@@ -14,17 +14,17 @@ import { exportInvoices } from "../utils/excelExport";
 import { CardSkeleton } from "../components/ui/Skeleton";
 import { ConfirmModal } from "../components/ui/ModernModal";
 import Pagination from "../components/ui/Pagination";
-import { isAdminOrManager } from "../utils/roleUtils";
+import Select from "../components/ui/Select";
 import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const LIMIT = 12;
 
 const InvoiceManagement = () => {
-  const { state } = useApp();
-  const { settings, currentUser } = state;
-  const { invoices, loading, fetchInvoices } = useInvoices();
+  const { state, actions } = useApp();
+  const { settings } = state;
+  const { invoices, loading, error, pagination, fetchInvoices } = useInvoices();
   const isOnline = useOnlineStatus();
-  const isAdmin = isAdminOrManager(currentUser);
+  const isAdmin = actions.hasPermission("invoices:edit");
 
   const {
     refundTarget, setRefundTarget, refunding, handleRefund,
@@ -42,25 +42,15 @@ const InvoiceManagement = () => {
   // Lock body scroll when invoice modal is open
   useBodyScrollLock(showModal);
 
-  useEffect(() => { fetchInvoices(); }, []); // eslint-disable-line
+  useEffect(() => {
+    const timer = setTimeout(() => fetchInvoices({ page, limit: LIMIT, search: search.trim() || undefined, status: filterStatus === "all" ? undefined : filterStatus, paymentMethod: filterPayment === "all" ? undefined : filterPayment }), 250);
+    return () => clearTimeout(timer);
+  }, [page, search, filterStatus, filterPayment, fetchInvoices]);
 
   const fmt = (v) => `${settings.currency} ${(Number(v) || 0).toFixed(2)}`;
 
-  const filtered = useMemo(() =>
-    invoices.filter((inv) => {
-      const matchSearch =
-        inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) ||
-        inv.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-        inv.customerPhone?.includes(search);
-      return matchSearch &&
-        (filterStatus === "all" || inv.status === filterStatus) &&
-        (filterPayment === "all" || inv.paymentMethod === filterPayment);
-    }),
-    [invoices, search, filterStatus, filterPayment]
-  );
-
-  const totalPages = Math.ceil(filtered.length / LIMIT);
-  const paginated  = filtered.slice((page - 1) * LIMIT, page * LIMIT);
+  const totalPages = pagination.pages;
+  const paginated = invoices;
 
   const totalRevenue = invoices.filter((i) => i.status === "Completed").reduce((s, i) => s + (i.total || i.grandTotal || 0), 0);
   const pendingCount = invoices.filter((i) => i.status === "Pending").length;
@@ -72,10 +62,10 @@ const InvoiceManagement = () => {
   const handlePrint = (inv) => { setSelectedInvoice(inv); setShowModal(true); setTimeout(() => window.print(), 500); };
 
   const STATS = [
-    { label: "Total Invoices", value: invoices.length,   icon: FileText,    grad: "from-slate-500 to-slate-600",  bg: "bg-slate-50 dark:bg-slate-800/60" },
-    { label: "Revenue",        value: fmt(totalRevenue), icon: TrendingUp,  grad: "from-emerald-500 to-teal-600", bg: "bg-emerald-50 dark:bg-emerald-900/15" },
-    { label: "Pending",        value: pendingCount,      icon: Clock,       grad: "from-amber-500 to-orange-500", bg: "bg-amber-50 dark:bg-amber-900/15" },
-    { label: "Today",          value: todayCount,        icon: CheckCircle, grad: "from-blue-500 to-indigo-600",  bg: "bg-blue-50 dark:bg-blue-900/15" },
+    { label: "Loaded invoices", value: invoices.length,   icon: FileText,    grad: "from-slate-500 to-slate-600",  bg: "bg-slate-50 dark:bg-slate-800/60" },
+    { label: "Completed page total",        value: fmt(totalRevenue), icon: TrendingUp,  grad: "from-emerald-500 to-teal-600", bg: "bg-emerald-50 dark:bg-emerald-900/15" },
+    { label: "Pending on page",        value: pendingCount,      icon: Clock,       grad: "from-amber-500 to-orange-500", bg: "bg-amber-50 dark:bg-amber-900/15" },
+    { label: "Today on page",          value: todayCount,        icon: CheckCircle, grad: "from-blue-500 to-indigo-600",  bg: "bg-blue-50 dark:bg-blue-900/15" },
   ];
 
   return (
@@ -97,11 +87,11 @@ const InvoiceManagement = () => {
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => exportInvoices(invoices, settings.currency)} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
-            <Download className="w-4 h-4" /> Export
+        <div className="flex flex-wrap gap-2">
+          <button disabled={loading || !!error || !invoices.length} onClick={() => exportInvoices(invoices, settings.currency)} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
+            <Download className="w-4 h-4" /> Export loaded page
           </button>
-          <button onClick={() => fetchInvoices()} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
+          <button aria-label="Refresh invoices" onClick={() => fetchInvoices()} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -127,8 +117,8 @@ const InvoiceManagement = () => {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input aria-label="Search invoices" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by invoice #, customer name or phone..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition-all" />
         </div>
@@ -138,11 +128,7 @@ const InvoiceManagement = () => {
             { value: filterPayment, onChange: (v) => { setFilterPayment(v); setPage(1); }, options: [["all","All Payments"],["Cash","Cash"],["Credit","Credit"],["Online Transfer","Online Transfer"],["Card","Card"]] },
           ].map(({ value, onChange, options }, i) => (
             <div key={i} className="relative">
-              <select value={value} onChange={(e) => onChange(e.target.value)}
-                className="appearance-none pl-3.5 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 outline-none cursor-pointer">
-                {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              <Select aria-label={i === 0 ? "Invoice status" : "Invoice payment method"} value={value} onChange={(e) => onChange(e.target.value)} options={options.map(([value, label]) => ({ value, label }))} />
             </div>
           ))}
           {hasFilters && (
@@ -153,8 +139,11 @@ const InvoiceManagement = () => {
         </div>
       </div>
 
+      <p className="text-xs text-slate-500">{pagination.total} matching invoices. Cards, summaries and exports cover the loaded page only. Completed invoice totals are not cash collections.</p>
       {/* Cards grid */}
-      {loading ? (
+      {error ? (
+        <div role="alert" className="card-base space-y-3 p-6"><p>{error}</p><button onClick={() => fetchInvoices()} className="ui-button-primary rounded-xl px-4 py-2">Retry invoices</button></div>
+      ) : loading ? (
         <CardSkeleton count={6} />
       ) : paginated.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -184,9 +173,9 @@ const InvoiceManagement = () => {
         </div>
       )}
 
-      {!loading && totalPages > 1 && (
+      {!loading && !error && totalPages > 1 && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <Pagination page={page} totalPages={totalPages} total={filtered.length} limit={LIMIT} onPageChange={setPage} />
+          <Pagination page={page} totalPages={totalPages} total={pagination.total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}
 

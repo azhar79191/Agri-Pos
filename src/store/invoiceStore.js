@@ -2,22 +2,30 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getInvoices, getInvoice, createInvoice, updateInvoiceStatus, getTodaySales, getRecentTransactions } from "../api/invoicesApi";
 
+let requestVersion = 0;
+
 export const useInvoiceStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       invoices: [],
       loading: false,
       error: null,
+      pagination: { page: 1, pages: 0, total: 0 },
+      lastParams: {},
 
       fetchInvoices: async (params) => {
-        set({ loading: true, error: null });
+        const version = ++requestVersion;
+        const query = params ?? get().lastParams;
+        set({ loading: true, error: null, lastParams: query });
         try {
-          const res = await getInvoices(params);
+          const res = await getInvoices(query);
+          if (version !== requestVersion) return;
           const data = res.data.data;
-          set({ invoices: Array.isArray(data) ? data : data?.invoices ?? data?.docs ?? [], loading: false });
+          set({ invoices: Array.isArray(data) ? data : data?.invoices ?? data?.docs ?? [], pagination: data?.pagination ?? { page: 1, pages: 1, total: Array.isArray(data) ? data.length : 0 }, loading: false });
           return res.data;
         } catch (err) {
-          set({ error: err.response?.data?.message || "Failed to fetch invoices", loading: false });
+          if (version !== requestVersion) return;
+          set({ invoices: [], pagination: { page: 1, pages: 0, total: 0 }, error: err.response?.data?.message || "Failed to fetch invoices", loading: false });
         }
       },
 
@@ -47,4 +55,4 @@ export const useInvoiceStore = create(
   )
 );
 
-window.addEventListener("business-session-reset", () => useInvoiceStore.setState(useInvoiceStore.getInitialState(), true));
+window.addEventListener("business-session-reset", () => { requestVersion += 1; useInvoiceStore.setState(useInvoiceStore.getInitialState(), true); });

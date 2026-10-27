@@ -63,16 +63,16 @@ const MORE_SECTIONS = [
     ],
   },
   {
-    label: "Crop Advisory",
+    label: "Crop Support",
     color: "green",
     items: [
-      { id: "recommendations/diagnosis", label: "AI Pest Diagnosis",  icon: Bug,         path: "/recommendations/diagnosis",  permission: "products" },
+      { id: "recommendations/diagnosis", label: "Pest Diagnosis",      icon: Bug,         path: "/recommendations/diagnosis",  permission: "products" },
       { id: "recommendations/dosage",    label: "Dosage Calculator",  icon: Beaker,      path: "/recommendations/dosage",     permission: "products" },
       { id: "recommendations/weather",   label: "Weather Advisory",   icon: Cloud,       path: "/recommendations/weather",    permission: "products" },
       { id: "recommendations/history",   label: "Advisory History",   icon: History,     path: "/recommendations/history",    permission: "products" },
       { id: "recommendations/calendar",  label: "Crop Calendar",      icon: Calendar,    path: "/recommendations/calendar",   permission: "products" },
       { id: "recommendations/print",     label: "Print Advisory",     icon: Printer,     path: "/recommendations/print",      permission: "products" },
-      { id: "recommendations/ai-stats",  label: "AI Statistics",      icon: TrendingUp,  path: "/recommendations/ai-stats",   permission: "reports"  },
+      { id: "recommendations/ai-stats",  label: "Advisory Activity",   icon: TrendingUp,  path: "/recommendations/ai-stats",   permission: "reports"  },
     ],
   },
   {
@@ -90,7 +90,7 @@ const MORE_SECTIONS = [
     label: "Administration",
     color: "indigo",
     items: [
-      { id: "assistant", label: "Business Assistant", icon: Zap, path: "/assistant", permission: "assistant:use" },
+      { id: "assistant", label: "Shop Assistant", icon: Zap, path: "/assistant", permission: "assistant:use" },
       { id: "staff/roles", label: "Roles & Access", icon: Shield, path: "/staff/roles", permission: "users", ownerOnly: true },
       { id: "staff",    label: "Staff Hub",    icon: Shield,   path: "/staff",    permission: "users"    },
       { id: "shops",    label: "My Shop",      icon: Building2,path: "/shops",    permission: "settings" },
@@ -111,7 +111,7 @@ const COLOR_MAP = {
 
 const MobileNav = () => {
   const { state, actions } = useApp();
-  const { currentUser, settings, cart } = state;
+  const { currentUser, cart } = state;
   const navigate  = useNavigate();
   const location  = useLocation();
   const [showMore, setShowMore] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { ChevronLeft, Sun, Moon, Bell } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -27,7 +27,7 @@ const MobileHeader = () => {
 
   return (
     <header
-      className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-700/60"
+      className="app-mobile-header lg:hidden fixed top-0 left-0 right-0 z-40 h-14 flex items-center justify-between px-4 backdrop-blur-xl border-b"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Left */}

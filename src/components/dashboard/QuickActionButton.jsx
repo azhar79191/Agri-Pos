@@ -1,22 +1,18 @@
 import React from "react";
 
-const QuickActionButton = ({ icon: Icon, label, sub, color, onClick, delay = 0 }) => {
-  const colors = {
-    blue:    "bg-blue-600 hover:bg-blue-700 shadow-blue-600/15",
-    slate:   "bg-slate-700 hover:bg-slate-800 shadow-slate-700/15 dark:bg-slate-600 dark:hover:bg-slate-500",
-    emerald: "bg-teal-600 hover:bg-teal-700 shadow-teal-600/15",
-  };
-  
+const QuickActionButton = ({ icon: _Icon, label, sub, onClick, delay = 0 }) => {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-md ${colors[color]} text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 animate-fade-up`}
+      className="dashboard-shortcut flex items-center gap-3 rounded-lg px-3 py-2.5 text-left"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <Icon className="w-4 h-4 flex-shrink-0" />
-      <div className="text-left">
-        <p className="font-medium leading-none">{label}</p>
-        {sub && <p className="text-xs opacity-75 mt-0.5">{sub}</p>}
+      <span className="dashboard-shortcut__icon flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg">
+        <_Icon className="h-[18px] w-[18px]" />
+      </span>
+      <div>
+        <p className="font-semibold leading-tight">{label}</p>
+        {sub && <p className="mt-1 text-xs font-normal">{sub}</p>}
       </div>
     </button>
   );

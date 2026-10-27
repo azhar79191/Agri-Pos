@@ -1,100 +1,76 @@
 import React from "react";
-import { Activity, Clock, Calendar, RefreshCw, AlertTriangle } from "lucide-react";
-import { formatDate, getTodayDate, formatCurrency } from "../../utils/helpers";
+import { AlertTriangle, ArrowUpRight, Calendar, RefreshCw, ShoppingCart } from "lucide-react";
+import { formatDate, getTodayDate } from "../../utils/helpers";
 
-const DashboardHeader = ({ 
-  currentUser, 
-  settings, 
-  timeStr, 
-  todaySales, 
-  totalProducts, 
-  totalCustomers,
+const DashboardHeader = ({
+  currentUser,
+  settings,
   lowStock,
   expiringProducts,
   refreshing,
   onRefresh,
-  onNavigate
+  onNavigate,
+  canPOS,
 }) => {
   const greeting = () => {
     const h = new Date().getHours();
-    return h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
   };
 
   return (
-    <div className="workspace-hero animate-fade-up">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+    <section className="workspace-hero dashboard-welcome animate-fade-up" aria-labelledby="dashboard-welcome-title">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-800/30">
-              <Activity className="w-3 h-3 text-blue-500" />
-              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Shop overview</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-              <Clock className="w-3 h-3 text-slate-400" />
-              <span className="text-xs text-slate-500">{timeStr}</span>
-            </div>
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
+            <Calendar className="w-4 h-4 text-[var(--pos-primary)]" aria-hidden="true" />
+            <span>{formatDate(getTodayDate())}</span>
           </div>
-
-          <p className="text-slate-500 text-sm font-medium mb-0.5">{greeting()},</p>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
-            {currentUser?.name || "Welcome"}
+          <h1 id="dashboard-welcome-title" className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
+            {greeting()}{currentUser?.name ? `, ${currentUser.name.split(" ")[0]}` : ""}
           </h1>
-          <p className="text-slate-500 text-sm">
-            Business overview for{" "}
-            <span className="text-slate-900 dark:text-white font-semibold">{settings.shopName || "your shop"}</span>
+          <p className="text-slate-600 dark:text-slate-300 text-sm">
+            Here’s what’s happening at <span className="font-semibold text-slate-900 dark:text-white">{settings.shopName || "your shop"}</span> today.
           </p>
-
-          <div className="flex flex-wrap items-center gap-4 mt-4">
-            {[
-              { label: "Today's Revenue", value: formatCurrency(todaySales, settings.currency), color: "text-blue-600 dark:text-blue-400" },
-              { label: "Products", value: totalProducts, color: "text-slate-900 dark:text-white" },
-              { label: "Customers", value: totalCustomers, color: "text-slate-900 dark:text-white" },
-            ].map((s, i) => (
-              <div key={i} className="flex items-center gap-2">
-                {i > 0 && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />}
-                <div>
-                  <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
-                  <p className="text-xs text-slate-400">{s.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div className="flex flex-col items-start lg:items-end gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-            <Calendar className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{formatDate(getTodayDate())}</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {canPOS && (
+            <button type="button" onClick={() => onNavigate("/pos")} className="dashboard-welcome__primary inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold">
+              <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+              New sale
+            </button>
+          )}
           <button
+            type="button"
             onClick={onRefresh}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors"
+            disabled={refreshing}
+            className="dashboard-welcome__refresh inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-medium disabled:cursor-wait disabled:opacity-70"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh Data
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+            {refreshing ? "Updating" : "Refresh"}
           </button>
-
-          {lowStock > 0 && (
-            <div
-              onClick={() => onNavigate("/stock")}
-              className="flex items-center gap-2 px-3 py-2 rounded-md border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-400 text-xs font-medium cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/25 transition-colors"
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {lowStock} low stock {lowStock === 1 ? "item" : "items"} — View
-            </div>
-          )}
-          {expiringProducts.length > 0 && (
-            <div
-              onClick={() => onNavigate("/products")}
-              className="flex items-center gap-2 px-3 py-2 rounded-md border border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-900/15 text-red-700 dark:text-red-400 text-xs font-medium cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/25 transition-colors"
-            >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {expiringProducts.length} expiring in 30 days — View
-            </div>
-          )}
         </div>
       </div>
-    </div>
+
+      {(lowStock > 0 || expiringProducts.length > 0) && (
+        <div className="dashboard-welcome__alerts mt-5 flex flex-wrap gap-2 border-t border-slate-200/70 pt-4 dark:border-slate-700/70">
+          {lowStock > 0 && (
+            <button type="button" onClick={() => onNavigate("/stock")} className="dashboard-welcome__alert">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              {lowStock} {lowStock === 1 ? "item is" : "items are"} running low
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+          {expiringProducts.length > 0 && (
+            <button type="button" onClick={() => onNavigate("/inventory/batch-expiry")} className="dashboard-welcome__alert">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              {expiringProducts.length} {expiringProducts.length === 1 ? "product expires" : "products expire"} soon
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
+    </section>
   );
 };
 
