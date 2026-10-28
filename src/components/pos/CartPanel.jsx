@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import { useApp } from "../../context/AppContext";
+import Select from "../ui/Select";
 import CashNumpad from "./CashNumpad";
 
 const paymentMethods = [
@@ -65,7 +66,7 @@ const CartPanel = ({
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col"
+      className="pos-cart bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col"
     >
       <div className="flex flex-col">
       {/* ── Header ── */}
@@ -106,13 +107,7 @@ const CartPanel = ({
       <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-            <select value={selectedCustomer} onChange={onCustomerChange}
-              className="w-full appearance-none pl-8 pr-7 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer outline-none">
-              <option value="">Walk-in Customer</option>
-              {customerOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+            <Select aria-label="Customer" value={selectedCustomer} onChange={onCustomerChange} options={[{ value: "", label: "Walk-in Customer" }, ...customerOptions]} />
           </div>
           <button onClick={onAddCustomer} title="Quick add customer"
             className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-blue-600 hover:border-blue-400 transition-colors shrink-0">
@@ -122,13 +117,7 @@ const CartPanel = ({
         {/* Sales Rep selector */}
         {salesReps.length > 0 && (
           <div className="relative mt-2">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            <select value={selectedSalesRep} onChange={onSalesRepChange}
-              className="w-full appearance-none pl-8 pr-7 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all cursor-pointer outline-none">
-              <option value="">No Sales Rep</option>
-              {salesReps.map(r => <option key={r._id} value={r._id}>{r.name} ({r.commission}% commission)</option>)}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+            <Select aria-label="Sales representative" value={selectedSalesRep} onChange={onSalesRepChange} options={[{ value: "", label: "No sales representative" }, ...salesReps.map(rep => ({ value: rep._id, label: rep.name }))]} />
           </div>
         )}
       </div>

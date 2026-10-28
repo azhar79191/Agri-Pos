@@ -11,7 +11,6 @@ import Input from "../components/ui/Input";
 import ModernModal, { ConfirmModal } from "../components/ui/ModernModal";
 import { formatCurrency } from "../utils/helpers";
 import Pagination from "../components/ui/Pagination";
-import { TableSkeleton } from "../components/ui/Skeleton";
 import { exportCustomers } from "../utils/excelExport";
 import CustomerRow from "../components/customers/CustomerRow";
 import CustomerStatsCards from "../components/customers/CustomerStatsCards";
@@ -37,6 +36,10 @@ const Customers = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage]             = useState(1);
+  const [sort, setSort] = useState({ index: null, direction: 'asc' });
+  const sortFields = [null,"name","address","balance","balance"];
+  const sortField = sortFields[sort.index];
+  const sortQuery = sortField ? `${(sort.index === 4 ? sort.direction === 'asc' : sort.direction === 'desc') ? '-' : ''}${sortField}` : '-createdAt';
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
   const [requested, setRequested] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -47,12 +50,12 @@ const Customers = () => {
   const selectAll    = () => setSelected(new Set(filteredCustomers.map((c) => c._id)));
   const clearSelect  = () => setSelected(new Set());
 
-  const reloadList = () => { setRequested(true); return fetchCustomers({ page, limit: LIMIT, search: searchTerm }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
+  const reloadList = () => { setRequested(true); return fetchCustomers({ page, limit: LIMIT, sort: sortQuery, search: searchTerm }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
   useEffect(() => {
     setSelected(new Set());
     const timer = setTimeout(reloadList, 250);
     return () => clearTimeout(timer);
-  }, [page, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, searchTerm, sortQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const filteredCustomers = customers;
@@ -93,9 +96,9 @@ const Customers = () => {
       {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton label="Loading customers" rows={6} cols={6} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (
           <div className="overflow-x-auto">
-            <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
+            <DataTable loading={loading || !requested} loadingLabel="Loading customers" emptyState={false} sort={sort} onSortChange={next => { setSort(next); setPage(1); }} className="w-full table-premium">
               <thead>
                 <tr>
                   <th className="w-10"><input type="checkbox" aria-label="Select all customers on this page" checked={selected.size === filteredCustomers.length && filteredCustomers.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
@@ -118,7 +121,7 @@ const Customers = () => {
                 ))}
               </tbody>
             </DataTable>
-            <ListFeedback empty={filteredCustomers.length === 0} title={searchTerm ? 'No matching customers' : 'No active customers yet'} description={searchTerm ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm ? () => { setSearchTerm(""); setPage(1); } : undefined} />
+            <ListFeedback empty={!loading && requested && filteredCustomers.length === 0} title={searchTerm ? 'No matching customers' : 'No active customers yet'} description={searchTerm ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm ? () => { setSearchTerm(""); setPage(1); } : undefined} />
           </div>
         )}
         <div className="border-t border-slate-100 dark:border-slate-800">

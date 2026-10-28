@@ -24,15 +24,19 @@ const fixedRow = row => row.type === 'tr' && cells(row).some(c => c.props.colSpa
  * Reusable row components supply sortValues in column order. Set sortable=false
  * for receipts or editable line-item forms; data-sortable=false excludes a column.
  */
-export default function DataTable({ children, loading = false, loadingLabel = "Loading records", emptyState = true, emptyTitle = 'No records found', emptyDescription = 'Records will appear here when they are available.', sortable = true, sortScope, searchable = false, ...props }) {
+export default function DataTable({ children, loading = false, loadingLabel = "Loading records", emptyState = true, emptyTitle = 'No records found', emptyDescription = 'Records will appear here when they are available.', sortable = true, sortScope, sort: controlledSort, onSortChange, searchable = false, ...props }) {
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState({ index: null, direction: 'asc' });
+  const [localSort, setSort] = useState({ index: null, direction: 'asc' });
+  const sort = controlledSort || localSort;
   const sections = nodes(children);
   const head = sections.find(s => s.type === 'thead');
   const headerIndex = nodes(head?.props.children).findIndex(r => r.type === 'tr');
   const headerRow = nodes(head?.props.children)[headerIndex];
   const headers = headerRow ? cells(headerRow) : [];
-  const toggle = index => setSort(previous => ({ index, direction: previous.index === index && previous.direction === 'asc' ? 'desc' : 'asc' }));
+  const toggle = index => {
+    const next = { index, direction: sort.index === index && sort.direction === 'asc' ? 'desc' : 'asc' };
+    if (onSortChange) onSortChange(next); else setSort(next);
+  };
   const enhanced = sections.map(section => {
     if (section.type === 'thead' && sortable) return cloneElement(section, {}, nodes(section.props.children).map((row, rowIndex) => rowIndex !== headerIndex ? row : cloneElement(row, {}, headers.map((header, index) => {
       const label = String(cellValue(header.props.children)).trim();
@@ -46,11 +50,11 @@ export default function DataTable({ children, loading = false, loadingLabel = "L
         </button>);
     }))));
     if (section.type !== 'tbody') return section;
-    if (loading) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><LoadingState variant="inline" label={loadingLabel} /></td></tr>);
+    if (loading) return cloneElement(section, {}, <tr><td className="table-loading-cell" colSpan={Math.max(headers.length, 1)}><LoadingState variant="table" cols={headers.length} label={loadingLabel} /></td></tr>);
     const rows = nodes(section.props.children).filter(row => !search || fixedRow(row) || String(row.props.sortValues?.join(' ') || cellValue(row)).toLocaleLowerCase().includes(search.toLocaleLowerCase()));
     if (emptyState && rows.length === 1 && fixedRow(rows[0]) && /^no |^nothing /i.test(String(cellValue(rows[0])).trim())) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><EmptyState title={String(cellValue(rows[0])).trim()} /></td></tr>);
     if (!rows.length && emptyState) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><EmptyState title={search ? 'No matching records' : emptyTitle} description={search ? 'Try a different search or clear the filters.' : emptyDescription} filtered={!!search} onClear={search ? () => setSearch('') : undefined} /></td></tr>);
-    if (!sortable || sort.index === null) return cloneElement(section, {}, rows);
+    if (!sortable || onSortChange || sort.index === null) return cloneElement(section, {}, rows);
     const movable = rows.filter(row => !fixedRow(row));
     const value = row => row.props.sortValues?.[sort.index] ?? cellValue(cells(row)[sort.index]);
     const ordered = movable.map((row, index) => ({ row, index })).sort((a, b) => compareValues(value(a.row), value(b.row), sort.direction, String(cellValue(headers[sort.index]))) || a.index - b.index).map(item => item.row);

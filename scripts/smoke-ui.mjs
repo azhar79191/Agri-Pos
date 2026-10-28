@@ -260,7 +260,7 @@ try {
   await page.getByLabel('Rescheduled due date', { exact: true }).fill('2026-11-03');
   await page.getByLabel('Contact notes', { exact: true }).fill('Farmer requested Tuesday');
   await page.getByRole('button', { name: 'Save follow-up', exact: true }).click();
-  await page.getByText('Farmer requested Tuesday', { exact: true }).waitFor();
+  await page.getByText('crop visit · Due 2026-11-03 · open', { exact: true }).waitFor();
   assert.equal(farmerTasks[0].dueDate, '2026-11-03');
   await page.getByRole('button', { name: 'Mark completed', exact: true }).click();
   await pickOption(page.getByLabel('Task status', { exact: true }), 'completed');

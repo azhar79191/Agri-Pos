@@ -15,14 +15,12 @@ const InvoiceCard = ({ invoice, currency, isAdmin, onView, onPrint, onDownload, 
   const PayIcon = pc.icon;
 
   return (
-    <div className={`group relative bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-1 transition-all duration-200 ${sc.border}`}>
-      <div className={`h-1 w-full ${invoice.status === "Completed" ? "bg-gradient-to-r from-emerald-400 to-teal-500" : invoice.status === "Pending" ? "bg-gradient-to-r from-amber-400 to-orange-500" : "bg-gradient-to-r from-red-400 to-rose-500"}`} />
-
+    <div className="invoice-card">
       <div className="p-4 space-y-3.5">
         {/* Header row */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="font-black text-slate-900 dark:text-white text-sm tracking-tight">#{invoice.invoiceNumber}</p>
+            <p className="font-semibold text-slate-900 dark:text-white text-sm tracking-tight">#{invoice.invoiceNumber}</p>
             <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
               <Clock className="w-3 h-3" />{fmtDate(invoice.createdAt)}
             </p>
@@ -73,34 +71,34 @@ const InvoiceCard = ({ invoice, currency, isAdmin, onView, onPrint, onDownload, 
               </span>
             )}
           </div>
-          <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+          <p className="text-xl font-semibold text-slate-900 dark:text-white">
             {fmt(invoice.total || invoice.grandTotal || 0, currency)}
           </p>
         </div>
 
         {/* Action bar */}
-        <div className="flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="invoice-card__actions flex gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
           <button onClick={() => onView(invoice)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 transition-all">
             <Eye className="w-3.5 h-3.5" /> View
           </button>
-          <button onClick={() => onPrint(invoice)} title="Print" className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors">
+          <button onClick={() => onPrint(invoice)} title="Print" aria-label="Print" className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors">
             <Printer className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => onDownload(invoice)} title="Download PDF" className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors">
+          <button onClick={() => onDownload(invoice)} title="Download PDF" aria-label="Download PDF" className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors">
             <Download className="w-3.5 h-3.5" />
           </button>
           {invoice.status === "Pending" && isAdmin && (
-            <button onClick={() => onMarkComplete(invoice)} title="Mark Completed" className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors">
+            <button onClick={() => onMarkComplete(invoice)} title="Mark Completed" aria-label="Mark Completed" className="p-2 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 transition-colors">
               <Check className="w-3.5 h-3.5" />
             </button>
           )}
           {invoice.status === "Completed" && isAdmin && (
-            <button onClick={() => onRefund(invoice)} title="Refund" className="p-2 rounded-xl text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-orange-200 dark:border-orange-800 transition-colors">
+            <button onClick={() => onRefund(invoice)} title="Refund" aria-label="Refund" className="p-2 rounded-xl text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-orange-200 dark:border-orange-800 transition-colors">
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
           )}
           {isAdmin && (
-            <button onClick={() => onDelete(invoice)} title="Delete" className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800 transition-colors">
+            <button onClick={() => onDelete(invoice)} title="Delete" aria-label="Delete" className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}

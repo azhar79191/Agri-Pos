@@ -9,7 +9,7 @@ const Button = ({
 
   const variants = {
     primary:   "ui-button-primary text-white focus:ring-blue-500 shadow-sm hover:shadow active:scale-[0.98]",
-    secondary: "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 focus:ring-blue-400 border border-slate-200 dark:border-slate-600",
+    secondary: "ui-button-secondary hover:brightness-95 focus:ring-blue-400",
     danger:    "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-sm hover:shadow active:scale-[0.98]",
     warning:   "bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500 shadow-sm hover:shadow",
     success:   "bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-blue-500 shadow-sm hover:shadow",

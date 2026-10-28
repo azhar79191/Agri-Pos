@@ -22,8 +22,8 @@ const TYPE_ICON = {
   default: Bell,
 };
 
-const mapNotif = (n, idx) => ({
-  id: n._id || `api-${n.type}-${idx}-${Date.now()}`,
+const mapNotif = (n) => ({
+  id: n._id || n.id || `${n.type}:${n.productId || n.customerId || n.message}`,
   type: n.type || "info", severity: n.severity || "info",
   title: n.title || "Notification", message: n.message || "",
   source: "api", createdAt: n.createdAt || new Date().toISOString(),
@@ -72,7 +72,7 @@ const NotificationCenter = () => {
   }, [loadNotifications]);
 
   const addNotification = useCallback((notif) => {
-    setNotifications(prev => prev.find(n => n.id === notif.id) ? prev : [notif, ...prev].slice(0, 50));
+    setNotifications(prev => [notif, ...prev.filter(n => n.id !== notif.id)].slice(0, 50));
   }, []);
 
   const dismiss = useCallback((id) => setNotifications(prev => prev.filter(n => n.id !== id)), []);
@@ -91,7 +91,7 @@ const NotificationCenter = () => {
     }, [addNotification, actions, navigate]),
     onStockAlert: useCallback((data) => {
       actions.showToast({ message: data.message, type: data.severity === "critical" ? "error" : "warning" });
-      addNotification({ id: `stock-${data.productId || Date.now()}`, type: data.type || "stock_alert", severity: data.severity || "warning", title: data.title || "Stock Alert", message: data.message, source: "socket", createdAt: new Date().toISOString(), action: () => { navigate("/products"); setShowPanel(false); } });
+      addNotification({ id: data._id || data.id || `${data.type || 'stock_alert'}:${data.productId || data.message}`, type: data.type || "stock_alert", severity: data.severity || "warning", title: data.title || "Stock Alert", message: data.message, source: "socket", createdAt: data.createdAt || new Date().toISOString(), action: () => { navigate("/products"); setShowPanel(false); } });
     }, [addNotification, actions, navigate]),
     onPermissionsUpdated: useCallback((data) => {
       // Check if this update is for the currently logged-in user

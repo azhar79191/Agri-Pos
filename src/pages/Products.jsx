@@ -10,7 +10,6 @@ import Input from "../components/ui/Input";
 import ModernModal, { ConfirmModal } from "../components/ui/ModernModal";
 import Select from "../components/ui/Select";
 import Pagination from "../components/ui/Pagination";
-import { TableSkeleton } from "../components/ui/Skeleton";
 import { exportProducts } from "../utils/excelExport";
 import ProductRow from "../components/products/ProductRow";
 import ProductStatsCards from "../components/products/ProductStatsCards";
@@ -41,6 +40,10 @@ const Products = () => {
   const [searchTerm, setSearchTerm]       = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [page, setPage]                   = useState(1);
+  const [sort, setSort] = useState({ index: null, direction: 'asc' });
+  const sortFields = [null,"name","category","manufacturer","unit","price","stock"];
+  const sortField = sortFields[sort.index];
+  const sortQuery = sortField ? `${sort.direction === 'desc' ? '-' : ''}${sortField}` : '-createdAt';
   const [pagination, setPagination]       = useState({ total: 0, pages: 1 });
   const [requested, setRequested] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -52,12 +55,12 @@ const Products = () => {
   const selectAll    = () => setSelected(new Set(filteredProducts.map((p) => p._id || p.id)));
   const clearSelect  = () => setSelected(new Set());
 
-  const reloadList = () => { setRequested(true); return fetchProducts({ page, limit: LIMIT, search: searchTerm, category: filterCategory }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
+  const reloadList = () => { setRequested(true); return fetchProducts({ page, limit: LIMIT, sort: sortQuery, search: searchTerm, category: filterCategory }).then(res => { if (res?.data?.pagination) setPagination(res.data.pagination); }); };
   useEffect(() => {
     setSelected(new Set());
     const timer = setTimeout(reloadList, 250);
     return () => clearTimeout(timer);
-  }, [page, searchTerm, filterCategory]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [page, searchTerm, filterCategory, sortQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const allCategories = shopCategories || [];
@@ -110,9 +113,9 @@ const Products = () => {
       {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton label="Loading products" rows={6} cols={8} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (
           <div className="overflow-x-auto">
-            <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
+            <DataTable loading={loading || !requested} loadingLabel="Loading products" emptyState={false} sort={sort} onSortChange={next => { setSort(next); setPage(1); }} className="w-full table-premium">
               <thead>
                 <tr>
                   <th className="w-10"><input type="checkbox" aria-label="Select all products on this page" checked={selected.size === filteredProducts.length && filteredProducts.length > 0} onChange={(e) => e.target.checked ? selectAll() : clearSelect()} className="rounded" /></th>
@@ -134,7 +137,7 @@ const Products = () => {
                 ))}
               </tbody>
             </DataTable>
-            <ListFeedback empty={filteredProducts.length === 0} title={searchTerm || filterCategory ? 'No matching products' : 'No active products yet'} description={searchTerm || filterCategory ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm || filterCategory ? () => { setSearchTerm(""); setFilterCategory(""); setPage(1); } : undefined} />
+            <ListFeedback empty={!loading && requested && filteredProducts.length === 0} title={searchTerm || filterCategory ? 'No matching products' : 'No active products yet'} description={searchTerm || filterCategory ? 'Try another search or clear the filters.' : 'Add the first record to get started.'} onClear={searchTerm || filterCategory ? () => { setSearchTerm(""); setFilterCategory(""); setPage(1); } : undefined} />
           </div>
         )}
         <div className="border-t border-slate-100 dark:border-slate-800">

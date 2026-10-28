@@ -1,16 +1,12 @@
-import LoadingState from "./LoadingState";
 import DataTable from "./DataTable";
-import EmptyState from "./EmptyState";
 import React from 'react';
 
 const SDPTable = ({ columns, data, loading, emptyMessage = 'No data available' }) => {
-  if (loading) return <LoadingState variant="table" cols={columns.length} label="Loading records" />;
 
-  if (!data?.length) return <EmptyState title={emptyMessage} />;
 
   return (
     <div className="overflow-x-auto">
-      <DataTable className="sdp-table">
+      <DataTable className="sdp-table" loading={loading} emptyTitle={emptyMessage}>
         <thead>
           <tr>
             {columns.map((col, idx) => (
@@ -21,7 +17,7 @@ const SDPTable = ({ columns, data, loading, emptyMessage = 'No data available' }
           </tr>
         </thead>
         <tbody>
-          {data.map((row, rowIdx) => (
+          {(data || []).map((row, rowIdx) => (
             <tr key={rowIdx}>
               {columns.map((col, colIdx) => (
                 <td data-sort-value={col.sortValue ? col.sortValue(row) : row[col.key]} key={colIdx} className={col.cellClassName}>

@@ -12,8 +12,10 @@ import { useUsers } from "../../../hooks/useUsers";
 import { ConfirmModal } from "../../../components/ui/ModernModal";
 import ModernModal from "../../../components/ui/ModernModal";
 import { ROLE_CFG, ALL_PERMISSIONS, PERM_KEYS, BASIC_PERMS, inp } from "./staffConfig";
+import API from "../../../api/axios";
+import Select from "../../../components/ui/Select";
 
-const emptyForm = { name: "", email: "", password: "", role: "cashier", phone: "" };
+const emptyForm = { name: "", email: "", password: "", role: "cashier", customRoleId: "", phone: "" };
 
 /* ── Permission Modal ── */
 const PermModal = ({ user, isOpen, onClose, onToggle, onGrantAll, onRevokeAll, submitting }) => {
@@ -85,7 +87,7 @@ const PermModal = ({ user, isOpen, onClose, onToggle, onGrantAll, onRevokeAll, s
 };
 
 /* ── User Card ── */
-const UserCard = ({ user, isAdmin, onEdit, onPerms, onDelete }) => {
+const UserCard = ({ user, roleName, isAdmin, onEdit, onPerms, onDelete }) => {
   const rc = ROLE_CFG[user.role] || ROLE_CFG.cashier;
   const isActive = user.isActive !== false;
   const permPct = Math.round(((user.permissions?.length || 0) / PERM_KEYS.length) * 100);
@@ -137,7 +139,7 @@ const UserCard = ({ user, isAdmin, onEdit, onPerms, onDelete }) => {
         <div className="flex items-center justify-between mb-4">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${rc.cls}`}>
             <div className={`w-1.5 h-1.5 rounded-full ${rc.dot}`} />
-            {rc.label}
+            {roleName || rc.label}
           </span>
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${isActive ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"}`}>
             {isActive ? "Active" : "Inactive"}
@@ -194,10 +196,20 @@ const UsersPanel = () => {
   const [permUser, setPermUser] = useState(null);
   const [permSubmitting, setPermSubmitting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [customRoles, setCustomRoles] = useState([]);
+  const [rolesError, setRolesError] = useState('');
 
   const isAdmin = state.currentUser?.role === "admin" || (state.currentUser?.permissions || []).some(p => p.startsWith("users:"));
 
   useEffect(() => { fetchUsers(); }, []); // eslint-disable-line
+  useEffect(() => {
+    if (!showForm || state.currentUser?.role !== 'admin') return;
+    let active = true;
+    setRolesError('');
+    API.get('/roles').then(response => { if (active) setCustomRoles(response.data.data.roles); })
+      .catch(error => { if (active) setRolesError(error.response?.data?.message || 'Unable to load custom roles. Close and reopen to retry.'); });
+    return () => { active = false; };
+  }, [showForm, state.currentUser?.role]);
   useEffect(() => {
     if (permUser) setPermUser(users.find(u => u._id === permUser._id) ?? null);
   }, [users]); // eslint-disable-line
@@ -208,7 +220,7 @@ const UsersPanel = () => {
   );
 
   const openAdd  = () => { setForm(emptyForm); setEditingUser(null); setShowPass(false); setShowForm(true); };
-  const openEdit = (u) => { setForm({ name: u.name, email: u.email, password: "", role: u.role || "cashier", phone: u.phone || "" }); setEditingUser(u); setShowPass(false); setShowForm(true); };
+  const openEdit = (u) => { setForm({ name: u.name, email: u.email, password: "", role: u.role || "cashier", customRoleId: u.customRoleId?._id || u.customRoleId || "", phone: u.phone || "" }); setEditingUser(u); setShowPass(false); setShowForm(true); };
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSubmit = async () => {
@@ -285,7 +297,7 @@ const UsersPanel = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(user => (
-            <UserCard key={user._id} user={user} isAdmin={isAdmin}
+            <UserCard key={user._id} user={user} roleName={customRoles.find(role => role._id === (user.customRoleId?._id || user.customRoleId))?.name} isAdmin={isAdmin}
               onEdit={openEdit} onPerms={setPermUser} onDelete={setDeleteTarget} />
           ))}
           {filtered.length === 0 && (
@@ -312,11 +324,10 @@ const UsersPanel = () => {
             <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email *</label><input type="email" value={form.email} onChange={e => f("email", e.target.value)} className={inp} placeholder="john@shop.com" /></div>
             <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Phone</label><input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} className={inp} placeholder="+92 300 0000000" /></div>
             <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
-              <select value={form.role} onChange={e => f("role", e.target.value)} className={inp}>
-                <option value="admin">Administrator</option>
-                <option value="manager">Manager</option>
-                <option value="cashier">Cashier</option>
-              </select>
+              <Select aria-label="Role" value={form.customRoleId ? `custom:${form.customRoleId}` : form.role}
+                onChange={event => { const value = event.target.value; setForm(current => ({ ...current, role: value.startsWith('custom:') ? 'cashier' : value, customRoleId: value.startsWith('custom:') ? value.slice(7) : '' })); }}
+                options={[{ value: 'admin', label: 'Administrator' }, { value: 'manager', label: 'Manager' }, { value: 'cashier', label: 'Cashier' }, ...customRoles.map(role => ({ value: `custom:${role._id}`, label: role.name }))]} />
+              {rolesError && <p role="alert" className="mt-2 text-xs text-red-600">{rolesError}</p>}
             </div>
           </div>
           <div>
