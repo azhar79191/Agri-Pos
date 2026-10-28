@@ -9,6 +9,7 @@ export default defineConfig({
       fastRefresh: true,
     }),
   ],
+  test: { maxWorkers: 2 },
 
   server: {
     host: true,

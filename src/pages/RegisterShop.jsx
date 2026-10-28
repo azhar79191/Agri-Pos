@@ -56,7 +56,7 @@ export default function RegisterShop() {
   const validateStep1 = () => {
     if (!adminForm.name || !adminForm.email || !adminForm.password) return "Name, email and password are required";
     if (adminForm.password !== adminForm.confirmPassword) return "Passwords do not match";
-    if (adminForm.password.length < 6) return "Password must be at least 6 characters";
+    if (adminForm.password.length < 8) return "Password must be at least 8 characters";
     return null;
   };
 

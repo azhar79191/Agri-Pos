@@ -32,7 +32,7 @@ const SetupForm = ({ onSubmit, loading }) => {
       <Field label="Phone (optional)"type="tel"   icon={Phone} value={form.phone}           onChange={set("phone")}           placeholder="+92 300 0000000" />
       <Field
         label="Password" type={showPwd ? "text" : "password"} icon={Lock}
-        value={form.password} onChange={set("password")} placeholder="Min 6 characters" required
+        value={form.password} onChange={set("password")} placeholder="Min 8 characters" required
         extra={
           <button type="button" onClick={() => setShowPwd((v) => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
             {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

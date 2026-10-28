@@ -26,3 +26,16 @@ loading errors remain distinct and retryable.
 Navigation labels, icons and permissions are defined in `MENU_GROUPS` for both
 desktop and mobile. The desktop sidebar keeps one section open and reveals the
 current route. Motion respects `prefers-reduced-motion`.
+
+## Loading feedback
+
+Use `LoadingState` with `variant="table"`, `"cards"`, `"stats"`, `"page"` or
+`"section"` for fetches. Give it a short contextual `label`, such as
+"Loading products". `TableSkeleton`, `CardSkeleton` and `StatSkeleton` delegate
+to this component. `DataTable` accepts `loading` and `loadingLabel`; do not render
+an empty state until the request settles. Keep search controls mounted during
+refreshes. Use `LoadingIndicator` inside pending action buttons, with a visible
+action label and `aria-busy`; shared `Button` handles this automatically.
+Skeletons are decorative, pending content is announced once, and animations
+respect reduced-motion preferences. Desktop company identity belongs in the
+sidebar; the top header starts with the current page title.

@@ -31,7 +31,7 @@ const Forecasting = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400">Trend analysis and revenue projections</p>
         </div>
       </div>
-      <FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
+      <p className="text-sm text-slate-500">Rule-based estimate: average of up to three recent months with recorded sales. No assumed growth, seasonality or AI prediction. Partial months and missing history can distort the estimate.</p><FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
 
       {data.error ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800"><p>{data.error}</p><button type="button" onClick={data.retry} className="mt-2 min-h-11 underline">Retry forecast</button></div> : data.loading ? (
         <LoadingState label="Loading forecast" />

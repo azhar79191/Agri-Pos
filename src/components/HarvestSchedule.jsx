@@ -30,7 +30,7 @@ export default function HarvestSchedule({ season, canEdit, currency }) {
     <p className="text-sm">Record agreed installments and contact notes. These promises do not settle invoices. Record collections through the customer account and review the statement.</p>
     {error && <p role="alert" className="text-red-700">{error}</p>}{message && <p role="status">{message}</p>}
     <button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload payment schedule</button>
-    {!data ? <div>{error ? <p role="alert">{'Schedule unavailable.'}</p> : <LoadingState label="Loading schedule" />}</div> : <>
+    {!data ? <div>{error ? <p>{'Schedule unavailable.'}</p> : <LoadingState label="Loading schedule" />}</div> : <>
       <p className="text-sm">Current customer dues across all seasons: {data.currentDues == null ? 'Unavailable' : `${currency} ${data.currentDues.toLocaleString()}`}</p>
       <p className="text-sm">Planned installments: {currency} {data.installments.reduce((sum, line) => sum + Number(line.amount || 0), 0).toLocaleString()}</p>
       <a className="block min-h-11 py-3 underline" href={`/customers/${season.customer?._id || season.customer}/statement`}>Review collections in customer statement</a>

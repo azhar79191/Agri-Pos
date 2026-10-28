@@ -324,7 +324,7 @@ const UsersPanel = () => {
               Password {editingUser && <span className="text-slate-400 font-normal">(leave blank to keep)</span>}
             </label>
             <div className="relative">
-              <input type={showPass ? "text" : "password"} value={form.password} onChange={e => f("password", e.target.value)} className={inp + " pr-10"} placeholder="Min 6 characters" />
+              <input type={showPass ? "text" : "password"} value={form.password} onChange={e => f("password", e.target.value)} className={inp + " pr-10"} placeholder="Min 8 characters" />
               <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

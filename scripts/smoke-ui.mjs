@@ -12,6 +12,15 @@ async function pickOption(control, value) {
   await control.click();
   await page.locator(`[role="option"][data-value="${value}"]`).click();
 }
+async function setCompanyAppearance(theme) {
+  await page.goto(`${origin}/settings`);
+  await page.getByRole('heading', { name: 'Brand studio', exact: true }).waitFor();
+  await pickOption(page.getByLabel('Company appearance', { exact: true }), theme);
+  await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
+  await page.getByText('Company settings are up to date', { exact: true }).waitFor();
+  await page.goto(`${origin}/staff/roles`);
+  await page.getByRole('heading', { name: 'Roles and access', exact: true }).waitFor();
+}
 try {
   for (let attempt = 0; attempt < 100; attempt++) {
     try { if ((await fetch(origin)).ok) break; } catch { /* Wait for local Vite startup. */ }
@@ -262,7 +271,7 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: 'artifacts/farmer-workspace-desktop.png', fullPage: true, animations: 'disabled' });
   await page.goto(`${origin}/settings`);
-  await page.getByRole('button', { name: /Branding & Emails/ }).click();
+  await page.getByRole('button', { name: /Company Branding/ }).click();
   await page.getByLabel('Brand name', { exact: true }).fill('Green Fields');
   await page.getByLabel('Tagline', { exact: true }).fill('Your crop partner');
   await page.getByLabel('Email footer', { exact: true }).fill('Thank you for choosing Green Fields');
@@ -284,7 +293,7 @@ try {
   assert.equal(await companyHeader.getByRole('img').getAttribute('src'), brandSettings.brandLogo);
   assert.equal(await page.evaluate(() => document.querySelector('link[rel="icon"]').getAttribute('href')), brandSettings.brandLogo);
   await page.reload();
-  await page.getByRole('button', { name: /Branding & Emails/ }).click();
+  await page.getByRole('button', { name: /Company Branding/ }).click();
   await page.getByRole('heading', { name: 'Brand studio', exact: true }).waitFor();
   assert.equal(await page.getByLabel('Company identity', { exact: true }).getByRole('img').getAttribute('src'), brandSettings.brandLogo);
   await page.setViewportSize({ width: 1024, height: 900 });
@@ -295,23 +304,22 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Brand settings must fit mobile width');
   await page.screenshot({ path: 'artifacts/company-brand-studio-mobile.png', fullPage: true, animations: 'disabled' });
-  await pickOption(page.getByLabel('Settings section', { exact: true }), 'theme');
-  const oldAccentSurface = await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).evaluate(element => getComputedStyle(element).color);
-  await page.getByRole('button', { name: 'Rose accent', exact: true }).click();
-  assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--brand-500')), '244 63 94');
-  const newAccentSurface = await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).evaluate(element => getComputedStyle(element).color);
-  assert.notEqual(oldAccentSurface, newAccentSurface, 'Theme selection must visibly change existing primary surfaces');
-  await page.getByRole('switch', { name: 'Dark appearance', exact: true }).click();
-  assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
-  await page.reload();
-  await pickOption(page.getByLabel('Settings section', { exact: true }), 'theme');
-  await page.getByRole('button', { name: 'Rose accent', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Rose company theme', exact: true }).click();
+  await pickOption(page.getByLabel('Company appearance', { exact: true }), 'dark');
+  await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
+  await page.getByText('Company settings are up to date', { exact: true }).waitFor();
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#f43f5e');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
+  await page.reload();
+  await page.getByRole('heading', { name: 'Brand studio', exact: true }).waitFor();
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
   await page.screenshot({ path: 'artifacts/theme-dark-mobile.png', fullPage: true, animations: 'disabled' });
   await page.evaluate(() => localStorage.setItem('appearance:color:other-shop:other-user', '#123456'));
-  await page.getByRole('button', { name: 'Use shop appearance defaults', exact: true }).click();
-  assert.equal(await page.evaluate(() => localStorage.getItem('appearance:color:other-shop:other-user')), '#123456', 'Reset must not clear another company account appearance');
+  await page.getByLabel('Brand accent', { exact: true }).fill('#047857');
+  await pickOption(page.getByLabel('Company appearance', { exact: true }), 'light');
+  await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
+  await page.getByText('Company settings are up to date', { exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem('appearance:color:other-shop:other-user')), '#123456', 'Saving appearance must not clear another company account appearance');
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#047857');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), false);
   await page.goto(`${origin}/staff/roles`);
@@ -327,13 +335,13 @@ try {
   const lightOption = await page.getByRole('option', { name: /Inventory staff/ }).evaluate(element => getComputedStyle(element).backgroundColor);
   await page.screenshot({ path: 'artifacts/custom-select-light.png', fullPage: true, animations: 'disabled' });
   await page.keyboard.press('Escape');
-  await page.getByTitle('Dark mode', { exact: true }).click();
+  await setCompanyAppearance('dark');
   await page.getByLabel('Staff member', { exact: true }).click();
   const darkOption = await page.getByRole('option', { name: /Inventory staff/ }).evaluate(element => getComputedStyle(element).backgroundColor);
   assert.notEqual(lightOption, darkOption, 'Custom option backgrounds follow appearance mode');
   await page.screenshot({ path: 'artifacts/custom-select-dark.png', fullPage: true, animations: 'disabled' });
   await page.keyboard.press('Escape');
-  await page.getByTitle('Light mode', { exact: true }).click();
+  await setCompanyAppearance('light');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByLabel('Staff member', { exact: true }).click();
   const menuBounds = await page.getByRole('listbox', { name: 'Staff member', exact: true }).boundingBox();

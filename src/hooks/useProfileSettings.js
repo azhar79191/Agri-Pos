@@ -61,8 +61,8 @@ export function useProfileSettings() {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       actions.showToast({ message: "New passwords do not match", type: "error" }); return;
     }
-    if (passwordForm.newPassword.length < 6) {
-      actions.showToast({ message: "Password must be at least 6 characters", type: "error" }); return;
+    if (passwordForm.newPassword.length < 8) {
+      actions.showToast({ message: "Password must be at least 8 characters", type: "error" }); return;
     }
     setSavingPassword(true);
     try {

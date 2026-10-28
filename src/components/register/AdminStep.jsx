@@ -34,7 +34,7 @@ export const AdminStep = ({ form, onChange, showPassword, togglePassword, onNext
           type={showPassword ? "text" : "password"}
           value={form.password}
           onChange={(e) => onChange("password", e.target.value)}
-          placeholder="Min 6 characters"
+          placeholder="Min 8 characters"
           required
           extra={
             <button type="button" onClick={togglePassword} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">

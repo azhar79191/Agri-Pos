@@ -1,5 +1,6 @@
 /** Maps route paths → page titles shown in the Header */
 export const PAGE_TITLES = {
+  'dealer-workspace': 'Dealer Workspace',
   "assistant": "Business Assistant",
   "dashboard":                "Dashboard",
   "dashboard/analytics":      "Analytics",

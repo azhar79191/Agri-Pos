@@ -1,10 +1,9 @@
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-const require = createRequire(import.meta.url);
-const { schemas } = require('../../agri-pos-backend/src/services/dealerRecords');
+const schemas = JSON.parse(readFileSync(new URL('./fixtures/dealer-schemas.json', import.meta.url), 'utf8'));
 const origin = 'http://127.0.0.1:5181';
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5181', '--strictPort'], { windowsHide: true, stdio: 'ignore', env: { ...process.env, VITE_API_BASE_URL: `${origin}/api` } });
 let browser, page;

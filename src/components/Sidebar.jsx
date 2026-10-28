@@ -54,7 +54,7 @@ const Sidebar = () => {
 
   const nav = (
     <div className="app-sidebar__surface flex flex-col h-full">
-      <div className="app-sidebar__brand h-16 flex items-center gap-3 px-4 flex-shrink-0">
+      <div role="group" aria-label="Company identity" className="app-sidebar__brand h-16 flex items-center gap-3 px-4 flex-shrink-0">
         <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.brandName || settings?.shopName} size="w-8 h-8" />
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-900 dark:text-white text-sm truncate leading-tight">{companyName(settings)}</p>

@@ -121,7 +121,7 @@ const TeamPanel = ({ shopId }) => {
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>
                     <div className="relative">
                       <input type={showPass ? "text" : "password"} value={form.password}
-                        onChange={e => f("password", e.target.value)} placeholder="Min 6 characters" className={inp + " pr-10"} />
+                        onChange={e => f("password", e.target.value)} placeholder="Min 8 characters" className={inp + " pr-10"} />
                       <button type="button" onClick={() => setShowPass(p => !p)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                         {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

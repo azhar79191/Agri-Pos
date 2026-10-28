@@ -106,8 +106,8 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     setError("");
 
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
@@ -379,7 +379,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Enter new password"
                         required
-                        minLength={6}
+                        minLength={8}
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                       />
                     </div>
@@ -397,7 +397,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirm new password"
                         required
-                        minLength={6}
+                        minLength={8}
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                       />
                     </div>

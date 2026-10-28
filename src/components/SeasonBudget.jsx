@@ -43,7 +43,7 @@ export default function SeasonBudget({ season, canEdit, currency }) {
     <p className="text-sm">Plan costs for {season.area} {season.areaUnit}. Actual costs are manually recorded totals for this season; they are not automatically calculated from invoices.</p>
     {error && <p role="alert" className="text-red-700 dark:text-red-400">{error}</p>}
     <button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload saved budget</button>
-    {!data ? <div>{error ? <p role="alert">Budget unavailable.</p> : <LoadingState label="Loading budget" />}</div> : <>
+    {!data ? <div>{error ? <p>Budget unavailable.</p> : <LoadingState label="Loading budget" />}</div> : <>
       <p className="text-sm">Saved plan: {fmt(data.planned)} · Recorded actual: {fmt(data.actual)} · Remaining: {fmt(data.remaining)}</p>
       {saved && <p role="status">Budget saved.</p>}
       <form onSubmit={save} className="space-y-3">

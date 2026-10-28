@@ -1,0 +1,323 @@
+{
+  "visits": {
+    "title": "Field visits",
+    "permission": "customers:view",
+    "write": "customers:edit",
+    "states": [
+      "open",
+      "completed",
+      "cancelled"
+    ],
+    "fields": {
+      "title": {
+        "label": "Visit purpose",
+        "type": "text",
+        "required": true
+      },
+      "customer": {
+        "label": "Customer",
+        "type": "reference",
+        "required": true,
+        "model": "Customer"
+      },
+      "assignee": {
+        "label": "Assigned staff",
+        "type": "reference",
+        "required": true,
+        "model": "User"
+      },
+      "dueDate": {
+        "label": "Visit date",
+        "type": "date",
+        "required": true
+      },
+      "notes": {
+        "label": "Field notes",
+        "type": "textarea",
+        "required": false
+      }
+    }
+  },
+  "substitutions": {
+    "title": "Reviewed product substitutions",
+    "permission": "products:view",
+    "write": "products:edit",
+    "states": [
+      "open",
+      "reviewed",
+      "rejected"
+    ],
+    "fields": {
+      "title": {
+        "label": "Substitution purpose",
+        "type": "text",
+        "required": true
+      },
+      "product": {
+        "label": "Original product",
+        "type": "reference",
+        "required": true,
+        "model": "Product"
+      },
+      "alternative": {
+        "label": "Alternative product",
+        "type": "reference",
+        "required": true,
+        "model": "Product"
+      },
+      "ingredient": {
+        "label": "Active ingredient on label",
+        "type": "text",
+        "required": true
+      },
+      "formulation": {
+        "label": "Formulation and concentration",
+        "type": "text",
+        "required": true
+      },
+      "crop": {
+        "label": "Crop and intended use",
+        "type": "text",
+        "required": true
+      },
+      "labelReference": {
+        "label": "Reviewed label reference",
+        "type": "text",
+        "required": true
+      },
+      "notes": {
+        "label": "Differences and restrictions",
+        "type": "textarea",
+        "required": true
+      }
+    }
+  },
+  "soil-tests": {
+    "title": "Soil-test records",
+    "permission": "customers:view",
+    "write": "customers:edit",
+    "states": [
+      "open",
+      "reviewed",
+      "closed"
+    ],
+    "fields": {
+      "title": {
+        "label": "Field or plot name",
+        "type": "text",
+        "required": true
+      },
+      "customer": {
+        "label": "Customer",
+        "type": "reference",
+        "required": true,
+        "model": "Customer"
+      },
+      "sampleDate": {
+        "label": "Sample date",
+        "type": "date",
+        "required": true
+      },
+      "laboratory": {
+        "label": "Laboratory",
+        "type": "text",
+        "required": true
+      },
+      "reportReference": {
+        "label": "Lab report reference / URL",
+        "type": "text",
+        "required": true
+      },
+      "ph": {
+        "label": "pH",
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 14
+      },
+      "ec": {
+        "label": "Electrical conductivity (dS/m)",
+        "type": "number",
+        "required": false,
+        "min": 0,
+        "max": 1000
+      },
+      "phosphorus": {
+        "label": "Phosphorus (mg/kg)",
+        "type": "number",
+        "required": false,
+        "min": 0,
+        "max": 100000
+      },
+      "potassium": {
+        "label": "Potassium (mg/kg)",
+        "type": "number",
+        "required": false,
+        "min": 0,
+        "max": 100000
+      },
+      "notes": {
+        "label": "Expert recommendation and follow-through notes",
+        "type": "textarea",
+        "required": false
+      }
+    }
+  },
+  "complaints": {
+    "title": "Farmer complaints and outcomes",
+    "permission": "customers:view",
+    "write": "customers:edit",
+    "states": [
+      "open",
+      "investigating",
+      "resolved",
+      "closed"
+    ],
+    "fields": {
+      "title": {
+        "label": "Complaint summary",
+        "type": "text",
+        "required": true
+      },
+      "customer": {
+        "label": "Customer",
+        "type": "reference",
+        "required": true,
+        "model": "Customer"
+      },
+      "product": {
+        "label": "Product",
+        "type": "reference",
+        "required": true,
+        "model": "Product"
+      },
+      "invoice": {
+        "label": "Invoice",
+        "type": "reference",
+        "required": false,
+        "model": "Invoice"
+      },
+      "batchNo": {
+        "label": "Reported batch number",
+        "type": "text",
+        "required": false
+      },
+      "evidence": {
+        "label": "Photo/report links or evidence references",
+        "type": "textarea",
+        "required": false
+      },
+      "outcomeSource": {
+        "label": "Outcome evidence",
+        "type": "select",
+        "required": true,
+        "options": [
+          "farmer_reported",
+          "staff_observed",
+          "expert_verified"
+        ]
+      },
+      "notes": {
+        "label": "Complaint, supplier response and outcome notes",
+        "type": "textarea",
+        "required": true
+      }
+    }
+  },
+  "supplier-offers": {
+    "title": "Supplier offer comparison",
+    "permission": "stock:view",
+    "write": "stock:manage",
+    "states": [
+      "open",
+      "accepted",
+      "rejected",
+      "expired"
+    ],
+    "fields": {
+      "title": {
+        "label": "Offer reference",
+        "type": "text",
+        "required": true
+      },
+      "supplier": {
+        "label": "Supplier",
+        "type": "reference",
+        "required": true,
+        "model": "Supplier"
+      },
+      "product": {
+        "label": "Product",
+        "type": "reference",
+        "required": true,
+        "model": "Product"
+      },
+      "expiresOn": {
+        "label": "Valid through",
+        "type": "date",
+        "required": true
+      },
+      "quantity": {
+        "label": "Paid packs",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1000000
+      },
+      "packSize": {
+        "label": "Base units per pack",
+        "type": "integer",
+        "required": true,
+        "min": 1,
+        "max": 1000000
+      },
+      "unitCost": {
+        "label": "Cost per paid pack",
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 100000000
+      },
+      "bonus": {
+        "label": "Bonus packs",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 1000000
+      },
+      "freight": {
+        "label": "Freight (not taxed)",
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 100000000
+      },
+      "discount": {
+        "label": "Total goods discount",
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 100000000
+      },
+      "taxRate": {
+        "label": "Goods tax rate (%)",
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 100
+      },
+      "paymentDays": {
+        "label": "Payment term (days)",
+        "type": "integer",
+        "required": true,
+        "min": 0,
+        "max": 365
+      },
+      "notes": {
+        "label": "Conditions / exclusions",
+        "type": "textarea",
+        "required": false
+      }
+    }
+  }
+}

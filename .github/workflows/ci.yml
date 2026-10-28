@@ -1,4 +1,4 @@
-name: Frontend checks
+name: Frontend release checks
 on: [push, pull_request]
 jobs:
   verify:
@@ -10,6 +10,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run lint -- --quiet
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: node scripts/smoke-dealer.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-verification
+          path: artifacts/

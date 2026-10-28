@@ -3,7 +3,7 @@ import { Package, BarChart3, ShoppingCart, Users, FileText, Shield, Leaf, Bell, 
 
 const FEATURES = [
   { icon: Package, title: "Smart Inventory", desc: "Real-time stock tracking, batch expiry alerts, and dead stock detection.", color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
-  { icon: BarChart3, title: "Deep Analytics", desc: "Profit reports, margin analysis, and AI-powered sales forecasting.", color: "#8b5cf6", bg: "rgba(139,92,246,0.1)" },
+  { icon: BarChart3, title: "Deep Analytics", desc: "Profit reports, margin analysis, and historical sales projections.", color: "#8b5cf6", bg: "rgba(139,92,246,0.1)" },
   { icon: ShoppingCart, title: "Lightning POS", desc: "Fast checkout with barcode scanning, held sales, and instant receipts.", color: "#06b6d4", bg: "rgba(6,182,212,0.1)" },
   { icon: Users, title: "Customer CRM", desc: "Loyalty programs, credit sales, purchase history — all unified.", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
   { icon: FileText, title: "Purchase Orders", desc: "Manage suppliers, create POs, receive goods, and handle returns.", color: "#10b981", bg: "rgba(16,185,129,0.1)" },
