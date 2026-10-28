@@ -36,7 +36,7 @@ export function useUserManagement() {
 
   const openEdit = useCallback((user) => {
     setEditingUser(user);
-    setFormData({ name: user.name, email: user.email, password: "", role: user.role || "cashier", phone: user.phone || "" });
+    setFormData({ name: user.name, email: user.email, password: "", role: user.role || "cashier", customRoleId: user.customRoleId || "", phone: user.phone || "" });
     setShowAddUser(true);
   }, []);
 

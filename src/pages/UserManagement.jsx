@@ -1,16 +1,20 @@
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Edit3, Trash2, Shield, Eye, EyeOff, UserCheck, UserX, Settings, RefreshCw, Users, X } from "lucide-react";
 import { useUsers } from "../hooks/useUsers";
 import { useUserManagement } from "../hooks/useUserManagement";
 import { ConfirmModal } from "../components/ui/ModernModal";
 import { AVAILABLE_PERMISSIONS, ALL_PERMISSION_KEYS, USER_ROLE_CONFIG } from "../constants/users";
+import API from "../api/axios";
+import Select from "../components/ui/Select";
 
 const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
 const UserManagement = () => {
   const { users, loading, fetchUsers } = useUsers();
+  const [customRoles, setCustomRoles] = useState([]);
+  const [rolesError, setRolesError] = useState("");
   const {
     isAdmin,
     showAddUser, setShowAddUser,
@@ -26,7 +30,12 @@ const UserManagement = () => {
     handleGrantAll, handleRevokeAll, handlePermissionToggle,
   } = useUserManagement();
 
-  useEffect(() => { fetchUsers(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchUsers();
+    if (isAdmin) API.get("/roles")
+      .then(response => setCustomRoles(response.data.data?.roles || []))
+      .catch(error => setRolesError(error.response?.data?.message || "Custom roles could not be loaded"));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -39,6 +48,7 @@ const UserManagement = () => {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">User Management</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">{users.length} users in system</p>
+            {rolesError && <p role="alert" className="mt-1 text-xs text-amber-700">{rolesError}</p>}
           </div>
         </div>
         <div className="flex gap-2">
@@ -61,6 +71,7 @@ const UserManagement = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.map((user, i) => {
+            const assignedRole = customRoles.find(role => role._id === user.customRoleId);
             const rc = USER_ROLE_CONFIG[user.role] || USER_ROLE_CONFIG.cashier;
             return (
               <div key={user._id} className={`bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium hover:shadow-premium-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden animate-fade-up stagger-${Math.min(i + 1, 4)}`}>
@@ -74,7 +85,7 @@ const UserManagement = () => {
                       <p className="font-bold text-slate-900 dark:text-white truncate text-sm">{user.name}</p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                     </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${rc.cls}`}>{rc.label}</span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${rc.cls}`}>{assignedRole?.name || rc.label}</span>
                   </div>
                   <div className="flex items-center justify-between px-1">
                     <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
@@ -139,11 +150,25 @@ const UserManagement = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Role</label>
-                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className={inputCls}>
-                  <option value="admin">Administrator</option>
-                  <option value="manager">Manager</option>
-                  <option value="cashier">Cashier</option>
-                </select>
+                <Select
+                  aria-label="Role"
+                  value={formData.customRoleId ? `custom:${formData.customRoleId}` : formData.role}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setFormData({
+                      ...formData,
+                      role: value.startsWith("custom:") ? "cashier" : value,
+                      customRoleId: value.startsWith("custom:") ? value.slice(7) : "",
+                    });
+                  }}
+                  options={[
+                    { value: "admin", label: "Administrator" },
+                    { value: "manager", label: "Manager" },
+                    { value: "cashier", label: "Cashier" },
+                    ...customRoles.map(role => ({ value: `custom:${role._id}`, label: `${role.name} (custom role)` })),
+                  ]}
+                />
+                {formData.customRoleId && <p className="mt-1 text-xs text-slate-500">The selected role’s permissions will be assigned to this staff account.</p>}
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={submitting} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-lg font-semibold text-sm transition-all">

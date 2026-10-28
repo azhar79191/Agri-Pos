@@ -6,6 +6,8 @@ describe('shop theme palette', () => {
     applyTheme('#7c3aed');
     expect(document.documentElement.style.getPropertyValue('--brand-500')).toBe('124 58 237');
     expect(document.documentElement.style.getPropertyValue('--pos-primary')).toBe('#7c3aed');
+    expect(document.documentElement.style.getPropertyValue('--primary')).toBe('262 83% 58%');
+    expect(document.documentElement.style.getPropertyValue('--ring')).toBe('262 83% 58%');
     expect(document.documentElement.style.getPropertyValue('--pos-primary-hover')).not.toContain('#1d4ed8');
   });
   it('chooses readable foregrounds and rejects invalid colors', () => {

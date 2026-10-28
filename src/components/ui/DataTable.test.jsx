@@ -5,7 +5,7 @@ import DataTable from './DataTable';
 import { compareValues } from '../../utils/tableSort';
 afterEach(cleanup);
 const records = [{id:'a', name:'Item 10', amount:1200}, {id:'b', name:'Item 2', amount:90}, {id:'c', name:'Item 1', amount:null}];
-function Example({data=records, searchable=false}) { return <DataTable searchable={searchable}><thead><tr><th>Name</th><th>Amount</th><th>Actions</th></tr></thead><tbody>{data.map(row => <tr key={row.id}><td>{row.name}</td><td data-sort-value={row.amount}>{row.amount == null ? 'Unknown' : `Custom ${row.amount}`}</td><td><button>Edit {row.name}</button></td></tr>)}</tbody><tfoot><tr><td colSpan={3}>Total</td></tr></tfoot></DataTable>; }
+function Example({data=records, searchable=false, loading=false}) { return <DataTable searchable={searchable} loading={loading}><thead><tr><th>Name</th><th>Amount</th><th>Actions</th></tr></thead><tbody>{data.map(row => <tr key={row.id}><td>{row.name}</td><td data-sort-value={row.amount}>{row.amount == null ? 'Unknown' : `Custom ${row.amount}`}</td><td><button>Edit {row.name}</button></td></tr>)}</tbody><tfoot><tr><td colSpan={3}>Total</td></tr></tfoot></DataTable>; }
 const names = () => [...document.querySelectorAll('tbody tr')].map(row=>row.cells[0].textContent);
 it('sorts numeric amounts both ways with missing values last and keeps totals fixed', () => {
  render(<Example />);
@@ -28,6 +28,12 @@ it('uses the common empty state and clears a table search', () => {
  expect(screen.getByRole('status').textContent).toContain('No matching records');
  fireEvent.click(screen.getAllByRole('button',{name:'Clear filters'}).at(-1));
  expect(names()).toHaveLength(3);
+});
+it('keeps table headers visible and displays loading feedback below them', () => {
+ render(<Example loading />);
+ expect(screen.getByRole('columnheader', {name:/Name/})).toBeTruthy();
+ expect(screen.getByRole('status', {name:'Loading records'})).toBeTruthy();
+ expect(document.querySelector('tbody').textContent).not.toContain('Item 10');
 });
 it('sorts explicit dates and keeps nulls last in both directions', () => {
  expect(compareValues('2026-01-31','2026-02-01','asc','Date')).toBeLessThan(0);

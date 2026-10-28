@@ -40,8 +40,8 @@ const CartPanel = ({
             {/* Checkout button */}
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               onClick={onCheckout} disabled={cart.length === 0 || checkoutLoading || !isOnline}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-black text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-              style={{ background: `linear-gradient(135deg, ${tc}, ${tc}cc)`, boxShadow: `0 8px 24px ${tc}40` }}>
+              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              style={{ background: tc }}>
               {checkoutLoading ? (
                 <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
                   className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
@@ -65,9 +65,9 @@ const CartPanel = ({
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-      className="lg:sticky lg:top-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-xl shadow-slate-200/40 dark:shadow-slate-900/40 flex flex-col overflow-hidden lg:max-h-[calc(100dvh-20rem)]"
+      className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col"
     >
-      <div className="min-h-0 flex-1 overflow-y-auto pb-36 lg:pb-0">
+      <div className="flex flex-col">
       {/* ── Header ── */}
       <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-900">
         <div className="flex items-center justify-between">
@@ -134,7 +134,7 @@ const CartPanel = ({
       </div>
 
       {/* ── Cart items ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2" style={{ maxHeight: "260px" }}>
+      <div className="px-4 py-3 space-y-2">
         <AnimatePresence initial={false}>
           {cart.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}

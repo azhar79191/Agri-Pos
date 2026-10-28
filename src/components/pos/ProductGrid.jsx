@@ -6,23 +6,12 @@ import { formatCurrency, isOutOfStock, isLowStock } from "../../utils/helpers";
 import usePOSFavorites from "../../hooks/usePOSFavorites";
 import { useApp } from "../../context/AppContext";
 
-const CAT_CFG = {
-  Herbicides:   { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-400",   dot: "bg-green-500" },
-  Insecticides: { bg: "bg-red-100 dark:bg-red-900/30",       text: "text-red-700 dark:text-red-400",       dot: "bg-red-500" },
-  Fungicides:   { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-400", dot: "bg-purple-500" },
-  Fertilizers:  { bg: "bg-amber-100 dark:bg-amber-900/30",   text: "text-amber-700 dark:text-amber-400",   dot: "bg-amber-500" },
-  Seeds:        { bg: "bg-emerald-100 dark:bg-emerald-900/20",text: "text-emerald-700 dark:text-emerald-400",dot: "bg-emerald-500" },
-  Other:        { bg: "bg-slate-100 dark:bg-slate-800",       text: "text-slate-600 dark:text-slate-400",   dot: "bg-slate-400" },
-};
-const getCat = (cat) => CAT_CFG[cat] || CAT_CFG.Other;
-
 /* ── Product Card ── */
 const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuantity, currency, isFavorite, onToggleFavorite }) => {
   const productId = product._id || product.id;
   const availableStock = product.stock - cartQuantity;
   const outOfStock = isOutOfStock(availableStock);
   const lowStock = isLowStock(availableStock);
-  const cat = getCat(product.category);
   const [adding, setAdding] = useState(false);
 
   const handleAdd = () => {
@@ -37,20 +26,17 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
   return (
     <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
       whileHover={!outOfStock ? { y: -3 } : {}}
-      className={`relative bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden transition-shadow duration-200 flex flex-col ${
+      className={`pos-product-card relative bg-white dark:bg-slate-900 rounded-xl border overflow-hidden transition-shadow duration-200 flex flex-col ${
         outOfStock ? "border-slate-200 dark:border-slate-800 opacity-60"
-        : inCart ? "border-emerald-300 dark:border-emerald-700 shadow-lg shadow-emerald-100/50 dark:shadow-emerald-900/20"
-        : "border-slate-200/80 dark:border-slate-700/60 hover:shadow-xl hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 hover:border-slate-300 dark:hover:border-slate-600"
-      }`}>
-      {inCart && <div className="absolute inset-0 rounded-2xl ring-2 ring-emerald-400/30 dark:ring-emerald-600/20 pointer-events-none z-10" />}
-      <div className={`relative h-28 flex items-center justify-center ${cat.bg} overflow-hidden`}>
-        <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full bg-white/20" />
-        <div className="absolute -bottom-3 -left-3 w-12 h-12 rounded-full bg-white/15" />
+        : inCart ? "border-slate-200 dark:border-slate-700"
+        : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+      }`} data-in-cart={inCart ? "true" : undefined}>
+      <div className="relative h-24 flex items-center justify-center bg-slate-50 dark:bg-slate-800 overflow-hidden">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-cover absolute inset-0" />
         ) : (
-          <div className="w-12 h-12 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur flex items-center justify-center shadow-sm z-10">
-            <Package className={`w-6 h-6 ${cat.text}`} />
+          <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 flex items-center justify-center border border-slate-100 dark:border-slate-600 z-10">
+            <Package className="w-6 h-6 text-slate-400" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -77,7 +63,7 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
           {product.manufacturer && <p className="text-[10px] text-slate-400 mt-0.5 truncate">{product.manufacturer}</p>}
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-base font-black text-emerald-600 dark:text-emerald-400">{formatCurrency(product.price, currency)}</p>
+          <p className="text-base font-bold" style={{ color: "var(--pos-primary)" }}>{formatCurrency(product.price, currency)}</p>
           <span className={`text-[10px] font-semibold ${outOfStock ? "text-red-500" : lowStock ? "text-amber-500" : "text-slate-400"}`}>{availableStock} left</span>
         </div>
         <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
@@ -85,15 +71,16 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
         </div>
         <div className="mt-auto">
           {inCart ? (
-            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/15 rounded-xl p-1 border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center justify-between rounded-lg p-1 border border-slate-200 dark:border-slate-700" style={{ background: "rgb(var(--pos-primary-rgb) / .06)" }}>
               <motion.button whileTap={{ scale: 0.85 }} onClick={() => onUpdateQuantity(productId, cartQuantity - 1)}
                 className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors">
                 <Minus className="w-3 h-3" />
               </motion.button>
               <motion.span key={cartQuantity} initial={{ scale: 1.4 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className="font-black text-emerald-700 dark:text-emerald-400 text-sm w-7 text-center">{cartQuantity}</motion.span>
+                className="font-semibold text-sm w-7 text-center" style={{ color: "var(--pos-primary)" }}>{cartQuantity}</motion.span>
               <motion.button whileTap={{ scale: 0.85 }} onClick={() => onUpdateQuantity(productId, cartQuantity + 1)} disabled={cartQuantity >= product.stock}
-                className="w-7 h-7 rounded-lg bg-emerald-500 shadow-sm flex items-center justify-center text-white hover:bg-emerald-600 disabled:opacity-40 transition-colors">
+                className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-40 transition-colors"
+                style={{ background: "var(--pos-primary)", color: "var(--pos-primary-foreground)" }}>
                 <Plus className="w-3 h-3" />
               </motion.button>
             </div>
@@ -102,9 +89,8 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
               onClick={handleAdd} disabled={outOfStock}
               className={`w-full py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 outOfStock ? "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                : adding ? "bg-emerald-500 text-white"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md"
-              }`}>
+                : "text-white"
+              }`} style={!outOfStock ? { background: "var(--pos-primary)", color: "var(--pos-primary-foreground)" } : undefined}>
               <AnimatePresence mode="wait">
                 {adding ? (
                   <motion.span key="added" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>✓ Added!</motion.span>
@@ -314,12 +300,12 @@ const ProductGrid = ({
                 All
               </button>
               {categories.map(cat => {
-                const c = getCat(cat);
                 const active = selectedCategory === cat;
                 return (
-                  <button key={cat} onClick={() => onCategoryChange({ target: { value: cat } })}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${active ? `${c.bg} ${c.text} border-transparent shadow-sm` : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />{cat}
+                  <button key={cat} onClick={() => onCategoryChange({ target: { value: cat } })} aria-pressed={active}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                    style={active ? { color: "var(--pos-primary)", background: "rgb(var(--pos-primary-rgb) / .08)", borderColor: "rgb(var(--pos-primary-rgb) / .2)" } : undefined}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? "var(--pos-primary)" : "#94a3b8" }} />{cat}
                   </button>
                 );
               })}
@@ -350,17 +336,17 @@ const ProductGrid = ({
                   const cartQuantity = inCart?.quantity || 0;
                   const availableStock = product.stock - cartQuantity;
                   const outOfStock = isOutOfStock(availableStock);
-                  const cat = getCat(product.category);
                   return (
                     <motion.div key={productId} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                      className={`flex items-center gap-3 p-3 rounded-2xl border bg-white dark:bg-slate-900 transition-all ${inCart ? "border-emerald-300 dark:border-emerald-700 shadow-sm" : "border-slate-200 dark:border-slate-700 hover:border-slate-300"} ${outOfStock ? "opacity-60" : ""}`}>
-                      <div className={`w-10 h-10 rounded-xl ${cat.bg} flex items-center justify-center shrink-0`}>
-                        <Package className={`w-5 h-5 ${cat.text}`} />
+                      className={`flex items-center gap-3 p-3 rounded-xl border bg-white dark:bg-slate-900 transition-all ${inCart ? "border-slate-200 dark:border-slate-700 shadow-sm" : "border-slate-200 dark:border-slate-700 hover:border-slate-300"} ${outOfStock ? "opacity-60" : ""}`}
+                      style={inCart ? { borderColor: "rgb(var(--pos-primary-rgb) / .38)" } : undefined}>
+                      <div className="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                        <Package className="w-5 h-5 text-slate-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{product.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-[10px] font-semibold ${cat.text}`}>{product.category}</span>
+                          <span className="text-[10px] font-semibold text-slate-500">{product.category}</span>
                           <span className="text-[10px] text-slate-400">{availableStock} left</span>
                         </div>
                       </div>

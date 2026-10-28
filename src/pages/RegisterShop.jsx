@@ -84,13 +84,13 @@ export default function RegisterShop() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
       <BrandingPanel steps={STEPS} currentStep={step} mode="register" />
 
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-slate-50 dark:bg-slate-950 overflow-y-auto">
+        <div className="w-full max-w-xl">
           <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-emerald-700 rounded-xl flex items-center justify-center">
               <Sprout className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">AgriNest POS</span>
@@ -99,15 +99,15 @@ export default function RegisterShop() {
           <div className="lg:hidden flex items-center justify-center gap-2 mb-6">
             {STEPS.map((s, i) => (
               <React.Fragment key={s.id}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.id ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400"}`}>
-                  {step > s.id ? "âœ“" : s.id}
+                <div aria-label={`Step ${s.id}: ${s.label}`} aria-current={step === s.id ? "step" : undefined} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${step >= s.id ? "bg-emerald-700 text-white" : "bg-slate-200 dark:bg-slate-700 text-slate-500"}`}>
+                  {step > s.id ? "✓" : s.id}
                 </div>
                 {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${step > s.id ? "bg-emerald-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
               </React.Fragment>
             ))}
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-8">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
             <ErrorBanner error={error} />
 
             {step === 1 && <AdminStep form={adminForm} onChange={setA} showPassword={showPass} togglePassword={() => setShowPass((p) => !p)} onNext={goNext} />}

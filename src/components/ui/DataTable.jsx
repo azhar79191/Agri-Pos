@@ -27,7 +27,6 @@ const fixedRow = row => row.type === 'tr' && cells(row).some(c => c.props.colSpa
 export default function DataTable({ children, loading = false, loadingLabel = "Loading records", emptyState = true, emptyTitle = 'No records found', emptyDescription = 'Records will appear here when they are available.', sortable = true, sortScope, searchable = false, ...props }) {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState({ index: null, direction: 'asc' });
-  if (loading) return <LoadingState variant="table" label={loadingLabel} cols={5} />;
   const sections = nodes(children);
   const head = sections.find(s => s.type === 'thead');
   const headerIndex = nodes(head?.props.children).findIndex(r => r.type === 'tr');
@@ -47,6 +46,7 @@ export default function DataTable({ children, loading = false, loadingLabel = "L
         </button>);
     }))));
     if (section.type !== 'tbody') return section;
+    if (loading) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><LoadingState variant="inline" label={loadingLabel} /></td></tr>);
     const rows = nodes(section.props.children).filter(row => !search || fixedRow(row) || String(row.props.sortValues?.join(' ') || cellValue(row)).toLocaleLowerCase().includes(search.toLocaleLowerCase()));
     if (emptyState && rows.length === 1 && fixedRow(rows[0]) && /^no |^nothing /i.test(String(cellValue(rows[0])).trim())) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><EmptyState title={String(cellValue(rows[0])).trim()} /></td></tr>);
     if (!rows.length && emptyState) return cloneElement(section, {}, <tr><td colSpan={Math.max(headers.length, 1)}><EmptyState title={search ? 'No matching records' : emptyTitle} description={search ? 'Try a different search or clear the filters.' : emptyDescription} filtered={!!search} onClear={search ? () => setSearch('') : undefined} /></td></tr>);

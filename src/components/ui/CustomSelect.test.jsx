@@ -29,6 +29,15 @@ it('supports pointer choice, typeahead, escape and outside dismissal', () => {
   fireEvent.click(trigger); fireEvent.pointerDown(document.body);
   expect(screen.queryByRole('listbox')).toBeNull();
 });
+it('filters dropdown options through its search field', () => {
+  render(<Example />);
+  fireEvent.click(screen.getByRole('combobox', { name: 'Access role' }));
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Search options' }), { target: { value: 'edit' } });
+  expect(screen.getByRole('option', { name: 'Editor' })).toBeTruthy();
+  expect(screen.queryByRole('option', { name: 'Viewer' })).toBeNull();
+  fireEvent.click(screen.getByRole('option', { name: 'Editor' }));
+  expect(screen.getByRole('combobox', { name: 'Access role' }).textContent).toContain('Editor');
+});
 it('does not open inside a disabled fieldset and announces empty lists', () => {
   const view = render(<fieldset disabled><Example /></fieldset>);
   fireEvent.click(screen.getByRole('combobox'));

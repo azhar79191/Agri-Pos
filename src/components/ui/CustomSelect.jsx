@@ -10,15 +10,17 @@ const CustomSelect = forwardRef(function CustomSelect({
   const generated = useId();
   const fieldId = id || generated, listId = `${fieldId}-options`, helpId = `${fieldId}-help`;
   const trigger = useRef(null), panel = useRef(null), typeahead = useRef({ value: '', time: 0 });
-  const [open, setOpen] = useState(false), [active, setActive] = useState(-1), [position, setPosition] = useState(null), [invalid, setInvalid] = useState(false);
+  const [open, setOpen] = useState(false), [active, setActive] = useState(-1), [position, setPosition] = useState(null), [invalid, setInvalid] = useState(false), [search, setSearch] = useState('');
   useImperativeHandle(ref, () => trigger.current);
   const normalized = options.map(option => ({ ...option, value: String(option.value) }));
+  const visibleOptions = normalized.map((option, index) => ({ option, index })).filter(({ option }) => option.label.toLowerCase().includes(search.toLowerCase()));
   const selected = normalized.find(option => option.value === String(value ?? ''));
   const unavailable = () => disabled || trigger.current?.matches(':disabled');
   const enabled = normalized.map((option, index) => option.disabled ? -1 : index).filter(index => index >= 0);
-  const close = (focus = false) => { setOpen(false); if (focus) trigger.current?.focus(); };
+  const close = (focus = false) => { setOpen(false); setSearch(''); if (focus) trigger.current?.focus(); };
   const show = (last = false) => {
     if (unavailable()) return;
+    setSearch('');
     const current = normalized.findIndex(option => option.value === String(value ?? '') && !option.disabled);
     setActive(current >= 0 ? current : last ? enabled.at(-1) ?? -1 : enabled[0] ?? -1);
     setOpen(true);
@@ -54,7 +56,7 @@ const CustomSelect = forwardRef(function CustomSelect({
       const bounds = trigger.current?.getBoundingClientRect();
       if (!bounds) return;
       const below = window.innerHeight - bounds.bottom - 12, above = bounds.top - 12;
-      const height = Math.min(280, Math.max(80, below >= 160 || below >= above ? below : above));
+        const height = Math.min(320, Math.max(100, below >= 160 || below >= above ? below : above));
       const width = Math.min(Math.max(bounds.width, 180), window.innerWidth - 24);
       setPosition({ position: 'fixed', width, maxHeight: height, left: Math.max(12, Math.min(bounds.left, window.innerWidth - width - 12)), ...(below >= 160 || below >= above ? { top: bounds.bottom + 6 } : { bottom: window.innerHeight - bounds.top + 6 }) });
     };
@@ -77,12 +79,16 @@ const CustomSelect = forwardRef(function CustomSelect({
     {/* Native form participation only; the visible popup is entirely custom. */}
     <select hidden aria-hidden="true" tabIndex={-1} name={name} value={value ?? ''} disabled={disabled} required={required} onChange={() => {}} onInvalid={event => { event.preventDefault(); setInvalid(true); trigger.current?.focus(); }}><option value="" />{normalized.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}</select>
     {(error || helperText || invalid) && <p id={helpId} className={`mt-1.5 text-xs ${error || invalid ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>{error || (invalid ? 'Choose an option.' : helperText)}</p>}
-    {open && position && createPortal(<div ref={panel} id={listId} role="listbox" aria-label={ariaLabel || label || placeholder} className="custom-select-menu overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl dark:border-slate-600 dark:bg-slate-900" style={{ ...position, zIndex: 12000 }}>
-      {normalized.length === 0 && <p className="p-3 text-slate-500 dark:text-slate-400">No options available</p>}
-      {normalized.map((option, index) => <div key={option.value} id={`${listId}-${index}`} role="option" data-value={option.value} aria-selected={option.value === String(value ?? '')} aria-disabled={!!option.disabled} data-active={index === active} onPointerMove={() => !option.disabled && setActive(index)} onPointerDown={event => event.preventDefault()} onClick={() => choose(index)}
+    {open && position && createPortal(<div ref={panel} className="custom-select-menu overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl dark:border-slate-600 dark:bg-slate-900" style={{ ...position, zIndex: 12000 }}>
+      <label className="sr-only" htmlFor={`${fieldId}-search`}>Search options</label>
+      <input id={`${fieldId}-search`} type="search" value={search} onChange={event => { setSearch(event.target.value); setActive(-1); }} placeholder="Search options..." className="mb-1.5 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-[var(--pos-primary)] dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+      <div id={listId} role="listbox" aria-label={ariaLabel || label || placeholder} className="max-h-[240px] overflow-y-auto overscroll-contain">
+      {visibleOptions.length === 0 && <p className="p-3 text-slate-500 dark:text-slate-400">{normalized.length === 0 ? 'No options available' : 'No matching options'}</p>}
+      {visibleOptions.map(({ option, index }) => <div key={option.value} id={`${listId}-${index}`} role="option" data-value={option.value} aria-selected={option.value === String(value ?? '')} aria-disabled={!!option.disabled} data-active={index === active} onPointerMove={() => !option.disabled && setActive(index)} onPointerDown={event => event.preventDefault()} onClick={() => choose(index)}
         className={`custom-select-option flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 ${option.disabled ? 'cursor-not-allowed opacity-40' : ''}`}>
         <span className="min-w-0 break-words">{option.label}</span>{option.value === String(value ?? '') && <Check aria-hidden="true" className="h-4 w-4 shrink-0" />}
       </div>)}
+      </div>
     </div>, document.body)}
   </div>;
 });

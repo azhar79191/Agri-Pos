@@ -9,7 +9,7 @@ const buildDoc = async (invoice, settings) => {
     import('jspdf-autotable'),
   ]);
 
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: settings?.receiptTemplate === 'compact' ? 'a5' : 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const currency = settings?.currency || 'Rs.';
   const address = settings?.shopAddress || settings?.address;

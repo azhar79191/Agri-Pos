@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, Receipt, Scan, Wifi, WifiOff, Zap } from "lucide-react";
+import { ShoppingCart, Receipt, Scan, Wifi, WifiOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const POSHeader = ({ isOnline, itemCount, onScanOpen }) => {
@@ -15,17 +15,15 @@ const POSHeader = ({ isOnline, itemCount, onScanOpen }) => {
       {/* Left */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
-            <Zap className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "var(--pos-primary)", color: "var(--pos-primary-foreground)" }}>
+            <ShoppingCart className="w-5 h-5" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Point of Sale
           </h1>
         </div>
         <div className="flex items-center gap-3 ml-13 pl-1">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Fast checkout · Real-time inventory
-          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Checkout</p>
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 2.5 }}
@@ -68,7 +66,7 @@ const POSHeader = ({ isOnline, itemCount, onScanOpen }) => {
           initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 15 }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
         >
           <ShoppingCart className="w-4 h-4" />
           {itemCount} {itemCount === 1 ? "item" : "items"}

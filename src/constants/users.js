@@ -33,4 +33,4 @@ export const USER_ROLE_CONFIG = {
   cashier: { label: "Cashier",       cls: "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400", gradient: "from-blue-600 to-blue-700" },
 };
 
-export const EMPTY_USER_FORM = { name: "", email: "", password: "", role: "cashier", phone: "" };
+export const EMPTY_USER_FORM = { name: "", email: "", password: "", role: "cashier", customRoleId: "", phone: "" };

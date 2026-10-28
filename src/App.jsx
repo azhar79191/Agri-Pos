@@ -127,7 +127,7 @@ const AppLayout = () => {
 
         {/* Main content */}
         <main className="workspace-main flex-1 overflow-y-auto p-4 lg:p-6 mt-14 lg:mt-0 pb-safe-nav lg:pb-6">
-          <div className="workspace-shell max-w-7xl mx-auto page-enter">
+          <div className="workspace-shell max-w-screen-2xl mx-auto page-enter">
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <AccessBoundary><Routes>

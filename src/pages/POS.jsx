@@ -56,20 +56,19 @@ const POS = () => {
   useEffect(() => {
     fetchProducts();
     fetchCustomers();
-    // Fetch sales reps with better error handling and data extraction
     getSalesReps({ status: "active", limit: 100 })
       .then((res) => {
-        console.log('Sales Reps Response:', res);
-        const reps = res.data?.data?.reps || res.data?.reps || res.data || [];
-        console.log('Extracted Sales Reps:', reps);
+        const reps = [res.data?.data?.reps, res.data?.reps, res.data].find(Array.isArray);
+        if (!reps) throw new Error("Sales representatives response was invalid");
         setSalesReps(reps);
       })
       .catch((err) => {
         console.error('Failed to fetch sales reps:', err);
         setSalesReps([]);
+        actions.showToast({ message: "Sales representatives could not be loaded. Checkout is still available.", type: "warning" });
       });
 
-  }, []); // eslint-disable-line
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const posCart = usePOSCart({ settings, customers });
   const {

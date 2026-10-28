@@ -21,7 +21,7 @@ const FEATURES = [
 
 /** Enhanced Branding Panel with modern gradient design */
 const BrandingPanel = ({ mode }) => (
-  <div className="hidden lg:flex lg:w-[45%] xl:w-1/2 relative overflow-hidden flex-col justify-between p-12 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+  <div className="hidden lg:flex lg:w-[40%] xl:w-[42%] relative overflow-hidden flex-col justify-between p-12 bg-slate-950">
     {/* Animated background elements */}
     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl animate-pulse" />
     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full -translate-x-1/4 translate-y-1/4 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
@@ -30,23 +30,23 @@ const BrandingPanel = ({ mode }) => (
     <div className="relative z-10">
       {/* Logo */}
       <div className="flex items-center gap-3 mb-16">
-        <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <div className="w-11 h-11 bg-emerald-700 rounded-xl flex items-center justify-center">
           <Sprout className="w-6 h-6 text-white" />
         </div>
         <div>
           <p className="font-bold text-white text-xl tracking-tight leading-none">{PLATFORM_BRAND.name}</p>
-          <p className="text-[10px] text-blue-300/70 mt-1 tracking-widest uppercase font-medium">{PLATFORM_BRAND.tagline}</p>
+          <p className="text-[10px] text-slate-400 mt-1 tracking-widest uppercase font-medium">{PLATFORM_BRAND.tagline}</p>
         </div>
       </div>
 
       {/* Main content */}
       <div className="mb-12">
-        <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-blue-500/15 to-purple-500/15 border border-blue-400/30 backdrop-blur-sm mb-6">
-          <Sparkles className="w-4 h-4 text-blue-300" />
-          <span className="text-xs font-semibold text-blue-200 tracking-wide">Premium Agricultural Solution</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-5">
+          <Sparkles className="w-4 h-4 text-emerald-300" />
+          <span className="text-xs font-medium text-slate-300">Agricultural retail workspace</span>
         </div>
         
-        <h1 className="text-5xl xl:text-6xl font-bold text-white leading-tight tracking-tight mb-5 bg-gradient-to-br from-white to-blue-100 bg-clip-text text-transparent">
+        <h1 className="text-4xl xl:text-5xl font-semibold text-white leading-tight tracking-tight mb-5">
           {mode === "setup" ? "Welcome.\nLet's begin." : "Grow your\nbusiness."}
         </h1>
         
@@ -62,10 +62,10 @@ const BrandingPanel = ({ mode }) => (
         {FEATURES.slice(0, 3).map(({ icon: Icon, title, desc }) => (
           <div 
             key={title} 
-            className="group flex items-center gap-4 p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 backdrop-blur-sm"
+            className="group flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors"
           >
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-              <Icon className="w-5 h-5 text-blue-300" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+              <Icon className="w-5 h-5 text-emerald-300" />
             </div>
             <div>
               <p className="text-sm font-semibold text-white mb-0.5">{title}</p>
@@ -157,11 +157,11 @@ const Login = () => {
       <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
         <BrandingPanel mode={mode} />
 
-        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-white dark:bg-slate-950">
-          <div className="w-full max-w-[440px]">
+        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-slate-50 dark:bg-slate-950">
+          <div className="w-full max-w-[440px] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
             {/* Mobile logo */}
             <div className="lg:hidden flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-10 h-10 bg-emerald-700 rounded-xl flex items-center justify-center">
                 <Sprout className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -201,7 +201,7 @@ const Login = () => {
                   New shop?{" "}
                   <button 
                     onClick={() => navigate("/register")} 
-                    className="text-blue-600 dark:text-blue-400 font-semibold hover:underline underline-offset-2 transition-colors"
+                    className="text-emerald-700 dark:text-emerald-300 font-semibold hover:underline underline-offset-2 transition-colors"
                   >
                     Register here
                   </button>

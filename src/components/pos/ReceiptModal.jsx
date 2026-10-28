@@ -21,7 +21,8 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 24 }}
           transition={{ type: "spring", stiffness: 280, damping: 22 }}
-          className="bg-white dark:bg-slate-900 rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col border border-slate-200/80 dark:border-slate-700/50 overflow-hidden"
+          className="receipt-modal bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden"
+          data-receipt-template={settings.receiptTemplate || "standard"}
         >
           {/* Modal header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
@@ -57,7 +58,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
 
           {/* Receipt content */}
           <div className="flex-1 overflow-y-auto p-5">
-            <div className="receipt bg-white rounded-lg border-2 border-dashed border-slate-200 p-5">
+            <div className="receipt receipt-paper bg-white rounded-lg border border-dashed border-slate-200 p-5">
               {/* Pending notice */}
               {transaction.status === "Pending" && (
                 <motion.div
