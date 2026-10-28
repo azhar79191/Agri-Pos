@@ -1,6 +1,5 @@
+import { LoadingIndicator } from "./LoadingState";
 import React from "react";
-import { Loader2 } from "lucide-react";
-
 const Button = ({
   children, variant = "primary", size = "md", className = "",
   disabled = false, loading = false, onClick, type = "button",
@@ -32,12 +31,13 @@ const Button = ({
     <button
       type={type}
       className={[base, variants[variant], sizes[size], (disabled || loading) && "opacity-50 cursor-not-allowed pointer-events-none", className].filter(Boolean).join(" ")}
+      aria-busy={loading || undefined}
       disabled={disabled || loading}
       onClick={onClick}
       {...props}
     >
       {loading
-        ? <Loader2 className="w-4 h-4 animate-spin" />
+        ? <LoadingIndicator />
         : Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
       {children}
     </button>

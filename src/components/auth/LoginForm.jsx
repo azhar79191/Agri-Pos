@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
-import { Mail, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 /**
  * LoginForm — email + password sign-in form with forgot password link.
@@ -65,7 +66,7 @@ const LoginForm = ({ initialEmail = "", onSubmit, loading, onForgotPassword }) =
         className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
       >
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <LoadingIndicator />
         ) : (
           <>
             <span>Sign In</span>

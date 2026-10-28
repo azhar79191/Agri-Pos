@@ -1,6 +1,7 @@
+import LoadingState from "../../components/ui/LoadingState";
 import { companyName } from "../../utils/company";
 import React, { useMemo } from "react";
-import { Clock, AlertTriangle, DollarSign, TrendingDown, Phone, FileText, Loader2 } from "lucide-react";
+import { Clock, AlertTriangle, DollarSign, TrendingDown, Phone, FileText } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { useCreditSales } from "../../hooks/useCreditSales";
@@ -65,9 +66,7 @@ const InvoiceAgingReport = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 gap-2 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span>
-        </div>
+        <LoadingState label="Loading" />
       ) : (
         <>
           {/* Summary cards */}

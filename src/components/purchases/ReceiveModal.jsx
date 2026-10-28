@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { Loader2, CheckCircle, AlertCircle, ClipboardCheck } from "lucide-react";
+import { CheckCircle, AlertCircle, ClipboardCheck } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { receiveGoods } from "../../api/purchaseOrdersApi";
@@ -71,7 +72,7 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
           <div className="flex gap-3">
             <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
             <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
               {saving ? "Saving..." : hasPendingReceipt ? "Recover original receipt" : "Confirm Receipt"}
             </button>
           </div>

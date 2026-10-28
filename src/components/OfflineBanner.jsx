@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState } from "react";
 import { WifiOff, Wifi, RefreshCw, X, Clock, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import useOfflineQueue from "../hooks/useOfflineQueue";
@@ -54,7 +55,7 @@ const OfflineBanner = () => {
                 className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
                 title="Retry now"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${retrying ? "animate-spin" : ""}`} />
+                {retrying ? <LoadingIndicator /> : <RefreshCw className={`w-3.5 h-3.5 `} />}
               </button>
             )}
             {pendingCount > 0 && (

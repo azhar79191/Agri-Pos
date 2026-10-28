@@ -8,6 +8,7 @@ const ItemRow = ({ item, index, onChange, onRemove }) => (
     <div className="col-span-5 text-sm text-slate-800 dark:text-slate-200 truncate px-2 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg">
       {item.productName || <span className="text-slate-400">—</span>}
     </div>
+    <label className="col-span-12 text-xs">Base units per purchased pack (quantity and cost below are per pack)<input aria-label={`Base units per pack for line ${index + 1}`} type="number" min="1" max="1000000" step="1" value={item.packSize || 1} onChange={e => onChange(index, 'packSize', Number(e.target.value))} className="min-h-11 w-full rounded border bg-white px-2 text-slate-900 dark:bg-slate-800 dark:text-white" /></label>
     <input
       type="number" min="1"
       value={item.quantity}

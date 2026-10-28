@@ -1,3 +1,4 @@
+import LoadingState from "./LoadingState";
 import EmptyState from "./EmptyState";
 import DataTable from "./DataTable";
 import React from "react";
@@ -33,11 +34,8 @@ const Table = ({
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-7 h-7 border-[3px] border-blue-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-slate-400">Loading...</p>
-                  </div>
+                <td colSpan={columns.length} className="p-0">
+                  <LoadingState variant="table" rows={5} cols={columns.length} label="Loading records" />
                 </td>
               </tr>
             ) : data.length === 0 ? (

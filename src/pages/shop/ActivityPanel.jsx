@@ -1,6 +1,7 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import React, { useState, useEffect } from "react";
-import { Bell, Loader2, ShoppingCart, Package, Users, Settings, RefreshCw } from "lucide-react";
+import { Bell, ShoppingCart, Package, Users, Settings, RefreshCw } from "lucide-react";
 import ShopCard from "./ShopCard";
 import { formatDate } from "../../utils/helpers";
 import { useApp } from "../../context/AppContext";
@@ -46,13 +47,11 @@ const ActivityPanel = () => {
       action={
         <button onClick={load} disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50">
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+          {loading ? <LoadingIndicator /> : <RefreshCw className={`w-3.5 h-3.5 `} />} Refresh
         </button>
       }>
       {loading ? (
-        <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading activity...</span>
-        </div>
+        <LoadingState label="Loading activity" />
       ) : logs.length === 0 ? (
         <EmptyState title={<>No activity recorded yet</>} />
       ) : (

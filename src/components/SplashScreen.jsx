@@ -1,3 +1,4 @@
+import LoadingState from "./ui/LoadingState";
 import React, { useEffect, useState } from "react";
 import { Sprout, Sparkles, TrendingUp, Shield } from "lucide-react";
 
@@ -174,7 +175,7 @@ const SplashScreen = ({ onComplete }) => {
             </div>
           </div>
           <div className="flex items-center justify-between mt-2 text-white/70 text-xs font-medium">
-            <span>Loading...</span>
+            <LoadingState label="Loading" />
             <span>{progress}%</span>
           </div>
         </div>

@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
-import { PackagePlus, Plus, Trash2, Package, Edit2, Search, X, Loader2 } from "lucide-react";
+import { PackagePlus, Plus, Trash2, Package, Edit2, Search, X } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useProducts } from "../../context/ProductsContext";
 import { formatCurrency } from "../../utils/helpers";
@@ -49,7 +50,7 @@ const Bundles = () => {
       <FilterBar filters={[{ type: "search", key: "search", placeholder: "Search bundles..." }]} values={{ search }} onChange={(k, v) => setSearch(v)} onClear={() => setSearch("")} total={total} />
 
       {loading ? (
-        <div className="flex items-center justify-center py-20 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading bundles...</span></div>
+        <LoadingState variant="cards" label="Loading bundles" />
       ) : bundles.length === 0 ? (
         <EmptyState icon={PackagePlus} title="No bundles yet" description="Create product bundles with discounted pricing to boost sales" actionLabel="Create Bundle" onAction={openCreate} />
       ) : (
@@ -81,7 +82,7 @@ const Bundles = () => {
                   <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(b)} className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button onClick={() => handleDelete(b._id)} disabled={deleting === b._id} className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50">
-                      {deleting === b._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      {deleting === b._id ? <LoadingIndicator /> : <Trash2 className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
@@ -177,7 +178,7 @@ const Bundles = () => {
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex-shrink-0">
               <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
               <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all" style={{ background: "var(--pos-primary)" }}>
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <PackagePlus className="w-4 h-4" />}
+                {saving ? <LoadingIndicator /> : <PackagePlus className="w-4 h-4" />}
                 {editing ? "Update Bundle" : "Create Bundle"}
               </button>
             </div>

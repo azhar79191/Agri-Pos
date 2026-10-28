@@ -5,7 +5,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
 import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
-import ShopLogo from "./ui/ShopLogo";
 import UserAvatar from "./ui/UserAvatar";
 import NotificationCenter from "./NotificationCenter";
 import GlobalSearch from "./GlobalSearch";
@@ -68,11 +67,7 @@ const Header = () => {
 
       {/* Left — title + breadcrumb */}
       <div className="flex min-w-0 items-center gap-4">
-        <div aria-label="Company identity" className="flex min-w-0 max-w-[240px] items-center gap-3 border-r border-slate-200 pr-4 dark:border-slate-700">
-          <ShopLogo logo={settings.brandLogo || settings.shopLogo} name={settings.brandName || settings.shopName} size="w-8 h-8" />
-          <div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900 dark:text-white">{companyName(settings)}</p>{settings.brandTagline && <p className="truncate text-[10px] text-slate-500">{settings.brandTagline}</p>}</div>
-        </div>
-        <div className="hidden xl:block">
+        <div className="min-w-0">
           {breadcrumb && (
             <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mb-0.5">
               <span>{breadcrumb[0]}</span>

@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, X, Loader2, Tag } from "lucide-react";
+import { Plus, X, Tag } from "lucide-react";
 import { getMyShop } from "../../api/shopApi";
 import { useApp } from "../../context/AppContext";
 import SettingsCard from "./SettingsCard";
@@ -67,9 +68,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
   return (
     <SettingsCard title={title} desc={desc}>
       {loading ? (
-        <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span>
-        </div>
+        <LoadingState label="Loading" />
       ) : !shop ? (
         <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
           <p className="text-sm text-slate-500 dark:text-slate-400">No shop found. Complete shop setup first.</p>
@@ -93,7 +92,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
               disabled={!input.trim() || adding}
               className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
             >
-              {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {adding ? <LoadingIndicator /> : <Plus className="w-4 h-4" />}
               Add
             </button>
           </div>
@@ -116,7 +115,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
                     disabled={adding || !!deleting}
                     className="flex items-center justify-center w-4 h-4 hover:text-red-500 disabled:opacity-50 transition-colors"
                   >
-                    {deleting === tag ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                    {deleting === tag ? <LoadingIndicator /> : <X className="w-3.5 h-3.5" />}
                   </button>
                 </span>
               ))}

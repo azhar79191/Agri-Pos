@@ -1,9 +1,10 @@
+import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import EmptyState from "../../../components/ui/EmptyState";
 import FilterBar from "../../../components/ui/FilterBar";
 import React, { useState, useEffect } from "react";
 import {
   Plus, Edit3, Trash2, Shield, Eye, EyeOff,
-  UserCheck, UserX, RefreshCw, Search, Loader2, Settings2,
+  UserCheck, UserX, RefreshCw, Search, Settings2,
   Mail, Phone, Users
 } from "lucide-react";
 import { useApp } from "../../../context/AppContext";
@@ -279,10 +280,7 @@ const UsersPanel = () => {
       {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-            <p className="text-sm text-slate-400">Loading team...</p>
-          </div>
+          <LoadingState label="Loading team" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -303,7 +301,7 @@ const UsersPanel = () => {
           <div className="flex justify-end gap-3">
             <button onClick={() => { setShowForm(false); setEditingUser(null); }} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
             <button onClick={handleSubmit} disabled={submitting} className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-50 text-white transition-all">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {submitting ? <LoadingIndicator /> : null}
               {submitting ? "Saving..." : editingUser ? "Update User" : "Add User"}
             </button>
           </div>

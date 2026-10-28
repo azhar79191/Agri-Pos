@@ -110,7 +110,7 @@ const Products = () => {
       {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={6} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton label="Loading products" rows={6} cols={8} /> : (
           <div className="overflow-x-auto">
             <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
               <thead>

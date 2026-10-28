@@ -185,8 +185,8 @@ const POS = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className={`lg:col-span-2 ${mobileTab === "cart" ? "hidden lg:block" : ""}`}>
           {catalogError && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">{catalogError}</p>}
-          {catalogLoading && <p role="status" className="mb-3 text-sm text-slate-500">Loading catalog...</p>}
           <ProductGrid
+            loading={catalogLoading}
             products={filteredProducts}
             cart={cart}
             categories={categories}

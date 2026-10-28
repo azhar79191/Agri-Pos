@@ -1,6 +1,7 @@
+import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState } from "react";
-import { BarChart3, TrendingUp, Users, ShoppingCart, DollarSign, Loader2 } from "lucide-react";
+import { BarChart3, TrendingUp, Users, ShoppingCart, DollarSign } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
@@ -36,9 +37,7 @@ const Analytics = () => {
       <FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
 
       {data.loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading analytics...</span>
-        </div>
+        <LoadingState label="Loading analytics" />
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

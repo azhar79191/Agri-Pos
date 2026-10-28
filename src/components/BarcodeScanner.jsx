@@ -1,4 +1,5 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from "react";
+import LoadingState, { LoadingIndicator } from "./ui/LoadingState";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Scan, Camera, Keyboard, XCircle, CheckCircle,
   RefreshCw, Package, ZapOff, AlertCircle,
@@ -331,10 +332,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
               : "border-red-400 bg-red-50 dark:bg-red-900/20"
           }`}>
             {loading && (
-              <div className="flex items-center justify-center py-4">
-                <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Looking up barcode...</span>
-              </div>
+              <LoadingState label="Loading content" />
             )}
             {!loading && (
               <>
@@ -460,7 +458,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
                     </span>
                   ) : (
                     <span className="flex items-center gap-2 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-slate-300 text-xs rounded-full">
-                      <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                      <LoadingIndicator />
                       {status || "Starting camera..."}
                     </span>
                   )}

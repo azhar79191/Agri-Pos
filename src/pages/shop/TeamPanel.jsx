@@ -1,6 +1,7 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import React, { useState, useEffect } from "react";
-import { Users, Plus, X, Eye, EyeOff, Loader2, Shield, UserCheck, ShoppingCart } from "lucide-react";
+import { Users, Plus, X, Eye, EyeOff, Shield, UserCheck, ShoppingCart } from "lucide-react";
 import ShopCard from "./ShopCard";
 import { inp } from "./shopConfig";
 import { getShopUsers, addUserToShop } from "../../api/shopApi";
@@ -60,9 +61,7 @@ const TeamPanel = ({ shopId }) => {
           )
         }>
         {loading ? (
-          <div className="flex  items-center justify-center py-10 gap-2 text-slate-400">
-            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading team...</span>
-          </div>
+          <LoadingState label="Loading team" />
         ) : (
           <div className="space-y-2">
             {users.length === 0 && !showForm && (
@@ -137,7 +136,7 @@ const TeamPanel = ({ shopId }) => {
                   </button>
                   <button onClick={handleAdd} disabled={adding}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors">
-                    {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {adding ? <LoadingIndicator /> : <Plus className="w-4 h-4" />}
                     {adding ? "Adding..." : "Add Member"}
                   </button>
                 </div>

@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
-import { DollarSign, Receipt, Percent, Save, Loader2, CheckCircle } from "lucide-react";
+import { DollarSign, Receipt, Percent, Save, CheckCircle } from "lucide-react";
 import ShopCard from "./ShopCard";
 import { inp } from "./shopConfig";
 
@@ -21,7 +22,7 @@ const BillingPanel = ({ form, setForm, saving, saved, onSave, shopName }) => {
         action={
           <button onClick={onSave} disabled={saving}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all ${saved ? "bg-emerald-500" : "bg-blue-600 hover:bg-blue-700"}`}>
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {saving ? <LoadingIndicator /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {saving ? "Saving..." : saved ? "Saved!" : "Save"}
           </button>
         }>

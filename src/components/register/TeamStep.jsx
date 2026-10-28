@@ -1,4 +1,5 @@
-import { Plus, Trash2, Eye, EyeOff, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { LoadingIndicator } from "../ui/LoadingState";
+import { Plus, Trash2, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
 
 export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, togglePassword, shopName, onBack, onSubmit, saving }) => (
   <>
@@ -82,7 +83,7 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
         disabled={saving}
         className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
       >
-        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Finish Setup <ArrowRight className="w-5 h-5" /></>}
+        {saving ? <LoadingIndicator /> : <>Finish Setup <ArrowRight className="w-5 h-5" /></>}
       </button>
     </div>
   </>

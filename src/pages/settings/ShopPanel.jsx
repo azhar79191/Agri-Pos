@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { Save, Loader2, Building2, DollarSign, Receipt, CheckCircle } from "lucide-react";
+import { Save, Building2, DollarSign, Receipt, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { getMyShop, updateShop } from "../../api/shopApi";
 import SettingsCard from "./SettingsCard";
@@ -49,9 +50,7 @@ const ShopPanel = () => {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-    </div>
+    <LoadingState label="Loading content" />
   );
 
   if (!shop) return (
@@ -72,7 +71,7 @@ const ShopPanel = () => {
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
             style={{ background: saved ? "#10b981" : themeColor }}>
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {saving ? <LoadingIndicator /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {saving ? "Saving..." : saved ? "Saved!" : "Save"}
           </button>
         }

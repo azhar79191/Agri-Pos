@@ -44,6 +44,7 @@ export const PAGE_TITLES = {
 
 /** Maps route paths → [parent, child] breadcrumb pairs */
 export const BREADCRUMBS = {
+  'dealer-workspace': ['Business', 'Dealer Workspace'],
   "dashboard/analytics":      ["Dashboard",    "Analytics"],
   "dashboard/forecasting":    ["Dashboard",    "Forecasting"],
   "sales/credit":             ["Sales",        "Credit Sales"],

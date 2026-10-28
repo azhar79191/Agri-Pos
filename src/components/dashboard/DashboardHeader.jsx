@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import { companyName } from "../../utils/company";
 import React from "react";
 import { AlertTriangle, ArrowUpRight, Calendar, RefreshCw, ShoppingCart } from "lucide-react";
@@ -47,7 +48,7 @@ const DashboardHeader = ({
             disabled={refreshing}
             className="dashboard-welcome__refresh inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-medium disabled:cursor-wait disabled:opacity-70"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+            {refreshing ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} aria-hidden="true" />}
             {refreshing ? "Updating" : "Refresh"}
           </button>
         </div>

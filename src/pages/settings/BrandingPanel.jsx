@@ -1,3 +1,4 @@
+import LoadingState from "../../components/ui/LoadingState";
 import Select from "../../components/ui/Select";
 import { useEffect, useRef, useState } from 'react';
 import API from '../../api/axios';
@@ -59,7 +60,7 @@ export default function BrandingPanel() {
     finally { setBusy(false); }
   };
   const field = (key, label, maxLength, type = 'text', required = false) => <label className="block text-sm font-medium">{label}<input required={required} type={type} maxLength={maxLength} className={input} value={key === 'brandLogo' && form[key]?.startsWith('data:') ? '' : form[key] || ''} onChange={e => { set(key, e.target.value); if (key === 'brandLogo') { setFile(null); setPreview(''); if (fileInput.current) fileInput.current.value = ''; } }} /></label>;
-  if (!form) return <section className="card-base p-6">{error ? <p role="alert">{error}<button type="button" onClick={load} className="ml-3 underline">Retry</button></p> : <p role="status">Loading company identity...</p>}</section>;
+  if (!form) return <section className="card-base p-6">{error ? <p role="alert">{error}<button type="button" onClick={load} className="ml-3 underline">Retry</button></p> : <LoadingState label="Loading company identity" />}</section>;
   const brand = themePalette(form.brandColor);
   const logo = preview || form.brandLogo || form.shopLogo || '';
   return <form onSubmit={save} className="space-y-6">

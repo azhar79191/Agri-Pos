@@ -1,7 +1,8 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import { useApp } from "../../context/AppContext";
 import { companyName } from "../../utils/company";
 import React, { useState, useRef } from "react";
-import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send, Camera, Upload, X, Image as ImageIcon, MapPin, DollarSign, Printer } from "lucide-react";
+import { Bug, Leaf, Sprout, ChevronRight, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send, Camera, Upload, X, Image as ImageIcon, MapPin, DollarSign, Printer } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory, detectPestFromImage } from "../../api/cropAdvisoryApi";
 import { CROPS, PEST_DISEASE_DATABASE, PRODUCT_DATABASE, SAFETY_PRECAUTIONS } from "../../data/cropAdvisory";
@@ -640,7 +641,7 @@ const EnhancedPestDiagnosis = () => {
                   <X className="w-4 h-4" />
                 </button>
                 <button onClick={detectFromImage} disabled={loading} className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {loading ? <LoadingIndicator /> : <Sparkles className="w-4 h-4" />}
                   {loading ? 'Analyzing...' : 'Detect with AI'}
                 </button>
               </div>
@@ -711,16 +712,7 @@ const EnhancedPestDiagnosis = () => {
       {step === 3 && (
         <div className="space-y-4">
           {loading ? (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-12 flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-slate-900 dark:text-white">Analyzing with AI...</p>
-                <p className="text-sm text-slate-500 mt-1">Getting expert recommendations for {selectedIssue} in {cropData?.name}</p>
-              </div>
-              <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
-            </div>
+            <LoadingState label="Preparing crop advisory" />
           ) : error ? (
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
               <div className="flex flex-col items-center gap-4 text-center">

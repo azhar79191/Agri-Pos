@@ -1,3 +1,4 @@
+import LoadingState from "../../components/ui/LoadingState";
 import React, { useState } from 'react';
 import { getCropAdvisory } from '../../api/cropAdvisoryApi';
 import { readAuthToken } from '../../utils/authStorage';
@@ -64,7 +65,7 @@ const TestCropAPI = () => {
 
       {loading && (
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">
-          <p className="text-blue-800">Loading...</p>
+          <LoadingState label="Loading" />
         </div>
       )}
 

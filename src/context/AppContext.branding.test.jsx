@@ -1,3 +1,6 @@
+import { MemoryRouter } from 'react-router-dom';
+import DocumentBranding from '../components/DocumentBranding';
+import { PLATFORM_BRAND } from '../constants/platformBrand';
 // @vitest-environment jsdom
 import React from 'react';
 import { render, screen, act, waitFor, cleanup } from '@testing-library/react';
@@ -12,7 +15,7 @@ function Probe() {
 }
 afterEach(() => { cleanup(); localStorage.clear(); sessionStorage.clear(); });
 it('isolates company appearance and clears branding on logout', async () => {
-  render(<AppProvider><Probe /></AppProvider>);
+  render(<MemoryRouter initialEntries={['/dashboard']}><AppProvider><DocumentBranding /><Probe /></AppProvider></MemoryRouter>);
   act(() => actions.login('', '', { name: 'A', shop: { _id: 'a', brandName: 'Company A', brandColor: '#7c3aed', theme: 'dark' } }));
   await waitFor(() => expect(screen.getByTestId('identity').textContent).toBe('Company A|#7c3aed|true'));
   act(() => actions.login('', '', { name: 'B', shop: { _id: 'b', brandName: 'Company B', theme: 'light' } }));
@@ -23,5 +26,5 @@ it('isolates company appearance and clears branding on logout', async () => {
   await waitFor(() => expect(screen.getByTestId('identity').textContent).toBe('Updated B|#0ea5e9|true'));
   act(() => actions.logout());
   await waitFor(() => expect(screen.getByTestId('identity').textContent).toBe('|#047857|false'));
-  expect(document.title).toBe('Agri-POS');
+  expect(document.title).toBe(PLATFORM_BRAND.name);
 });

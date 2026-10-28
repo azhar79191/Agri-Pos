@@ -1,3 +1,4 @@
+import LoadingState from "./LoadingState";
 import FilterBar from "./FilterBar";
 import React, { Children, cloneElement, isValidElement, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
@@ -23,9 +24,10 @@ const fixedRow = row => row.type === 'tr' && cells(row).some(c => c.props.colSpa
  * Reusable row components supply sortValues in column order. Set sortable=false
  * for receipts or editable line-item forms; data-sortable=false excludes a column.
  */
-export default function DataTable({ children, emptyState = true, emptyTitle = 'No records found', emptyDescription = 'Records will appear here when they are available.', sortable = true, sortScope, searchable = false, ...props }) {
+export default function DataTable({ children, loading = false, loadingLabel = "Loading records", emptyState = true, emptyTitle = 'No records found', emptyDescription = 'Records will appear here when they are available.', sortable = true, sortScope, searchable = false, ...props }) {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState({ index: null, direction: 'asc' });
+  if (loading) return <LoadingState variant="table" label={loadingLabel} cols={5} />;
   const sections = nodes(children);
   const head = sections.find(s => s.type === 'thead');
   const headerIndex = nodes(head?.props.children).findIndex(r => r.type === 'tr');

@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
-import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 const Field = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra }) => (
   <div>
@@ -40,7 +41,7 @@ const SetupForm = ({ onSubmit, loading }) => {
       />
       <Field label="Confirm Password" type="password" icon={Lock} value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" required />
       <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
+        {loading ? <LoadingIndicator /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
       </button>
     </form>
   );

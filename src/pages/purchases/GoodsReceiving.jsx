@@ -1,7 +1,8 @@
+import LoadingState from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useCallback } from "react";
-import { ClipboardCheck, AlertCircle, Loader2, ChevronDown, Search, Truck, CheckCircle, Package } from "lucide-react";
+import { ClipboardCheck, AlertCircle, ChevronDown, Search, Truck, CheckCircle, Package } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { usePaginatedApi } from "../../hooks/usePaginatedApi";
@@ -116,7 +117,7 @@ const GoodsReceiving = () => {
         </div>
       </FilterBar>
 
-      {loading && <div className="flex items-center justify-center py-16"><Loader2 className="w-7 h-7 animate-spin text-emerald-500" /></div>}
+      {loading && <LoadingState variant="cards" label="Loading content" />}
       {!loading && error && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 text-sm">
           <AlertCircle className="w-5 h-5 shrink-0" />{error}

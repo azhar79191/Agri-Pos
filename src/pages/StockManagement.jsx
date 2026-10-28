@@ -1,3 +1,4 @@
+import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import DataTable from "../components/ui/DataTable";
 import { useApp } from "../context/AppContext";
@@ -169,7 +170,7 @@ const StockManagement = () => {
           </div>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="text-slate-500 dark:text-slate-400 text-center py-8 text-sm">Loading...</p>
+              <LoadingState label="Loading" />
             ) : logs.length === 0 ? (
               <EmptyState title={<>No stock history available</>} />
             ) : (
@@ -204,7 +205,7 @@ const StockManagement = () => {
           <span className="ml-auto text-xs text-slate-400">{displayLevels.length} products</span>
         </div>
         <div className="overflow-x-auto">
-          <DataTable searchable className="w-full table-premium">
+          <DataTable loading={refreshingLevels && !stockLevels} loadingLabel="Loading stock levels" searchable className="w-full table-premium">
             <thead>
               <tr>{["Product", "Current Stock", "Unit", "Status"].map((h) => (
                 <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>

@@ -1,7 +1,8 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useMemo } from "react";
-import { CreditCard, DollarSign, Clock, AlertTriangle, Search, Loader2, CheckCircle } from "lucide-react";
+import { CreditCard, DollarSign, Clock, AlertTriangle, Search, CheckCircle } from "lucide-react";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
 import ModernModal from "../../components/ui/ModernModal";
@@ -76,7 +77,7 @@ const CreditSales = () => {
 
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+          <LoadingState variant="table" label="Loading credit sales" />
         ) : (
           <div className="overflow-x-auto">
             <DataTable emptyState={false} className="w-full table-premium min-w-[800px]">
@@ -113,7 +114,7 @@ const CreditSales = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
             <button onClick={() => setPaymentModal(null)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors order-2 sm:order-1">Cancel</button>
             <button onClick={handlePayment} disabled={processing} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors order-1 sm:order-2">
-              {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}Record Payment
+              {processing ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}Record Payment
             </button>
           </div>
         }

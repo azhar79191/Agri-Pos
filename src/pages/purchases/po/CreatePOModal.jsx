@@ -17,7 +17,7 @@ const CreatePOModal = ({ isOpen, onClose, onCreated }) => {
 
   useEffect(() => {
     if (!isOpen) return;
-    getSuppliers({ limit: 200 })
+    getSuppliers({ limit: 100 })
       .then(r => {
         const d = r.data.data;
         setSuppliers(d.suppliers ?? d.items ?? d.data ?? []);
@@ -34,7 +34,7 @@ const CreatePOModal = ({ isOpen, onClose, onCreated }) => {
     if (items.length === 0) { actions.showToast({ message: "Add at least one item", type: "error" }); return; }
     setSaving(true);
     try {
-      const payload = { ...form, items: items.map(i => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })) };
+      const payload = { ...form, items: items.map(i => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice, packSize: i.packSize || 1, packLabel: "pack" })) };
       const res = await createPurchaseOrder(payload);
       const order = res.data.data.order ?? res.data.data;
       actions.showToast({ message: `${order.poNumber} created successfully`, type: "success" });

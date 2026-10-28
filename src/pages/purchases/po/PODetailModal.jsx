@@ -1,6 +1,7 @@
+import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import DataTable from "../../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
-import { Send, Package, Calendar, FileText, Loader2 } from "lucide-react";
+import { Send, Package, Calendar, FileText } from "lucide-react";
 import ModernModal from "../../../components/ui/ModernModal";
 import { getPurchaseOrder, sendPurchaseOrder } from "../../../api/purchaseOrdersApi";
 import { formatCurrency, formatDate } from "../../../utils/helpers";
@@ -64,7 +65,7 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
             </button>
             <button onClick={handleSend} disabled={sending}
               className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {sending ? <LoadingIndicator /> : <Send className="w-4 h-4" />}
               {sending ? "Sending..." : "Send to Supplier"}
             </button>
           </div>
@@ -78,9 +79,7 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
       }
     >
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        </div>
+        <LoadingState label="Loading content" />
       ) : data ? (
         <div className="space-y-5">
           {/* Status badge */}

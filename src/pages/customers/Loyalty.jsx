@@ -1,6 +1,7 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
-import { Award, Gift, Crown, Loader2, X, Star } from "lucide-react";
+import { Award, Gift, Crown, X, Star } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
@@ -77,7 +78,7 @@ const Loyalty = () => {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading members...</span></div>
+        <LoadingState label="Loading members" />
       ) : members.length === 0 ? (
         <EmptyState icon={Award} title="No loyalty members yet" description="Customers automatically earn points based on their total purchases" />
       ) : (
@@ -149,7 +150,7 @@ const Loyalty = () => {
             <div className="flex gap-3">
               <button onClick={() => setRedeemModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
               <button onClick={handleRedeem} disabled={redeeming} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-amber-500 hover:bg-amber-600 transition-colors">
-                {redeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gift className="w-4 h-4" />}Redeem
+                {redeeming ? <LoadingIndicator /> : <Gift className="w-4 h-4" />}Redeem
               </button>
             </div>
           </div>

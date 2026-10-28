@@ -1,3 +1,4 @@
+import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState } from "react";
 import { Download, Trash2, RefreshCw, CheckCircle, AlertTriangle, Database } from "lucide-react";
 import SettingsCard from "./SettingsCard";
@@ -75,7 +76,7 @@ const DataPanel = () => {
             action={
               <button onClick={() => exportData("products")} disabled={exporting === "products"}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors">
-                {exporting === "products" ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                {exporting === "products" ? <LoadingIndicator /> : <Download className="w-3.5 h-3.5" />}
                 Export
               </button>
             }
@@ -86,7 +87,7 @@ const DataPanel = () => {
             action={
               <button onClick={() => exportData("customers")} disabled={exporting === "customers"}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white transition-colors">
-                {exporting === "customers" ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                {exporting === "customers" ? <LoadingIndicator /> : <Download className="w-3.5 h-3.5" />}
                 Export
               </button>
             }

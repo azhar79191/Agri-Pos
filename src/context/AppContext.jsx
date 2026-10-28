@@ -11,7 +11,6 @@ import { clearAuthToken, readAuthToken } from "../utils/authStorage";
 const _savedUser = (() => {
   try { return JSON.parse(localStorage.getItem("user") || localStorage.getItem("posUser")); } catch { return null; }
 })();
-const _defaultIcon = document.querySelector('link[rel="icon"]')?.getAttribute("href") || "/favicon.svg";
 const _savedShop = _savedUser?.shop && typeof _savedUser.shop === "object" ? _savedUser.shop : null;
 const _savedDarkMode = _savedShop?.theme === "dark";
 const _savedThemeColor = _savedShop?.brandColor || "#047857";
@@ -132,10 +131,6 @@ export function AppProvider({ children }) {
     applyTheme(state.themeColor);
   }, [state.themeColor]);
   useEffect(() => {
-    let icon = document.querySelector('link[rel="icon"]');
-    if (!icon) { icon = document.createElement('link'); icon.rel = 'icon'; document.head.appendChild(icon); }
-    icon.href = state.settings.brandLogo || state.settings.shopLogo || _defaultIcon;
-    document.title = state.settings.brandName || state.settings.shopName || 'Agri-POS';
     dispatch({ type: A.SET_THEME_COLOR, payload: state.settings.brandColor || "#047857" });
     dispatch({ type: A.SET_DARK_MODE, payload: state.settings.theme === 'dark' });
   }, [state.settings.brandName, state.settings.shopName, state.settings.brandLogo, state.settings.shopLogo, state.settings.brandColor, state.settings.theme]);

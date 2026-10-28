@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, DollarSign, Database, RefreshCw, Loader2, AlertCircle, CheckCircle, XCircle, Activity } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Database, RefreshCw, AlertCircle, CheckCircle, XCircle, Activity } from "lucide-react";
 import { getAIStats } from "../../api/cropAdvisoryApi";
 
 const AIStatistics = () => {
@@ -71,7 +72,7 @@ const AIStatistics = () => {
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 disabled:opacity-50 transition-colors"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} />}
           Refresh
         </button>
       </div>
@@ -143,10 +144,7 @@ const AIStatistics = () => {
 
       {/* Loading State */}
       {loading && !stats && (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-12 flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">Loading AI statistics...</p>
-        </div>
+        <LoadingState label="Loading AI statistics" />
       )}
 
       {/* Statistics Display */}

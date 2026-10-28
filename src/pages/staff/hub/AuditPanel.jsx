@@ -1,8 +1,9 @@
+import LoadingState from "../../../components/ui/LoadingState";
 import FilterBar from "../../../components/ui/FilterBar";
 import React from "react";
 import {
   Shield, User, Clock, Package, DollarSign,
-  Edit3, Trash2, LogIn, Settings, Loader2, AlertCircle, RefreshCw, ArrowRight
+  Edit3, Trash2, LogIn, Settings, AlertCircle, RefreshCw, ArrowRight
 } from "lucide-react";
 import { usePaginatedApi } from "../../../hooks/usePaginatedApi";
 import { getAuditLogs } from "../../../api/auditLogsApi";
@@ -53,10 +54,7 @@ const AuditPanel = () => {
       </div>
 
       {loading && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <p className="text-sm text-slate-400">Loading audit trail...</p>
-        </div>
+        <LoadingState label="Loading audit trail" />
       )}
 
       {!loading && error && (

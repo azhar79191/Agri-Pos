@@ -93,7 +93,7 @@ const Customers = () => {
       {bulkMessage && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">{bulkMessage}</p>}
       {/* Table */}
       <div className="card-base overflow-hidden">
-        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton rows={LIMIT} cols={4} /> : (
+        {error ? <ListFeedback error={error} onRetry={reloadList} /> : (loading || !requested) ? <TableSkeleton label="Loading customers" rows={6} cols={6} /> : (
           <div className="overflow-x-auto">
             <DataTable emptyState={false} sortScope="Sorting applies to this page" className="w-full table-premium">
               <thead>

@@ -1,3 +1,4 @@
+import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import React, { useEffect } from "react";
 import { Plus, Edit3, Trash2, Shield, Eye, EyeOff, UserCheck, UserX, Settings, RefreshCw, Users, X } from "lucide-react";
@@ -54,7 +55,7 @@ const UserManagement = () => {
 
       {/* Users grid */}
       {loading ? (
-        <div className="text-center py-16 text-slate-500">Loading users...</div>
+        <LoadingState variant="cards" label="Loading users" />
       ) : users.length === 0 ? (
         <EmptyState title={<>No users found</>} />
       ) : (

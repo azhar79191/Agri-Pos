@@ -1,6 +1,7 @@
+import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useCallback } from "react";
-import { ShoppingBag, Plus, Search, ChevronDown, Loader2, AlertCircle } from "lucide-react";
+import { ShoppingBag, Plus, Search, ChevronDown, AlertCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { usePaginatedApi } from "../../hooks/usePaginatedApi";
 import { getPurchaseOrders } from "../../api/purchaseOrdersApi";
@@ -82,9 +83,7 @@ const PurchaseOrders = () => {
 
       {/* ── Loading ── */}
       {loading && (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-7 h-7 animate-spin text-blue-500" />
-        </div>
+        <LoadingState variant="cards" label="Loading content" />
       )}
 
       {/* ── Error ── */}

@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
-import { Crown, Calendar, Check, X, Loader2, Sparkles } from "lucide-react";
+import { Crown, Calendar, Check, X, Sparkles } from "lucide-react";
 import { grantPlan } from "../../api/superAdminApi";
 
 /**
@@ -304,7 +305,7 @@ const PlanManagement = ({ shop, onSuccess }) => {
       >
         {loading ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <LoadingIndicator />
             <span>Granting Plan...</span>
           </>
         ) : (

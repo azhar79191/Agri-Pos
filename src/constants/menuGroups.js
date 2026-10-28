@@ -14,6 +14,7 @@ import {
  * `single: true` renders the group as a flat button with no dropdown.
  */
 export const MENU_GROUPS = [
+  { id: 'dealer-workspace', label: 'Dealer Workspace', icon: ClipboardList, permission: 'customers', single: true, children: [{ id: 'dealer-workspace', label: 'Dealer Workspace', icon: ClipboardList }] },
   {
     id: "dashboard", label: "Dashboard", icon: LayoutDashboard, permission: "dashboard",
     children: [

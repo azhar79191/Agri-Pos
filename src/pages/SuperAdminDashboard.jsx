@@ -1,3 +1,4 @@
+import LoadingState, { LoadingIndicator } from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
 import DataTable from "../components/ui/DataTable";
@@ -6,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Shield, Store, Users, CheckCircle, XCircle, Clock,
   TrendingUp, Trash2, RefreshCw, Eye, EyeOff,
-  AlertTriangle, Crown, Zap, X, Loader2, LogOut,
+  AlertTriangle, Crown, Zap, X, LogOut,
   Copy, Check, Phone, Mail, User, Key, Calendar,
   Activity, Lock, ChevronDown, ChevronUp, Search,
 } from "lucide-react";
@@ -132,9 +133,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-20 gap-2 text-slate-400">
-              <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading user data…</span>
-            </div>
+            <LoadingState label="Loading user data" />
           ) : error ? (
             <div className="flex items-center justify-center py-20 text-red-500 text-sm">{error}</div>
           ) : filtered.length === 0 ? (
@@ -355,7 +354,7 @@ const PlanModal = ({ shop, onClose, onSave }) => {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
             {shop?.isApproved ? "Update Plan" : "Approve & Activate"}
           </button>
         </div>
@@ -392,7 +391,7 @@ const SuspendModal = ({ shop, onClose, onSave }) => {
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 transition-colors">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+            {saving ? <LoadingIndicator /> : <XCircle className="w-4 h-4" />}
             Suspend
           </button>
         </div>
@@ -462,7 +461,7 @@ const SuperAdminDashboard = () => {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+            {loading ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} />} Refresh
           </button>
           <button onClick={() => {
             if (window.confirm("Are you sure you want to logout?")) {
@@ -523,9 +522,7 @@ const SuperAdminDashboard = () => {
       {/* Shops table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-20 gap-2 text-slate-400">
-            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading shops...</span>
-          </div>
+          <LoadingState label="Loading shops" />
         ) : filtered.length === 0 ? (
           <EmptyState title={<>No shops found</>} />
         ) : (
@@ -618,7 +615,7 @@ const SuperAdminDashboard = () => {
                         {/* Delete */}
                         <button onClick={() => handleDelete(shop)} disabled={deleting === shop._id}
                           className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50">
-                          {deleting === shop._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                          {deleting === shop._id ? <LoadingIndicator /> : <Trash2 className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </td>

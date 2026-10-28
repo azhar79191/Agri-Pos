@@ -1,9 +1,10 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import SupplierPaymentModal from "../../components/purchases/SupplierPaymentModal";
 import SupplierClaims from "../../components/purchases/SupplierClaims";
 import React, { useState } from "react";
 import SupplierLedgerModal from "../../components/purchases/SupplierLedgerModal";
-import { Building2, Plus, Phone, MapPin, Edit2, Trash2, Loader2, TrendingUp, CreditCard } from "lucide-react";
+import { Building2, Plus, Phone, MapPin, Edit2, Trash2, TrendingUp, CreditCard } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
@@ -63,7 +64,7 @@ const Suppliers = () => {
 
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error} <button type="button" onClick={refresh} className="min-h-11 underline">Retry suppliers</button></p>}
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading suppliers...</span></div>
+        <LoadingState variant="cards" label="Loading suppliers" />
       ) : suppliers.length === 0 ? (
         <EmptyState icon={Building2} title="No suppliers found" description="Add your product suppliers to manage purchase orders" actionLabel={isAdmin ? "Add Supplier" : undefined} onAction={isAdmin ? openCreate : undefined} />
       ) : (
@@ -84,7 +85,7 @@ const Suppliers = () => {
                   <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
                     <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button onClick={() => handleDelete(s._id)} disabled={deleting === s._id} className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50">
-                      {deleting === s._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      {deleting === s._id ? <LoadingIndicator /> : <Trash2 className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 )}
@@ -124,7 +125,7 @@ const Suppliers = () => {
           <div className="flex gap-3 justify-end">
             <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: "var(--pos-primary)" }}>
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
+              {saving ? <LoadingIndicator /> : <Building2 className="w-4 h-4" />}
               {editing ? "Update" : "Add Supplier"}
             </button>
           </div>

@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect, useMemo, useRef } from "react";
+import LoadingState from "../components/ui/LoadingState";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Package, AlertTriangle, Users, DollarSign,
   BarChart3, ArrowRight, Zap, Clock, CheckCircle2,
@@ -149,6 +150,8 @@ const Dashboard = () => {
       ),
     },
   ];
+
+  if (!hasDashboardData && refreshing && !loadError) return <LoadingState variant="page" label="Loading dashboard" />;
 
   return (
     <div className="space-y-5">

@@ -1,17 +1,10 @@
+import LoadingState from "./LoadingState";
 import DataTable from "./DataTable";
 import EmptyState from "./EmptyState";
 import React from 'react';
 
 const SDPTable = ({ columns, data, loading, emptyMessage = 'No data available' }) => {
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-3 p-6">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800 rounded-lg" />
-        ))}
-      </div>
-    );
-  }
+  if (loading) return <LoadingState variant="table" cols={columns.length} label="Loading records" />;
 
   if (!data?.length) return <EmptyState title={emptyMessage} />;
 

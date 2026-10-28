@@ -1,7 +1,8 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import React, { useState, useCallback, useEffect } from "react";
-import { RotateCcw, Plus, X, Loader2, CheckCircle, Clock, XCircle, Package, Eye, AlertCircle, Edit2, Trash2 } from "lucide-react";
+import { RotateCcw, Plus, X, CheckCircle, Clock, XCircle, Package, Eye, AlertCircle, Edit2, Trash2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
@@ -208,9 +209,7 @@ const PurchaseReturns = () => {
       {/* Table */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-slate-400">
-            <Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span>
-          </div>
+          <LoadingState label="Loading" />
         ) : returns.length === 0 ? (
           <EmptyState icon={RotateCcw} title="No purchase returns" description="Create a return when you need to send goods back to a supplier" actionLabel={isAdmin ? "New Return" : undefined} onAction={isAdmin ? openModal : undefined} />
         ) : (
@@ -263,7 +262,7 @@ const PurchaseReturns = () => {
                                 </button>
                                 <button onClick={() => handleStatusUpdate(r._id, "Approved")} disabled={updatingId === r._id}
                                   className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 transition-colors disabled:opacity-50" title="Approve">
-                                  {updatingId === r._id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Approve"}
+                                  {updatingId === r._id ? <LoadingIndicator /> : "Approve"}
                                 </button>
                                 <button onClick={() => handleStatusUpdate(r._id, "Rejected")} disabled={updatingId === r._id}
                                   className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50" title="Reject">
@@ -273,7 +272,7 @@ const PurchaseReturns = () => {
                             )}
                             {r.status === "Rejected" && (
                               <button onClick={() => handleDelete(r._id)} disabled={updatingId === r._id} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 transition-colors disabled:opacity-50" title="Delete">
-                                {updatingId === r._id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                                {updatingId === r._id ? <LoadingIndicator /> : <Trash2 className="w-3 h-3" />}
                               </button>
                             )}
                           </div>
@@ -295,7 +294,7 @@ const PurchaseReturns = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
             <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors order-2 sm:order-1">Cancel</button>
             <button onClick={handleCreate} disabled={saving} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 order-1 sm:order-2" style={{ background: "var(--pos-primary)" }}>
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+              {saving ? <LoadingIndicator /> : <RotateCcw className="w-4 h-4" />}
               {editingReturn ? "Update Return" : "Create Return"}
             </button>
           </div>

@@ -1,6 +1,7 @@
+import LoadingState from "../../../components/ui/LoadingState";
 import EmptyState from "../../../components/ui/EmptyState";
 import React, { useEffect } from "react";
-import { Shield, Check, X, Loader2, Zap } from "lucide-react";
+import { Shield, Check, X, Zap } from "lucide-react";
 import { useUsers } from "../../../hooks/useUsers";
 import { useApp } from "../../../context/AppContext";
 import { ROLE_CFG, ALL_PERMISSIONS, PERM_KEYS, BASIC_PERMS } from "./staffConfig";
@@ -39,10 +40,7 @@ const PermsPanel = () => {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-20 gap-3">
-      <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-      <p className="text-sm text-slate-400">Loading permissions...</p>
-    </div>
+    <LoadingState label="Loading permissions" />
   );
 
   if (users.length === 0) return (

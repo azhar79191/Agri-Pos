@@ -1,8 +1,9 @@
+import LoadingState from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
-import { History, Search, Filter, Calendar, Eye, Trash2, Download, Share2, Loader2, AlertCircle } from "lucide-react";
+import { History, Search, Filter, Calendar, Eye, Trash2, Download, Share2, AlertCircle } from "lucide-react";
 import { getAllAdvisories, deleteAdvisory, exportAdvisories } from "../../api/cropAdvisoryApi";
 import { useApp } from "../../context/AppContext";
 
@@ -199,9 +200,7 @@ const AdvisoryHistory = () => {
       {/* Advisories List */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-          </div>
+          <LoadingState variant="table" label="Loading advisories" />
         ) : advisories.length === 0 ? (
           <EmptyState title={<>No advisories found</>} description={<>Try adjusting your filters</>} />
         ) : (

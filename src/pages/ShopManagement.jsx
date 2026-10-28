@@ -1,5 +1,5 @@
+import LoadingState from "../components/ui/LoadingState";
 import React, { useState, useEffect, useCallback } from "react";
-import { Loader2 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { getMyShop, updateShop, createShop } from "../api/shopApi";
@@ -99,9 +99,7 @@ const ShopManagement = () => {
   const current = ALL_ITEMS.find(i => i.id === active);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-7 h-7 animate-spin text-blue-500" />
-    </div>
+    <LoadingState label="Loading content" />
   );
 
   /* ── Panel renderer ── */

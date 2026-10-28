@@ -1,3 +1,4 @@
+import LoadingState from "../ui/LoadingState";
 import DataTable from "../ui/DataTable";
 import { useEffect, useState } from 'react';
 import ModernModal from '../ui/ModernModal';
@@ -22,7 +23,7 @@ export default function SupplierLedgerModal({ supplier, currency, onClose }) {
   return <ModernModal isOpen onClose={onClose} title={`${supplier.name} - balance movements`} size="xl">
     <p className="mb-4 text-sm text-slate-500">Older purchases may not appear in this history. Reconcile these movements against the current supplier balances.</p>
     {error ? <div role="alert"><p>{error}</p><button type="button" onClick={() => setAttempt(value => value + 1)} className="min-h-11 underline">Retry history</button></div>
-      : loading ? <p role="status">Loading movements...</p> : <>
+      : loading ? <LoadingState label="Loading movements" /> : <>
         <div className="overflow-x-auto"><DataTable sortScope="Sorting applies to this page" emptyTitle="No recorded movements yet" className="w-full text-left text-sm">
           <thead><tr>{['Date', 'Reference', 'Movement', 'Value', 'Outstanding after', 'Credit after'].map(label => <th key={label} className="whitespace-nowrap border-b p-3">{label}</th>)}</tr></thead>
           <tbody>{data.entries.map(entry => <tr key={entry._id} className="border-b border-slate-100 dark:border-slate-800">

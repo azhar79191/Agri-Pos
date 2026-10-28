@@ -1,6 +1,7 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useMemo, useEffect } from "react";
-import { Package, TrendingUp, TrendingDown, AlertTriangle, Archive, Zap, BarChart2, Loader2, ShoppingBag, CheckCircle } from "lucide-react";
+import { Package, TrendingUp, TrendingDown, AlertTriangle, Archive, Zap, BarChart2, ShoppingBag, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/helpers";
@@ -81,7 +82,7 @@ const DeadStockAlerts = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+        <LoadingState label="Loading" />
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -135,7 +136,7 @@ const DeadStockAlerts = () => {
                             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:opacity-50 transition-all shadow-sm"
                           >
                             {reordering === item._id
-                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ? <LoadingIndicator />
                               : <ShoppingBag className="w-3.5 h-3.5" />}
                             {reordering === item._id ? "Creating PO..." : "Reorder Now → Draft PO"}
                           </button>

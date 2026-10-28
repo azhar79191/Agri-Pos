@@ -1,5 +1,6 @@
+import LoadingState from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { ShoppingCart, Package, Users, DollarSign, TrendingUp, Loader2, BarChart3 } from "lucide-react";
+import { ShoppingCart, Package, Users, DollarSign, TrendingUp, BarChart3 } from "lucide-react";
 import ShopCard from "./ShopCard";
 import { formatCurrency } from "../../utils/helpers";
 import { useApp } from "../../context/AppContext";
@@ -44,9 +45,7 @@ const StatsPanel = () => {
   }, []); // eslint-disable-line
 
   if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-    </div>
+    <LoadingState label="Loading content" />
   );
 
   const todaySales    = data?.todaySales?.total || 0;

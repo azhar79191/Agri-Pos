@@ -1,7 +1,8 @@
+import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
-import { DollarSign, Loader2 } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { getProfitReport } from "../../api/reportsApi";
@@ -51,7 +52,7 @@ const ProfitReports = () => {
 
       <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+          <LoadingState variant="table" label="Loading profit report" />
         ) : (
           <DataTable emptyTitle="No profit data for this period" className="w-full table-premium">
             <thead><tr>{["Invoice", "Customer", "Revenue", "Cost", "Profit", "Margin", "Date"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>

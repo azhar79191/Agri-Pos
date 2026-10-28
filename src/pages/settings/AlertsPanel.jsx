@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { AlertTriangle, Save, Loader2, CheckCircle } from "lucide-react";
+import { AlertTriangle, Save, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { getMyShop, updateShop } from "../../api/shopApi";
 import SettingsCard from "./SettingsCard";
@@ -39,7 +40,7 @@ const AlertsPanel = () => {
     } finally { setSaving(false); }
   };
 
-  if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>;
+  if (loading) return <LoadingState label="Loading content" />;
 
   return (
     <SettingsCard
@@ -49,7 +50,7 @@ const AlertsPanel = () => {
         <button onClick={handleSave} disabled={saving || !shop}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all"
           style={{ background: saved ? "#10b981" : themeColor }}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saving ? <LoadingIndicator /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           {saving ? "Saving..." : saved ? "Saved!" : "Save"}
         </button>
       }

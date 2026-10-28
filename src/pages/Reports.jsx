@@ -183,7 +183,7 @@ const Reports = () => {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest revenue in selected period</p>
           </div>
           <div className="overflow-x-auto">
-            <DataTable className="w-full table-premium">
+            <DataTable loading={loading} loadingLabel="Loading report" className="w-full table-premium">
               <thead>
                 <tr>{["#", "Product Name", "Qty Sold", "Revenue"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
               </thead>
@@ -229,7 +229,7 @@ const Reports = () => {
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Products that need restocking</p>
             </div>
             <div className="overflow-x-auto">
-              <DataTable className="w-full table-premium">
+              <DataTable loading={loading} loadingLabel="Loading report" className="w-full table-premium">
                 <thead>
                   <tr>{["Product Name", "Category", "Stock Level", "Price"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr>
                 </thead>

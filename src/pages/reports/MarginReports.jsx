@@ -1,5 +1,6 @@
+import LoadingState from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { PieChart, TrendingDown, Loader2 } from "lucide-react";
+import { PieChart, TrendingDown } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { getMarginReport } from "../../api/reportsApi";
@@ -26,7 +27,7 @@ const MarginReports = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+        <LoadingState label="Loading" />
       ) : categories.length === 0 ? (
         <div className="text-center py-16 text-slate-400 text-sm">No margin data available. Make some sales first.</div>
       ) : (

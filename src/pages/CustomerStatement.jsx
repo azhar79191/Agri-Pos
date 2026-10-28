@@ -1,3 +1,4 @@
+import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import DataTable from "../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
@@ -52,9 +53,7 @@ const CustomerStatement = () => {
   }, [id, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-    </div>
+    <LoadingState label="Loading content" />
   );
 
   if (!customer) return null;

@@ -1,5 +1,6 @@
+import LoadingState from "../../../components/ui/LoadingState";
 import React, { useEffect, useState } from "react";
-import { Users, UserCheck, Shield, TrendingUp, Award, Loader2, BarChart3, Crown, Medal } from "lucide-react";
+import { Users, UserCheck, Shield, TrendingUp, Award, BarChart3, Crown, Medal } from "lucide-react";
 import { useUsers } from "../../../hooks/useUsers";
 import { getSalesReps } from "../../../api/salesRepsApi";
 import { formatCurrency } from "../../../utils/helpers";
@@ -51,10 +52,7 @@ const OverviewPanel = () => {
   const maxSales  = sortedReps[0]?.totalSales || 1;
 
   if (uLoading || rLoading) return (
-    <div className="flex flex-col items-center justify-center py-20 gap-3">
-      <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-      <p className="text-sm text-slate-400">Loading overview...</p>
-    </div>
+    <LoadingState label="Loading overview" />
   );
 
   return (

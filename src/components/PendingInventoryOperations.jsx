@@ -10,7 +10,7 @@ function loadPending(pathPrefix) {
     if (!key.startsWith('financial-command:') || !key.endsWith(scopeSuffix)) continue;
     try {
       const item = JSON.parse(sessionStorage.getItem(key));
-      if (item.idField === 'clientOperationId' && item.path?.startsWith(pathPrefix) && /^\/(products|stock\/adjust|purchase-returns|suppliers|loyalty|farmer-workspace)(\/|$)/.test(item.path)) entries.push({ ...item, key });
+      if (['clientOperationId', 'clientSaleId'].includes(item.idField) && item.path?.startsWith(pathPrefix) && /^\/(products|invoices|stock\/adjust|purchase-returns|suppliers|loyalty|farmer-workspace|dealer-records|customer-orders|dealer-network)(\/|$)/.test(item.path)) entries.push({ ...item, key });
     } catch { /* Keep unreadable recovery records for manual investigation. */ }
   }
   return entries;

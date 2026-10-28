@@ -1,3 +1,4 @@
+import LoadingState, { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Bell, X, Package, Calendar, DollarSign, ShoppingCart, AlertTriangle, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -144,7 +145,7 @@ const NotificationCenter = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={loadNotifications} disabled={fetching} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                    <RefreshCw className={`w-3.5 h-3.5 text-slate-400 ${fetching ? "animate-spin" : ""}`} />
+                    {fetching ? <LoadingIndicator /> : <RefreshCw className={`w-3.5 h-3.5 text-slate-400 `} />}
                   </button>
                   {notifications.length > 0 && (
                     <button onClick={() => setNotifications([])} className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
@@ -156,10 +157,7 @@ const NotificationCenter = () => {
 
               <div className="overflow-y-auto flex-1">
                 {fetching && notifications.length === 0 ? (
-                  <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">Loading...</span>
-                  </div>
+                  <LoadingState label="Loading" />
                 ) : notifications.length === 0 ? (
                   <div className="p-8 text-center text-slate-400 dark:text-slate-500">
                     <Bell className="w-10 h-10 mx-auto mb-2 opacity-30" />

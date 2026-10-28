@@ -1,5 +1,6 @@
+import LoadingState from "../../components/ui/LoadingState";
 import React, { useState } from "react";
-import { Bug, Leaf, Sprout, ChevronRight, Loader2, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send } from "lucide-react";
+import { Bug, Leaf, Sprout, ChevronRight, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory } from "../../api/cropAdvisoryApi";
 import FeedbackForm from "../../components/FeedbackForm";
@@ -194,16 +195,7 @@ const PestDiagnosis = () => {
       {step === 3 && (
         <div className="space-y-4">
           {loading ? (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-12 flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-slate-900 dark:text-white">Analyzing with AI...</p>
-                <p className="text-sm text-slate-500 mt-1">Getting expert recommendations for {selectedIssue} in {selectedCrop}</p>
-              </div>
-              <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
-            </div>
+            <LoadingState label="Loading content" />
           ) : error ? (
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
               <div className="flex flex-col items-center gap-4 text-center">

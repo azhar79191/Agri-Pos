@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import React, { useState } from "react";
-import { UserCheck, Plus, Edit3, Trash2, Loader2, MapPin, Phone, TrendingUp, DollarSign, Award } from "lucide-react";
+import { UserCheck, Plus, Edit3, Trash2, MapPin, Phone, TrendingUp, DollarSign, Award } from "lucide-react";
 import { useApp } from "../../../context/AppContext";
 import { usePaginatedApi } from "../../../hooks/usePaginatedApi";
 import { getSalesReps, createSalesRep, updateSalesRep, deleteSalesRep } from "../../../api/salesRepsApi";
@@ -191,10 +192,7 @@ const RepsPanel = () => {
 
       {/* Grid */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-violet-500" />
-          <p className="text-sm text-slate-400">Loading reps...</p>
-        </div>
+        <LoadingState label="Loading reps" />
       ) : reps.length === 0 ? (
         <EmptyState icon={UserCheck} title="No sales reps yet" description="Add your field representatives to track commissions and performance" actionLabel="Add Rep" onAction={openAdd} />
       ) : (
@@ -219,7 +217,7 @@ const RepsPanel = () => {
           <div className="flex justify-end gap-3">
             <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-50 text-white transition-all">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {saving ? <LoadingIndicator /> : null}
               {saving ? "Saving..." : editing ? "Update" : "Add Rep"}
             </button>
           </div>

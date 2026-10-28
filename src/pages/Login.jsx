@@ -1,6 +1,7 @@
+import LoadingState from "../components/ui/LoadingState";
 import { PLATFORM_BRAND } from "../constants/platformBrand";
 import React, { useState, useEffect } from "react";
-import { Sprout, Loader2, Package, BarChart3, Shield, Sparkles, Zap, TrendingUp } from "lucide-react";
+import { Sprout, Package, BarChart3, Shield, Sparkles, Zap, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
@@ -147,20 +148,7 @@ const Login = () => {
 
   if (mode === "checking") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 dark:from-slate-950 dark:via-blue-950 dark:to-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/30 animate-pulse">
-              <Sprout className="w-8 h-8 text-white" />
-            </div>
-            <div className="absolute inset-0 bg-blue-500/20 rounded-2xl blur-xl animate-pulse" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Loading... <br /> please wait</p>
-          </div>
-        </div>
-      </div>
+      <LoadingState variant="page" label="Preparing sign in" />
     );
   }
 

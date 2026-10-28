@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState } from "react";
-import { Cloud, MapPin, Thermometer, Droplets, Wind, Sun, CloudRain, AlertTriangle, Loader2, RefreshCw, Calendar, TrendingUp, Sprout, CheckCircle, XCircle } from "lucide-react";
+import { Cloud, MapPin, Thermometer, Droplets, Wind, Sun, CloudRain, AlertTriangle, RefreshCw, Calendar, TrendingUp, Sprout, CheckCircle, XCircle } from "lucide-react";
 import { getWeatherAdvisory } from "../../api/cropAdvisoryApi";
 import { CROPS } from "../../data/cropAdvisory";
 import FeedbackForm from "../../components/FeedbackForm";
@@ -202,7 +203,7 @@ const WeatherAdvisory = () => {
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <LoadingIndicator />
               Getting Weather Advisory...
             </>
           ) : (

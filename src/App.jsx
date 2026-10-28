@@ -1,3 +1,5 @@
+import LoadingState from "./components/ui/LoadingState";
+import DocumentBranding from "./components/DocumentBranding";
 import React, { Suspense, lazy, Component, useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
@@ -22,6 +24,7 @@ import Landing from "./pages/Landing";
 
 // Lazy — code-split heavy pages
 const BusinessAssistant = lazy(() => import("./pages/BusinessAssistant"));
+const DealerWorkspace = lazy(() => import("./pages/DealerWorkspace"));
 const Dashboard         = lazy(() => import("./pages/Dashboard"));
 const Products          = lazy(() => import("./pages/Products"));
 const Customers         = lazy(() => import("./pages/Customers"));
@@ -74,9 +77,7 @@ const Forecasting       = lazy(() => import("./pages/dashboard/Forecasting"));
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
 
 const PageLoader = () => (
-  <div className="flex items-center justify-center h-64">
-    <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--pos-primary) transparent transparent transparent" }} />
-  </div>
+  <LoadingState variant="page" label="Loading workspace" />
 );
 
 class ErrorBoundary extends Component {
@@ -132,6 +133,7 @@ const AppLayout = () => {
                 <AccessBoundary><Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/assistant" element={<BusinessAssistant />} />
+                  <Route path="/dealer-workspace" element={<DealerWorkspace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/customers" element={<Customers />} />
@@ -318,9 +320,7 @@ const AppContent = () => {
   // Still checking shop status — show loader
   if (shopStatus === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="w-8 h-8 border-4 border-t-transparent border-emerald-500 rounded-full animate-spin" />
-      </div>
+      <LoadingState variant="page" label="Loading workspace" />
     );
   }
 
@@ -331,6 +331,7 @@ function App() {
   // Splash screen disabled - using PWA native splash screen instead
   return (
     <AppProvider>
+      <DocumentBranding />
       <AppContent />
     </AppProvider>
   );

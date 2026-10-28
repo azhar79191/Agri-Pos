@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState } from 'react';
-import { ThumbsUp, ThumbsDown, Star, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Star, Send, CheckCircle } from 'lucide-react';
 
 const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
   const [helpful, setHelpful] = useState(null);
@@ -167,7 +168,7 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
         >
           {submitting ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <LoadingIndicator />
               Submitting Feedback...
             </>
           ) : (

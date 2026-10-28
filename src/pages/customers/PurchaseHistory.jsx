@@ -1,5 +1,6 @@
+import LoadingState from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { History, ShoppingCart, Loader2 } from "lucide-react";
+import { History, ShoppingCart } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { getCustomerPurchaseHistory } from "../../api/reportsApi";
@@ -31,7 +32,7 @@ const PurchaseHistory = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+        <LoadingState label="Loading" />
       ) : customers.length === 0 ? (
         <EmptyState icon={History} title="No purchase history" description="Customer purchase history will appear here after sales are made" />
       ) : (

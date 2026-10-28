@@ -1,5 +1,6 @@
+import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState, useRef, useEffect } from "react";
-import { X, Mail, KeyRound, Lock, ArrowRight, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { X, Mail, KeyRound, Lock, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { requestPasswordReset, verifyResetCode, resetPassword, resendResetCode } from "../../api/authApi";
 
 /**
@@ -272,7 +273,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                 className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <LoadingIndicator />
                 ) : (
                   <>
                     <span>Send Reset Code</span>
@@ -346,7 +347,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <LoadingIndicator />
                   ) : (
                     <>
                       <span>Verify Code</span>
@@ -432,7 +433,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                 className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <LoadingIndicator />
                 ) : (
                   <>
                     <span>Reset Password</span>

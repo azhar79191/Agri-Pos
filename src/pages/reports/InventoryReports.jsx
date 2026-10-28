@@ -1,6 +1,7 @@
+import LoadingState from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
-import { Package, DollarSign, TrendingDown, Archive, Loader2 } from "lucide-react";
+import { Package, DollarSign, TrendingDown, Archive } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { getInventoryReport } from "../../api/reportsApi";
@@ -38,7 +39,7 @@ const InventoryReports = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+        <LoadingState variant="table" label="Loading inventory report" />
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

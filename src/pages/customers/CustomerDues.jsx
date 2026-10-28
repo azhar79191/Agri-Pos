@@ -1,5 +1,6 @@
+import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
-import { Wallet, DollarSign, Users, Loader2, X, AlertTriangle, Phone } from "lucide-react";
+import { Wallet, DollarSign, Users, X, AlertTriangle, Phone } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
 import Pagination from "../../components/ui/Pagination";
@@ -55,7 +56,7 @@ const CustomerDues = () => {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 gap-2 text-slate-400"><Loader2 className="w-5 h-5 animate-spin" /><span className="text-sm">Loading...</span></div>
+        <LoadingState label="Loading" />
       ) : dues.length === 0 ? (
         <EmptyState icon={Wallet} title="No customer dues" description="All customers have cleared their balances" />
       ) : (
@@ -116,7 +117,7 @@ const CustomerDues = () => {
             <div className="flex gap-3">
               <button onClick={() => setDepositModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
               <button onClick={handleDeposit} disabled={depositing} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-emerald-500 hover:bg-emerald-600 transition-colors">
-                {depositing ? <Loader2 className="w-4 h-4 animate-spin" /> : <DollarSign className="w-4 h-4" />}
+                {depositing ? <LoadingIndicator /> : <DollarSign className="w-4 h-4" />}
                 Collect
               </button>
             </div>

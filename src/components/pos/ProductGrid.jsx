@@ -1,3 +1,4 @@
+import LoadingState from "../ui/LoadingState";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Package, Search, ChevronDown, Clock, Star, Zap, ShoppingBag, Filter, PackagePlus, Tag, Percent } from "lucide-react";
@@ -181,7 +182,7 @@ const BundleCard = ({ bundle, onAddBundle, currency }) => {
 
 /* ── Main ProductGrid ── */
 const ProductGrid = ({
-  products, cart, categories, searchTerm, selectedCategory,
+  products, cart, categories, searchTerm, selectedCategory, loading = false,
   onSearchChange, onCategoryChange, onAddToCart, onUpdateQuantity, currency,
   recentProducts = [], bundles = [], onAddBundle, bundlesEnabled = true,
 }) => {
@@ -328,7 +329,7 @@ const ProductGrid = ({
           {products.length > 0 && <p className="text-xs text-slate-400 font-medium">{products.length} product{products.length !== 1 ? "s" : ""}</p>}
 
           <AnimatePresence>
-            {viewMode === "grid" ? (
+            {loading ? <LoadingState variant="cards" label="Loading products" /> : viewMode === "grid" ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {products.map(product => {
                   const productId = product._id || product.id;
@@ -383,7 +384,7 @@ const ProductGrid = ({
             )}
           </AnimatePresence>
 
-          {products.length === 0 && (
+          {!loading && products.length === 0 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
               <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
