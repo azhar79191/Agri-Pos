@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { useStock } from "./useStock";
-import { isAdminOrManager } from "../utils/roleUtils";
 
 /**
  * useStockAdjustment — manages stock adjustment form state and submission.
@@ -9,7 +8,7 @@ import { isAdminOrManager } from "../utils/roleUtils";
 export function useStockAdjustment(fetchLevels, setStockLevels, stockLevels = []) {
   const { actions, state } = useApp();
   const { fetchLogs, fetchAlerts, adjust } = useStock();
-  const isAdmin = isAdminOrManager(state.currentUser);
+  const isAdmin = actions.hasPermission('stock:manage');
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [adjustmentType, setAdjustmentType]   = useState("add");

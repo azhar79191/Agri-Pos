@@ -200,13 +200,9 @@ const AdvisoryHistory = () => {
 
       {/* Advisories List */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-hidden">
-        {loading ? (
-          <LoadingState variant="table" label="Loading advisories" />
-        ) : advisories.length === 0 ? (
-          <EmptyState title={<>No advisories found</>} description={<>Try adjusting your filters</>} />
-        ) : (
+
           <div className="overflow-x-auto">
-            <DataTable sortScope="Sorting applies to this page" className="w-full">
+            <DataTable loading={loading} loadingLabel="Loading advisories" emptyTitle="No advisories found" sortScope="Sorting applies to this page" className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Date</th>
@@ -260,7 +256,6 @@ const AdvisoryHistory = () => {
               </tbody>
             </DataTable>
           </div>
-        )}
 
         {/* Pagination */}
         {!loading && advisories.length > 0 && (

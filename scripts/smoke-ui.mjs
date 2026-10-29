@@ -184,8 +184,11 @@ try {
   await page.getByRole('button', { name: 'Add', exact: true }).last().click();
   await page.getByRole('button', { name: 'Exact', exact: true }).click();
   await mkdir('artifacts', { recursive: true });
+  await page.locator('.workspace-main').evaluate(element => { element.scrollTop = 0; });
   const desktopAction = await page.getByRole('button', { name: 'Confirm cash sale', exact: true }).boundingBox();
-  assert(desktopAction && desktopAction.y >= 0 && desktopAction.y + desktopAction.height <= 1000, 'Desktop payment action must remain in the viewport');
+  assert(desktopAction, 'Desktop payment action must be present');
+  assert.equal(await page.locator('.pos-cart').evaluate(element => getComputedStyle(element).maxHeight), 'none', 'Receipt grows with its contents');
+  assert.equal(await page.getByRole('heading', { name: 'Order Summary', exact: true }).isVisible(), true);
   await page.screenshot({ path: 'artifacts/pos-desktop.png', fullPage: true, animations: 'disabled' });
   await page.getByRole('button', { name: 'Confirm cash sale', exact: true }).click();
   await page.getByText('Insufficient stock — browser fixture', { exact: true }).waitFor();

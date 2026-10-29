@@ -38,6 +38,7 @@ const InvoiceManagement = () => {
   const [search, setSearch]             = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPayment, setFilterPayment] = useState("all");
+  const [sortOrder, setSortOrder] = useState('-createdAt');
   const [page, setPage]                 = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showModal, setShowModal]       = useState(false);
@@ -48,9 +49,9 @@ const InvoiceManagement = () => {
   useBodyScrollLock(showModal);
 
   useEffect(() => {
-    const timer = setTimeout(() => fetchInvoices({ page, limit: LIMIT, search: search.trim() || undefined, status: filterStatus === "all" ? undefined : filterStatus, paymentMethod: filterPayment === "all" ? undefined : filterPayment }), 250);
+    const timer = setTimeout(() => fetchInvoices({ page, limit: LIMIT, sort: sortOrder, search: search.trim() || undefined, status: filterStatus === "all" ? undefined : filterStatus, paymentMethod: filterPayment === "all" ? undefined : filterPayment }), 250);
     return () => clearTimeout(timer);
-  }, [page, search, filterStatus, filterPayment, fetchInvoices]);
+  }, [page, search, filterStatus, filterPayment, sortOrder, fetchInvoices]);
 
   const fmt = (v) => `${settings.currency} ${(Number(v) || 0).toFixed(2)}`;
 
@@ -127,7 +128,8 @@ const InvoiceManagement = () => {
             placeholder="Search by invoice #, customer name or phone..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition-all" />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Select aria-label="Sort invoices" value={sortOrder} onChange={event => { setSortOrder(event.target.value); setPage(1); }} options={[{ value: "-createdAt", label: "Newest first" }, { value: "createdAt", label: "Oldest first" }, { value: "-total", label: "Highest total" }, { value: "total", label: "Lowest total" }]} />
           {[
             { value: filterStatus, onChange: (v) => { setFilterStatus(v); setPage(1); }, options: [["all","All Status"],["Completed","Completed"],["Pending","Pending"],["Cancelled","Cancelled"]] },
             { value: filterPayment, onChange: (v) => { setFilterPayment(v); setPage(1); }, options: [["all","All Payments"],["Cash","Cash"],["Credit","Credit"],["Online Transfer","Online Transfer"],["Card","Card"]] },
@@ -180,7 +182,7 @@ const InvoiceManagement = () => {
       {emailInvoice && <EmailInvoiceModal invoice={emailInvoice} onClose={() => setEmailInvoice(null)} />}
       {/* Invoice view modal */}
       {showModal && selectedInvoice && (
-        <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:hidden" onClick={() => setShowModal(false)}>
+        <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:block" onClick={() => setShowModal(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-backdrop" />
           <div
             className=" z-10 w-full  max-w-6xl flex flex-col overflow-y-auto h-[80vh] rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in"

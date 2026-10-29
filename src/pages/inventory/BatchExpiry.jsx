@@ -1,4 +1,5 @@
 import SearchableSelect from "../../components/ui/Select";
+import Pagination from "../../components/ui/Pagination";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useMemo } from "react";
@@ -19,17 +20,13 @@ const STATS_CFG = (stats) => [
 const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm";
 
 const BatchExpiry = () => {
-  const { batches, loading, error, reload, showModal, setShowModal, saving, form, setForm, handleAdd } = useBatches();
-  const [search, setSearch]           = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const { batches, loading, error, reload, page, total, totalPages, setPage, filters, setFilter, showModal, setShowModal, saving, form, setForm, handleAdd } = useBatches();
+  const search = filters.search;
+  const filterStatus = filters.status || "all";
+  const setSearch = value => setFilter("search", value);
+  const setFilterStatus = value => setFilter("status", value === "all" ? "" : value);
 
-  const filtered = useMemo(() => batches.filter((b) => {
-    const matchSearch = b.productName.toLowerCase().includes(search.toLowerCase()) || b.batchNo.toLowerCase().includes(search.toLowerCase());
-    if (filterStatus === "all")      return matchSearch;
-    if (filterStatus === "expiring") return matchSearch && getExpiryStatus(b.expiryDate).days > 0 && getExpiryStatus(b.expiryDate).days <= 90;
-    if (filterStatus === "expired")  return matchSearch && getExpiryStatus(b.expiryDate).days <= 0;
-    return matchSearch;
-  }), [batches, search, filterStatus]);
+  const filtered = batches;
 
   const stats = useMemo(() => ({
     total:      batches.length,
@@ -77,7 +74,6 @@ const BatchExpiry = () => {
             <option value="expiring">Expiring Soon</option>
             <option value="expired">Expired</option>
           </SearchableSelect>
-          <ChevronDown className="absolute right-60 sm:right-3  top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
 
@@ -114,6 +110,7 @@ const BatchExpiry = () => {
         </div>
       </div>
 
+      <Pagination page={page} totalPages={totalPages} total={total} limit={15} onPageChange={setPage} />
       <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Batch"
         footer={<button onClick={handleAdd} disabled={saving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">{saving ? "Saving..." : "Add Batch"}</button>}>
         <div className="space-y-4">

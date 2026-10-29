@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 
 const CustomSelect = forwardRef(function CustomSelect({
-  label, error, helperText, options, children, onSearchChange, loading = false, value = '', onChange, placeholder = 'Select an option',
+  label, error, helperText, options, children, onSearchChange, loading = false, value: controlledValue, defaultValue = '', onChange, placeholder = 'Select an option',
   disabled = false, required = false, name, id, className = '', containerClassName = '', labelClassName = '',
   'aria-label': ariaLabel, onBlur, onFocus,
 }, ref) {
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const value = controlledValue ?? internalValue;
   const generated = useId();
   const fieldId = id || generated, listId = `${fieldId}-options`, helpId = `${fieldId}-help`;
   const trigger = useRef(null), panel = useRef(null), typeahead = useRef({ value: '', time: 0 });
@@ -22,7 +24,7 @@ const CustomSelect = forwardRef(function CustomSelect({
   const close = (focus = false) => { setOpen(false); setSearch(''); if (focus) trigger.current?.focus(); };
   const show = (last = false) => {
     if (unavailable()) return;
-    setSearch('');
+    setSearch(''); onSearchChange?.('');
     const current = normalized.findIndex(option => option.value === String(value ?? '') && !option.disabled);
     setActive(current >= 0 ? current : last ? enabled.at(-1) ?? -1 : enabled[0] ?? -1);
     setOpen(true);
@@ -30,6 +32,7 @@ const CustomSelect = forwardRef(function CustomSelect({
   const choose = index => {
     const option = normalized[index];
     if (!option || option.disabled || unavailable()) return;
+    setInternalValue(option.value);
     onChange?.({ target: { value: option.value, name }, currentTarget: { value: option.value, name } });
     setInvalid(false); close(true);
   };
@@ -72,7 +75,8 @@ const CustomSelect = forwardRef(function CustomSelect({
     return () => document.removeEventListener('pointerdown', outside);
   }, [open]);
   useEffect(() => { if (open) panel.current?.querySelector('[data-active="true"]')?.scrollIntoView?.({ block: 'nearest' }); }, [active, open]);
-  return <div className={`min-w-0 ${containerClassName}`}>
+  const layoutClasses = className.split(/\s+/).filter(token => /(^|:)(col-span-|row-span-|flex-1$|w-|min-w-|max-w-|self-|order-)/.test(token)).join(' ');
+  return <div className={`min-w-0 ${layoutClasses} ${containerClassName}`}>
     {label && <label htmlFor={fieldId} className={`mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300 ${labelClassName}`}>{label}{required && <span className="ml-1 text-red-500">*</span>}</label>}
     <button ref={trigger} id={fieldId} type="button" role="combobox" aria-label={ariaLabel} aria-expanded={open} aria-controls={listId} aria-haspopup="listbox" aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined} aria-required={required || undefined} aria-invalid={!!error || invalid || undefined} aria-describedby={error || helperText || invalid ? helpId : undefined} disabled={disabled} onClick={() => open ? close() : show()} onKeyDown={keyDown} onBlur={onBlur} onFocus={onFocus}
       className={`custom-select-trigger flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2 text-left text-sm text-slate-900 dark:bg-slate-800 dark:text-white ${error || invalid ? 'border-red-400' : 'border-slate-300 dark:border-slate-600'} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}>

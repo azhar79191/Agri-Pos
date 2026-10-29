@@ -13,10 +13,12 @@ it('records manual evidence and never claims an automatic authenticity result', 
   financialCommand.mockResolvedValue({ data: { data: { item: { _id: 'check-a', code: 'PACK-123', outcome: 'manufacturer_confirmed', manufacturer: 'Manufacturer A', evidence: 'Confirmed by manufacturer support', checkedByName: 'Owner', createdAt: '2026-10-28T00:00:00Z' } } } });
   render(<ProductAuthenticity products={products} canEdit />);
   fireEvent.click(screen.getByText('Manufacturer authenticity checks'));
-  fireEvent.change(screen.getByLabelText('Product from current search page'), { target: { value: 'a' } });
+  fireEvent.click(screen.getByLabelText('Product from current search page'));
+  fireEvent.click(screen.getByRole('option', { name: 'Seed · Manufacturer A' }));
   await screen.findByText('No checks recorded. Authenticity is unverified.');
   fireEvent.change(screen.getByLabelText('Package verification code'), { target: { value: 'PACK-123' } });
-  fireEvent.change(screen.getByLabelText('Recorded outcome'), { target: { value: 'manufacturer_confirmed' } });
+  fireEvent.click(screen.getByLabelText('Recorded outcome'));
+  fireEvent.click(screen.getByRole('option', { name: /Manufacturer confirmation recorded by staff/i }));
   fireEvent.change(screen.getByLabelText('Evidence or manufacturer response'), { target: { value: 'Confirmed by manufacturer support' } });
   fireEvent.click(screen.getByText('Record manual check'));
   await screen.findByText('Check recorded.');
@@ -27,7 +29,8 @@ it('requires a registered company manufacturer before enabling checks', async ()
   API.get.mockResolvedValue({ data: { data: { manufacturer: '', registered: false, checks: [] } } });
   render(<ProductAuthenticity products={products} canEdit />);
   fireEvent.click(screen.getByText('Manufacturer authenticity checks'));
-  fireEvent.change(screen.getByLabelText('Product from current search page'), { target: { value: 'a' } });
+  fireEvent.click(screen.getByLabelText('Product from current search page'));
+  fireEvent.click(screen.getByRole('option', { name: 'Seed · Manufacturer A' }));
   await screen.findByText(/Add this manufacturer in company brands to record checks/);
   expect(screen.queryByText('Record manual check')).toBeNull();
 });

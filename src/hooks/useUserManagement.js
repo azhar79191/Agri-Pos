@@ -108,7 +108,7 @@ export function useUserManagement() {
     }
   }, [users, editPermissions, fetchUsers, actions]);
 
-  const isAdmin = state.currentUser?.role === "admin" || (state.currentUser?.permissions || []).some((p) => p.startsWith("users:"));
+  const isAdmin = state.currentUser?.role === "admin";
 
   return {
     isAdmin,

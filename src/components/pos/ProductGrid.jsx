@@ -280,7 +280,6 @@ const ProductGrid = ({
                   <option value="">All Categories</option>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </SearchableSelect>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
               </div>
               <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                 {["grid", "list"].map(v => (

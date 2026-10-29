@@ -114,7 +114,6 @@ const GoodsReceiving = () => {
             <option value="Partially Received">Partially Received</option>
             <option value="Completed">Completed</option>
           </SearchableSelect>
-          <ChevronDown className="absolute right-[200px] sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
 

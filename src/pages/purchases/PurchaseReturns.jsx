@@ -28,7 +28,7 @@ const emptyForm = { supplierId: "", reason: "", notes: "", items: [{ product: ""
 const PurchaseReturns = () => {
   const { state, actions } = useApp();
   const { settings } = state;
-  const isAdmin = state.currentUser?.role === "admin" || state.currentUser?.role === "manager";
+  const isAdmin = actions.hasPermission("stock:manage");
 
   const { data: returns, loading, page, totalPages, total, filters, setFilter, setFilters, setPage, refresh } =
     usePaginatedApi(getPurchaseReturns, { search: "", status: "" }, LIMIT);
@@ -209,13 +209,9 @@ const PurchaseReturns = () => {
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
-        {loading ? (
-          <LoadingState label="Loading" />
-        ) : returns.length === 0 ? (
-          <EmptyState icon={RotateCcw} title="No purchase returns" description="Create a return when you need to send goods back to a supplier" actionLabel={isAdmin ? "New Return" : undefined} onAction={isAdmin ? openModal : undefined} />
-        ) : (
+
           <div className="overflow-x-auto">
-            <DataTable sortScope="Sorting applies to this page" className="w-full table-premium">
+            <DataTable loading={loading} emptyTitle="No purchase returns" className="w-full table-premium">
               <thead>
                 <tr>
                   {["Return #", "Supplier", "Reason", "Items", "Total", "Status", "Date", isAdmin ? "Actions" : ""].filter(Boolean).map(h => (
@@ -285,7 +281,6 @@ const PurchaseReturns = () => {
               </tbody>
             </DataTable>
           </div>
-        )}
         <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
       </div>
 

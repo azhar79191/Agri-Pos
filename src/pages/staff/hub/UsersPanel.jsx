@@ -199,11 +199,11 @@ const UsersPanel = () => {
   const [customRoles, setCustomRoles] = useState([]);
   const [rolesError, setRolesError] = useState('');
 
-  const isAdmin = state.currentUser?.role === "admin" || (state.currentUser?.permissions || []).some(p => p.startsWith("users:"));
+  const isAdmin = state.currentUser?.role === "admin";
 
   useEffect(() => { fetchUsers(); }, []); // eslint-disable-line
   useEffect(() => {
-    if (!showForm || state.currentUser?.role !== 'admin') return;
+    if (state.currentUser?.role !== 'admin') return;
     let active = true;
     setRolesError('');
     API.get('/roles').then(response => { if (active) setCustomRoles(response.data.data.roles); })

@@ -107,7 +107,6 @@ const Reports = () => {
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
           </SearchableSelect>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
 

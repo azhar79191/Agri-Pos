@@ -16,7 +16,8 @@ it('requires evidence and confirmation before posting credit', async () => {
   financialCommand.mockResolvedValue({ data: { data: {} } });
   render(<SupplierClaims suppliers={suppliers} currency="Rs." onRecorded={recorded} />);
   fireEvent.click(screen.getByText('Supplier claims and schemes'));
-  fireEvent.change(screen.getByLabelText('Supplier from current search page'), { target: { value: 'a' } });
+  fireEvent.click(screen.getByLabelText('Supplier from current search page'));
+  fireEvent.click(screen.getByRole('option', { name: 'Supplier A' }));
   const credit = await screen.findByText('Post supplier credit');
   expect(credit.disabled).toBe(true);
   fireEvent.change(screen.getByLabelText('Supplier response / credit-note reference'), { target: { value: 'Supplier credit note CN-1' } });
@@ -32,7 +33,8 @@ it('creates a claim separately from posting ledger credit', async () => {
   financialCommand.mockResolvedValue({ data: { data: {} } });
   render(<SupplierClaims suppliers={suppliers} currency="Rs." />);
   fireEvent.click(screen.getByText('Supplier claims and schemes'));
-  fireEvent.change(screen.getByLabelText('Supplier from current search page'), { target: { value: 'a' } });
+  fireEvent.click(screen.getByLabelText('Supplier from current search page'));
+  fireEvent.click(screen.getByRole('option', { name: 'Supplier A' }));
   await screen.findByText('Post supplier credit');
   fireEvent.change(screen.getByLabelText('Claim title'), { target: { value: 'Expired cartons' } });
   fireEvent.change(screen.getByLabelText('Expected credit (Rs.)'), { target: { value: '200' } });

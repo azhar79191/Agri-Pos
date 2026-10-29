@@ -1,9 +1,20 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import DataTable from './DataTable';
 import { compareValues } from '../../utils/tableSort';
 afterEach(cleanup);
+it('keeps headers during loading and delegates server sorting without reordering one page', () => {
+  const onSortChange = vi.fn();
+  const content = <><thead><tr><th>Name</th></tr></thead><tbody><tr><td>Zebra</td></tr><tr><td>Apple</td></tr></tbody></>;
+  const view = render(<DataTable loading>{content}</DataTable>);
+  expect(screen.getByRole('columnheader', { name: /Name/ })).toBeTruthy();
+  expect(document.querySelector('tbody .loading-table')).toBeTruthy();
+  view.rerender(<DataTable sort={{ index: null, direction: 'asc' }} onSortChange={onSortChange}>{content}</DataTable>);
+  fireEvent.click(screen.getByRole('button', { name: 'Sort by Name' }));
+  expect(onSortChange).toHaveBeenCalledWith({ index: 0, direction: 'asc' });
+  expect([...document.querySelectorAll('tbody td')].map(cell => cell.textContent)).toEqual(['Zebra', 'Apple']);
+});
 const records = [{id:'a', name:'Item 10', amount:1200}, {id:'b', name:'Item 2', amount:90}, {id:'c', name:'Item 1', amount:null}];
 function Example({data=records, searchable=false, loading=false}) { return <DataTable searchable={searchable} loading={loading}><thead><tr><th>Name</th><th>Amount</th><th>Actions</th></tr></thead><tbody>{data.map(row => <tr key={row.id}><td>{row.name}</td><td data-sort-value={row.amount}>{row.amount == null ? 'Unknown' : `Custom ${row.amount}`}</td><td><button>Edit {row.name}</button></td></tr>)}</tbody><tfoot><tr><td colSpan={3}>Total</td></tr></tfoot></DataTable>; }
 const names = () => [...document.querySelectorAll('tbody tr')].map(row=>row.cells[0].textContent);

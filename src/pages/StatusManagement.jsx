@@ -99,7 +99,6 @@ const StatusManagementPage = () => {
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
           </SearchableSelect>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
         <div className="relative">
           <SearchableSelect aria-label="All Types" value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
@@ -107,7 +106,6 @@ const StatusManagementPage = () => {
             <option value="invoice">Invoices</option>
             <option value="transaction">Transactions</option>
           </SearchableSelect>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
 

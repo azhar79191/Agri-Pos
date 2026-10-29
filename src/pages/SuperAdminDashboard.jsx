@@ -429,8 +429,8 @@ const SuperAdminDashboard = () => {
       setShops(shopsRes.data.data.shops);
       setPagination(shopsRes.data.data.pagination || { total: shopsRes.data.data.shops.length, pages: 1 });
       setLoadError('');
-    } catch {} finally { setLoading(false); }
-  }, []);
+    } catch (error) { setLoadError(error.response?.data?.message || 'Unable to load shops'); } finally { setLoading(false); }
+  }, [page, search, filter, sortQuery]);
 
   useEffect(() => { const timer = setTimeout(load, 250); return () => clearTimeout(timer); }, [load]);
 
@@ -523,13 +523,9 @@ const SuperAdminDashboard = () => {
 
       {/* Shops table */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        {loading ? (
-          <LoadingState label="Loading shops" />
-        ) : filtered.length === 0 ? (
-          <EmptyState title={<>No shops found</>} />
-        ) : (
+        {loadError ? <p role="alert" className="p-4 text-sm text-red-600">{loadError}<button onClick={load} className="ml-3 underline">Retry</button></p> : (
           <div className="overflow-x-auto">
-            <DataTable loading={loading} loadingLabel="Loading shops" sort={sort} onSortChange={next => { setSort(next); setPage(1); }} className="w-full">
+            <DataTable loading={loading} loadingLabel="Loading shops" emptyTitle="No shops found" sort={sort} onSortChange={next => { setSort(next); setPage(1); }} className="w-full">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800">
                   {["Shop", "Owner", "Plan", "Status", "Members", "Expiry", "Actions"].map(h => (

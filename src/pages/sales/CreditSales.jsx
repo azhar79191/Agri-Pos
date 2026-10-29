@@ -77,11 +77,9 @@ const CreditSales = () => {
       </FilterBar>
 
       <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
-        {loading ? (
-          <LoadingState variant="table" label="Loading credit sales" />
-        ) : (
+
           <div className="overflow-x-auto">
-            <DataTable emptyState={false} className="w-full table-premium min-w-[800px]">
+            <DataTable loading={loading} loadingLabel="Loading credit sales" emptyState={false} className="w-full table-premium min-w-[800px]">
               <thead><tr>{["Invoice", "Customer", "Total", "Paid", "Balance", "Due Date", "Status", "Actions"].map((h) => <th key={h} className="text-left px-4 py-3.5 text-xs font-700 text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-700/50">{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filtered.map((s) => (
@@ -105,7 +103,6 @@ const CreditSales = () => {
               </tbody>
             </DataTable>
           </div>
-        )}
         {!loading && filtered.length === 0 && <EmptyState icon={CreditCard} title="No credit sales found" />}
       </div>
 

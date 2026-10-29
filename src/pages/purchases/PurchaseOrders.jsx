@@ -78,7 +78,6 @@ const PurchaseOrders = () => {
             <option value="">All Status</option>
             {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
           </SearchableSelect>
-          <ChevronDown className="absolute right-[200px] sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
 

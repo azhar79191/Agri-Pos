@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Delete, CheckCircle } from "lucide-react";
+import { Delete, CheckCircle, Keyboard } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 
 const DENOMINATIONS = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
@@ -19,6 +19,7 @@ const roundUp = (amount, to) => Math.ceil(amount / to) * to;
 
 const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
   const [display, setDisplay] = useState(value || "");
+  const [showKeypad, setShowKeypad] = useState(false);
 
   useEffect(() => { setDisplay(value || ""); }, [value]);
 
@@ -59,10 +60,10 @@ const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
       <div className="relative">
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-900 dark:bg-slate-950 border border-slate-700">
           <span className="text-xs text-slate-500 font-medium">{currency}</span>
-          <span className={`text-2xl font-black tracking-tight ${display ? "text-white" : "text-slate-600"}`}>
-            {display || "0"}
-          </span>
-          <button onClick={backspace} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
+          <input aria-label="Cash received" inputMode="decimal" autoComplete="off" placeholder="0" value={display}
+            onChange={event => { const next = event.target.value; if (/^\d*\.?\d{0,2}$/.test(next)) { setDisplay(next); onChange(next); } }}
+            className="min-w-0 flex-1 bg-transparent px-3 text-right text-xl font-semibold text-white outline-none" />
+          <button type="button" aria-label="Delete last cash digit" onClick={backspace} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
             <Delete className="w-4 h-4" />
           </button>
         </div>
@@ -98,7 +99,8 @@ const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
       </div>
 
       {/* Numpad grid */}
-      <div className="grid grid-cols-3 keep-cols gap-2">
+      <button type="button" aria-expanded={showKeypad} onClick={() => setShowKeypad(current => !current)} className="flex min-h-9 items-center gap-2 text-xs text-slate-500"><Keyboard className="h-4 w-4" />{showKeypad ? 'Hide keypad' : 'Show keypad'}</button>
+      {showKeypad && <div className="grid grid-cols-3 keep-cols gap-2">
         {KEYS.map((k) => (
           <button
             key={k}
@@ -108,10 +110,10 @@ const CashNumpad = ({ payableAmount, value, onChange, currency }) => {
             {k}
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* Denomination breakdown */}
-      {breakdown.length > 0 && (
+      {showKeypad && breakdown.length > 0 && (
         <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Return in denominations</p>
           <div className="flex flex-wrap gap-1.5">

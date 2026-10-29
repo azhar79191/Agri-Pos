@@ -125,6 +125,8 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
       const invoiceRecord = invoice.invoice ?? invoice;
       const isPending     = invoiceRecord.status === "Pending";
       const transaction   = {
+        _id:           invoiceRecord._id,
+        customerEmail: customer?.email || '',
         id:            invoiceRecord.invoiceNumber || generateInvoiceNumber(),
         invoiceNumber: invoiceRecord.invoiceNumber,
         date:          getTodayDate(),

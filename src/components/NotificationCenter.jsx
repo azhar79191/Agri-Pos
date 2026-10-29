@@ -100,7 +100,11 @@ const NotificationCenter = () => {
         const myId = me._id || me.id;
         if (myId && String(myId) === String(data.userId)) {
           // Update localStorage and dispatch to AppContext
-          const updated = { ...me, permissions: data.permissions };
+          const updated = { ...me, permissions: data.permissions,
+            ...(data.role !== undefined ? { role: data.role } : {}),
+            ...(data.customRoleId !== undefined ? { customRoleId: data.customRoleId } : {}),
+            ...(data.permissionsCustomized !== undefined ? { permissionsCustomized: data.permissionsCustomized } : {}),
+          };
           localStorage.setItem("user", JSON.stringify(updated));
           window.dispatchEvent(new CustomEvent("user-updated", { detail: updated }));
           actions.showToast({ message: "Your permissions have been updated by admin", type: "info" });

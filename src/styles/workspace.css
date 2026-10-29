@@ -35,6 +35,7 @@ body { font-family: Inter, system-ui, sans-serif; background: var(--workspace-bg
 .workspace-shell .animate-ping { animation: none; }
 .receipt-paper[data-receipt-template="compact"] { max-width: 560px; margin: auto; padding: 20px; font-size: 12px; }
 @media print {
+  div:has(> .receipt), div:has(.receipt-modal) { max-height: none !important; height: auto !important; overflow: visible !important; }
   .receipt-paper { height: auto !important; max-height: none !important; overflow: visible !important; }
   .receipt-paper table tr { break-inside: avoid; }
 }
@@ -74,8 +75,5 @@ button .loading-indicator > i { display: none; }
 .auth-brand { background: #f1f5fb; color: #172033; }
 .auth-shell button[type="submit"] { background-image: none; background-color: var(--pos-primary); color: var(--pos-primary-foreground); box-shadow: none; }
 .auth-shell input { border-radius: 8px; font-size: 14px; }
-@media (min-width: 1024px) {
-  .pos-cart { max-height: calc(100vh - 18rem); }
-  .pos-cart > div:first-child { min-height: 0; overflow-y: auto; }
-}
+.pos-cart > div:first-child { overflow: visible; }
 @media (prefers-reduced-motion: reduce) { .button-spinner, button .loading-indicator { animation: none; } }
