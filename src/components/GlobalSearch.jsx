@@ -1,3 +1,4 @@
+import Modal from "./ui/Modal";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Search, X, ArrowRight, Command, Clock, Zap, CornerDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -94,16 +95,6 @@ const GlobalSearch = () => {
     else { setQuery(""); setActiveIdx(0); }
   }, [open]);
 
-  // Outside click
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
   // Filtered page results
   const pageResults = useMemo(() => {
     if (!query.trim()) return [];
@@ -191,14 +182,12 @@ const GlobalSearch = () => {
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[8vh] px-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-
-          <div
-            ref={containerRef}
-            className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
-            style={{ animation: "scale-in 0.15s ease both" }}
-          >
+        <Modal
+          isOpen
+          onClose={() => setOpen(false)}
+          title="Search workspace"
+          size="lg"
+          bodyClassName="app-modal__body--flush"><div ref={containerRef}>
             {/* ── Search input ── */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
               <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -381,8 +370,7 @@ const GlobalSearch = () => {
                 </span>
               )}
             </div>
-          </div>
-        </div>
+          </div></Modal>
       )}
     </>
   );

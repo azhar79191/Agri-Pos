@@ -1,7 +1,8 @@
+import Modal from "../components/ui/Modal";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import React, { useEffect, useState } from "react";
-import { Plus, Edit3, Trash2, Shield, Eye, EyeOff, UserCheck, UserX, Settings, RefreshCw, Users, X } from "lucide-react";
+import { Plus, Edit3, Trash2, Shield, Eye, EyeOff, UserCheck, UserX, Settings, RefreshCw, Users } from "lucide-react";
 import { useUsers } from "../hooks/useUsers";
 import { useUserManagement } from "../hooks/useUserManagement";
 import { ConfirmModal } from "../components/ui/ModernModal";
@@ -39,7 +40,7 @@ const UserManagement = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      {/* Header */}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
@@ -120,13 +121,13 @@ const UserManagement = () => {
 
       {/* Add / Edit modal */}
       {showAddUser && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => { setShowAddUser(false); setShowPassword(false); }}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">{editingUser ? "Edit User" : "Add New User"}</h3>
-            </div>
-            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
+        <Modal
+          isOpen
+          onClose={() => { setShowAddUser(false); setShowPassword(false); }}
+          title={<>{editingUser ? "Edit User" : "Add New User"}</>}
+          size="sm"><div className="space-y-4">
+
+            <form onSubmit={handleSubmit} className="space-y-4">
               {[
                 { label: "Full Name", key: "name",  type: "text",  required: true },
                 { label: "Email",     key: "email", type: "email", required: true },
@@ -179,25 +180,19 @@ const UserManagement = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+          </div></Modal>
       )}
 
       {/* Permissions modal */}
       {showPermissions && selectedUser && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowPermissions(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Permissions — {selectedUser.name}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedUser.permissions?.length || 0} of {ALL_PERMISSION_KEYS.length} granted</p>
-              </div>
-              <button onClick={() => setShowPermissions(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex gap-2">
+        <Modal
+          isOpen
+          onClose={() => setShowPermissions(false)}
+          title={<>Permissions — {selectedUser.name}</>}
+          size="lg"
+          subtitle={<>{selectedUser.permissions?.length || 0} of {ALL_PERMISSION_KEYS.length} granted</>}><div className="space-y-4">
+
+            <div className="border-b border-slate-100 dark:border-slate-800 flex gap-2">
               <button onClick={() => handleGrantAll(selectedUser._id)} disabled={permSubmitting} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors">
                 <UserCheck className="w-3.5 h-3.5" />Grant All
               </button>
@@ -205,7 +200,7 @@ const UserManagement = () => {
                 <UserX className="w-3.5 h-3.5" />Revoke All
               </button>
             </div>
-            <div className="overflow-y-auto flex-1 p-6">
+            <div className="">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {AVAILABLE_PERMISSIONS.map((perm) => {
                   const has = (selectedUser.permissions || []).includes(perm.key);
@@ -224,8 +219,7 @@ const UserManagement = () => {
                 })}
               </div>
             </div>
-          </div>
-        </div>
+          </div></Modal>
       )}
 
       <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Delete User" message={`Are you sure you want to delete "${deleteTarget?.name}"?`} confirmText="Delete" confirmVariant="danger" icon={Trash2} iconColor="red" />

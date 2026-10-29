@@ -1,13 +1,12 @@
+import Modal from "./ui/Modal";
 import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
-import { DollarSign, Wallet, CreditCard, X, ArrowRight } from "lucide-react";
+import { DollarSign, Wallet, CreditCard, ArrowRight } from "lucide-react";
 import ModernButton from "./ui/ModernButton";
 import { useCustomers } from "../context/CustomersContext";
 import { useApp } from "../context/AppContext";
 import { formatCurrency } from "../utils/helpers";
 import { depositCredit, walletDeposit } from "../api/customersApi";
-import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const TAB_DEPOSIT = "deposit"; // clears creditBalance first, excess → walletBalance
 const TAB_WALLET  = "wallet";  // adds directly to walletBalance
@@ -22,9 +21,6 @@ const DepositCashModal = ({ isOpen, onClose }) => {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  // Lock body scroll when modal is open
-  useBodyScrollLock(isOpen);
 
   const customer = customers.find(c => c._id === selectedCustomer);
   const dep = parseFloat(amount) || 0;
@@ -79,27 +75,24 @@ const DepositCashModal = ({ isOpen, onClose }) => {
 
   const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={handleClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative z-10000 w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700/50" onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-blue-900/20 flex items-center justify-center">
-            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-white">Customer Payment</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Deposit cash or top up wallet</p>
-          </div>
-          <button onClick={handleClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+  return (
+    <Modal
+          isOpen
+          onClose={handleClose}
+          title={<>Customer Payment</>}
+          size="sm"
+          subtitle={<>Deposit cash or top up wallet</>}
+          icon={DollarSign}
+          footer={<div className="flex justify-end gap-3">
+          <ModernButton variant="secondary" onClick={handleClose}>Cancel</ModernButton>
+          <ModernButton variant="primary" onClick={handleSubmit} loading={submitting}
+            disabled={!selectedCustomer || !dep || dep <= 0} icon={DollarSign}>
+            {tab === TAB_DEPOSIT ? "Confirm Deposit" : "Add to Wallet"}
+          </ModernButton>
+        </div>}><div className="space-y-4">
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 mx-5 mt-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+        <div className="flex gap-1 mt-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
           {[
             { id: TAB_DEPOSIT, label: "Clear Credit", icon: CreditCard },
             { id: TAB_WALLET,  label: "Wallet Top-up", icon: Wallet },
@@ -112,12 +105,12 @@ const DepositCashModal = ({ isOpen, onClose }) => {
             </button>
           ))}
         </div>
-        <p className="text-xs text-slate-400 text-center mt-1.5 px-5">
+        <p className="text-xs text-slate-400 text-center mt-1.5">
           {tab === TAB_DEPOSIT ? "Clears credit dues first — excess goes to wallet" : "Adds directly to wallet balance"}
         </p>
 
         {/* Body */}
-        <div className="px-5 py-4 space-y-4">
+        <div className="space-y-4">
           {/* Customer */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Customer</label>
@@ -198,17 +191,9 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-          <ModernButton variant="secondary" onClick={handleClose}>Cancel</ModernButton>
-          <ModernButton variant="primary" onClick={handleSubmit} loading={submitting}
-            disabled={!selectedCustomer || !dep || dep <= 0} icon={DollarSign}>
-            {tab === TAB_DEPOSIT ? "Confirm Deposit" : "Add to Wallet"}
-          </ModernButton>
-        </div>
-      </div>
-    </div>,
-    document.body
+
+
+      </div></Modal>
   );
 };
 

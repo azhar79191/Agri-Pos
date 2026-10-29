@@ -1,5 +1,6 @@
+import Modal from "../components/ui/Modal";
 import React, { useState, useMemo } from "react";
-import { ShoppingCart, Plus, Minus, Trash2, Receipt, X, Package, Zap, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Receipt, X, Package, Zap } from "lucide-react";
 import { DEMO_PRODUCTS, DEMO_CUSTOMERS, DEMO_SETTINGS, disableDemoMode } from "../data/demoData";
 import { formatCurrency } from "../utils/helpers";
 import { normalizeInvoiceItems } from "../utils/normalizeInvoiceItems";
@@ -195,21 +196,19 @@ const DemoPOS = () => {
 
       {/* Receipt Modal */}
       {receipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto" style={{ animation: "scale-in 0.15s ease both" }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <Receipt className="w-4 h-4 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="font-bold text-slate-900 text-sm">Receipt (Demo)</p>
-                  <p className="text-xs text-slate-400 font-mono">{receipt.invoiceNumber}</p>
-                </div>
-              </div>
-              <button onClick={() => setReceipt(null)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="p-5">
+        <Modal
+          isOpen
+          onClose={() => setReceipt(null)}
+          title="Receipt"
+          size="xs"
+          subtitle={<>{receipt.invoiceNumber}</>}
+          footer={<div className="">
+              <button onClick={() => setReceipt(null)} className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-colors">
+                New Sale
+              </button>
+            </div>}><div className="space-y-4">
+
+            <div className="">
               <div className="text-center mb-4 pb-4 border-b border-dashed border-slate-200">
                 <p className="font-bold text-lg text-slate-900">{DEMO_SETTINGS.shopName}</p>
                 <p className="text-xs text-slate-500">{receipt.date} {receipt.time}</p>
@@ -237,13 +236,8 @@ const DemoPOS = () => {
               </div>
               <p className="text-center text-xs text-slate-400 mt-4">{DEMO_SETTINGS.receiptFooter}</p>
             </div>
-            <div className="px-5 pb-5">
-              <button onClick={() => setReceipt(null)} className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-colors">
-                New Sale
-              </button>
-            </div>
-          </div>
-        </div>
+
+          </div></Modal>
       )}
     </div>
   );

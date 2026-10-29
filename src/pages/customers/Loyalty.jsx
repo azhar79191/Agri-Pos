@@ -1,7 +1,8 @@
+import Modal from "../../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
-import { Award, Gift, Crown, X, Star } from "lucide-react";
+import { Award, Gift, Crown, Star } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
@@ -129,14 +130,19 @@ const Loyalty = () => {
 
       {/* Redeem modal */}
       {redeemModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setRedeemModal(null)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200/80 dark:border-slate-700/50 animate-scale-in p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 dark:text-white">Redeem Points</h3>
-              <button onClick={() => setRedeemModal(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="w-5 h-5" /></button>
-            </div>
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <Modal
+          isOpen
+          onClose={() => setRedeemModal(null)}
+          title={<>Redeem Points</>}
+          size="xs"
+          footer={<div className="flex gap-3">
+              <button onClick={() => setRedeemModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={handleRedeem} disabled={redeeming} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-amber-500 hover:bg-amber-600 transition-colors">
+                {redeeming ? <LoadingIndicator /> : <Gift className="w-4 h-4" />}Redeem
+              </button>
+            </div>}><div className="space-y-4">
+
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">{redeemModal.name}</p>
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Available: <strong>{(redeemModal.points || 0).toLocaleString()} points</strong></p>
             </div>
@@ -146,14 +152,8 @@ const Loyalty = () => {
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all" />
               {redeemPts && <p className="text-xs text-slate-400 mt-1">Value: {formatCurrency(parseInt(redeemPts) * 0.5, settings.currency)}</p>}
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => setRedeemModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-              <button onClick={handleRedeem} disabled={redeeming} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-amber-500 hover:bg-amber-600 transition-colors">
-                {redeeming ? <LoadingIndicator /> : <Gift className="w-4 h-4" />}Redeem
-              </button>
-            </div>
-          </div>
-        </div>
+
+          </div></Modal>
       )}
     </div>
   );

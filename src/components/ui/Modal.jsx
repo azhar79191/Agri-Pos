@@ -1,57 +1,57 @@
-import useDialogAccessibility from "../../hooks/useDialogAccessibility";
-import React, { useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
-import useBodyScrollLock from "../../hooks/useBodyScrollLock";
+import React, { useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
+import useDialogAccessibility from '../../hooks/useDialogAccessibility';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 
-const Modal = ({
-  isOpen, onClose, title, children, footer = null,
-  size = "md", showCloseButton = true,
-  closeOnOverlayClick = true, closeOnEsc = true,
-}) => {
-  // Lock body scroll when modal is open
+const sizes = { xs: 'max-w-sm', sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl', '2xl': 'max-w-6xl', full: 'max-w-full' };
+
+/** Shared dialog shell. Keep business logic and form state in the caller. */
+export default function Modal({
+  isOpen, onClose, title, subtitle, children, footer = null,
+  size = 'md', showCloseButton = true, closeOnOverlayClick = true, closeOnEsc = true,
+  icon: Icon, iconColor = 'brand', headerActions, ariaLabel = 'Dialog',
+  className = '', bodyClassName = '', ...dialogProps
+}) {
   useBodyScrollLock(isOpen);
   const { dialogRef, titleId } = useDialogAccessibility(isOpen);
+  const descriptionId = useId();
 
   useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e) => { if (e.key === "Escape" && closeOnEsc) onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => { document.removeEventListener("keydown", handler); };
-  }, [isOpen, closeOnEsc, onClose]);
+    if (!isOpen || !closeOnEsc) return;
+    const handler = event => {
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (event.key === 'Escape' && dialogs[dialogs.length - 1] === dialogRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        onClose?.();
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, closeOnEsc, onClose, dialogRef]);
 
   if (!isOpen) return null;
-
-  const sizes = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-4xl", "2xl": "max-w-6xl", full: "max-w-full mx-4" };
-
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4" onClick={closeOnOverlayClick ? onClose : undefined}>
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
-      <div
-        ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : "Dialog"} tabIndex={-1}
-        className={`relative z-10000 w-full ${sizes[size]} max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden rounded-lg sm:rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 animate-scale-in`}
-        onClick={e => e.stopPropagation()}
-      >
-        {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-3.5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            {title && <h3 id={titleId} className="text-sm sm:text-base font-semibold text-slate-800 dark:text-white truncate pr-2">{title}</h3>}
-            {showCloseButton && (
-              <button type="button" aria-label="Close dialog" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors flex-shrink-0">
-                <X className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-            )}
+    <div className="app-modal" onClick={event => {
+      if (event.target === event.currentTarget && closeOnOverlayClick) onClose?.();
+    }}>
+      <div {...dialogProps} ref={dialogRef} role="dialog" aria-modal="true"
+        aria-labelledby={title ? titleId : undefined} aria-label={title ? undefined : ariaLabel}
+        aria-describedby={subtitle ? descriptionId : undefined} tabIndex={-1}
+        className={`app-modal__panel w-full ${sizes[size] || sizes.md} ${className}`}>
+        {(title || showCloseButton) && <header className="app-modal__header">
+          {Icon && <span className="app-modal__icon" data-tone={iconColor} aria-hidden="true"><Icon size={18} strokeWidth={1.75} /></span>}
+          <div className="app-modal__heading">
+            {title && <h3 id={titleId}>{title}</h3>}
+            {subtitle && <p id={descriptionId}>{subtitle}</p>}
           </div>
-        )}
-        <div className="px-3 sm:px-5 py-3 sm:py-4 overflow-y-auto flex-1 modal-content-scroll">{children}</div>
-        {footer && (
-          <div className="px-3 sm:px-5 py-3 sm:py-3.5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex-shrink-0">
-            {footer}
-          </div>
-        )}
+          {headerActions}
+          {showCloseButton && <button type="button" className="app-modal__close" aria-label="Close dialog" onClick={onClose}><X size={17} /></button>}
+        </header>}
+        <div className={`app-modal__body modal-content-scroll ${bodyClassName}`}>{children}</div>
+        {footer && <footer className="app-modal__footer">{footer}</footer>}
       </div>
-    </div>,
-    document.body
+    </div>, document.body
   );
-};
-
-export default Modal;
+}

@@ -1,6 +1,6 @@
+import Modal from "./Modal";
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, Check, X } from "lucide-react";
-import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const ICONS = { success: CheckCircle, error: XCircle, warning: AlertTriangle, info: Info };
 
@@ -15,30 +15,16 @@ const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
   const Icon = ICONS[type] || AlertTriangle;
   const style = STYLES[type] || STYLES.warning;
 
-  // Lock body scroll when confirm toast is open
-  useBodyScrollLock(true);
-
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 modal-backdrop animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-lg shadow-premium-lg max-w-sm w-full overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-700">
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${style.iconBg}`}>
-            <Icon className={`w-5 h-5 ${style.iconColor}`} />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Confirm Action</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Please confirm to proceed</p>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div className="px-5 py-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{message}</p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3 px-5 pb-4">
+    <Modal
+          isOpen
+          onClose={onCancel}
+          title={<>Confirm Action</>}
+          size="xs"
+          subtitle={<>Please confirm to proceed</>}
+          icon={Icon}
+          iconColor={type === "error" ? "red" : type === "warning" ? "amber" : "brand"}
+          footer={<div className="flex gap-3">
           <button
             onClick={onCancel}
             className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md font-medium text-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
@@ -51,9 +37,14 @@ const ConfirmToast = ({ message, type = "warning", onConfirm, onCancel }) => {
           >
             <Check className="w-4 h-4" />Confirm
           </button>
+        </div>}><div className="space-y-4">
+
+        {/* Body */}
+        <div className="">
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{message}</p>
         </div>
-      </div>
-    </div>
+
+      </div></Modal>
   );
 };
 

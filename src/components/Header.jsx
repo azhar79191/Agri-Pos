@@ -1,6 +1,7 @@
+import Modal from "./ui/Modal";
 import { companyName } from "../utils/company";
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, LogOut, ChevronDown, Shield, User, Store, Download, Share, X } from "lucide-react";
+import { LogOut, ChevronDown, Shield, User, Store, Download, Share } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
@@ -159,7 +160,6 @@ const Header = () => {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="p-1.5">
                 <button
                   onClick={() => { navigate("/profile"); setShowMenu(false); }}
@@ -203,35 +203,29 @@ const Header = () => {
 
     {/* Install instructions modal — for iOS / non-Chrome browsers */}
     {showInstallModal && (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-        onClick={() => setShowInstallModal(false)}
-      >
-        <div
-          className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Download className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Install {companyName(settings)}</p>
-                <p className="text-xs text-slate-400">Add to your device</p>
-              </div>
-            </div>
+      <Modal
+          isOpen
+          onClose={() => setShowInstallModal(false)}
+          title="Install app"
+          size="xs"
+          subtitle={<>Add to your device</>}
+          footer={<div className="flex gap-2">
             <button
               onClick={() => setShowInstallModal(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
-              <X className="w-4 h-4" />
+              Maybe later
             </button>
-          </div>
+            <button
+              onClick={() => setShowInstallModal(false)}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors"
+            >
+              Got it
+            </button>
+          </div>}><div className="space-y-4">
 
           {/* Body */}
-          <div className="p-5">
+          <div className="">
             {isIOS ? (
               <div>
                 <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">
@@ -275,23 +269,9 @@ const Header = () => {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="px-5 pb-5 flex gap-2">
-            <button
-              onClick={() => setShowInstallModal(false)}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-            >
-              Maybe later
-            </button>
-            <button
-              onClick={() => setShowInstallModal(false)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors"
-            >
-              Got it
-            </button>
-          </div>
-        </div>
-      </div>
+
+
+        </div></Modal>
     )}
     </>
   );

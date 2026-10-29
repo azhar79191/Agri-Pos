@@ -1,3 +1,4 @@
+import Modal from "../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
@@ -5,13 +6,7 @@ import Pagination from "../components/ui/Pagination";
 import DataTable from "../components/ui/DataTable";
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Shield, Store, Users, CheckCircle, XCircle, Clock,
-  TrendingUp, Trash2, RefreshCw, Eye, EyeOff,
-  AlertTriangle, Crown, Zap, X, LogOut,
-  Copy, Check, Phone, Mail, User, Key, Calendar,
-  Activity, Lock, ChevronDown, ChevronUp, Search,
-} from "lucide-react";
+import { Shield, Store, Users, CheckCircle, XCircle, Clock, TrendingUp, Trash2, RefreshCw, Eye, EyeOff, AlertTriangle, Crown, Zap, LogOut, Copy, Check, Phone, Mail, User, Key, Calendar, Activity, Lock, ChevronDown, ChevronUp, Search } from "lucide-react";
 import {
   getSuperAdminStats, getAllShops, approveShop,
   grantPlan, suspendShop, unsuspendShop,
@@ -103,27 +98,20 @@ const ShopUsersModal = ({ shop, onClose }) => {
   const fmt = d => d ? new Date(d).toLocaleString("en-PK", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-5xl max-h-[90vh] flex flex-col" style={{ animation: "scale-in 0.15s ease both" }}>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 dark:text-white">Users — {shop.name}</h3>
-              <p className="text-xs text-slate-400 mt-0.5">{loading ? "Loading…" : `${users.length} user${users.length !== 1 ? "s" : ""} · All database fields`}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal
+          isOpen
+          onClose={onClose}
+          title={<>Users — {shop.name}</>}
+          size="2xl"
+          subtitle={<>{loading ? "Loading…" : `${users.length} user${users.length !== 1 ? "s" : ""} · All database fields`}</>}
+          icon={Users}
+          footer={<div className="flex items-center justify-between">
+          <p className="text-xs text-slate-400">{filtered.length} of {users.length} users{search && ` · filtered by "${search}"`}</p>
+          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Close</button>
+        </div>}><div className="space-y-4">
 
         {/* Search */}
-        <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+        <div className="border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, phone, role…"
@@ -132,7 +120,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="">
           {loading ? (
             <LoadingState label="Loading user data" />
           ) : error ? (
@@ -276,13 +264,9 @@ const ShopUsersModal = ({ shop, onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 flex-shrink-0 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
-          <p className="text-xs text-slate-400">{filtered.length} of {users.length} users{search && ` · filtered by "${search}"`}</p>
-          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Close</button>
-        </div>
-      </div>
-    </div>
+
+
+      </div></Modal>
   );
 };
 
@@ -316,13 +300,21 @@ const PlanModal = ({ shop, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-md" style={{ animation: "scale-in 0.15s ease both" }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="font-bold text-slate-900 dark:text-white">{shop?.isApproved ? "Change Plan" : "Approve Shop"} — {shop?.name}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-5 space-y-4">
+    <Modal
+          isOpen
+          onClose={onClose}
+          title={<>{shop?.isApproved ? "Change Plan" : "Approve Shop"} — {shop?.name}</>}
+          size="sm"
+          footer={<div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+          <button onClick={handleSave} disabled={saving}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
+            {shop?.isApproved ? "Update Plan" : "Approve & Activate"}
+          </button>
+        </div>}><div className="space-y-4">
+
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Select Plan</label>
             <div className="space-y-2">
@@ -351,16 +343,8 @@ const PlanModal = ({ shop, onClose, onSave }) => {
             </div>
           </div>
         </div>
-        <div className="flex gap-3 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
-            {shop?.isApproved ? "Update Plan" : "Approve & Activate"}
-          </button>
-        </div>
-      </div>
-    </div>
+
+      </div></Modal>
   );
 };
 
@@ -377,27 +361,28 @@ const SuspendModal = ({ shop, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-sm" style={{ animation: "scale-in 0.15s ease both" }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <h3 className="font-bold text-slate-900 dark:text-white">Suspend — {shop?.name}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-5">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Reason (optional)</label>
-          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3} placeholder="e.g. Payment overdue..."
-            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all" />
-        </div>
-        <div className="flex gap-3 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+    <Modal
+          isOpen
+          onClose={onClose}
+          title={<>Suspend — {shop?.name}</>}
+          size="xs"
+          iconColor={"red"}
+          footer={<div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 transition-colors">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors">
             {saving ? <LoadingIndicator /> : <XCircle className="w-4 h-4" />}
             Suspend
           </button>
+        </div>}><div className="space-y-4">
+
+        <div className="">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Reason (optional)</label>
+          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3} placeholder="e.g. Payment overdue..."
+            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all" />
         </div>
-      </div>
-    </div>
+
+      </div></Modal>
   );
 };
 
@@ -450,7 +435,6 @@ const SuperAdminDashboard = () => {
   return (
     <div className="platform-workspace workspace-shell min-h-screen p-4 sm:p-8 space-y-6">
 
-      {/* Header */}
       <div className="workspace-hero flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
@@ -577,7 +561,7 @@ const SuperAdminDashboard = () => {
                     <td className="px-4 py-3.5 text-xs text-slate-500">
                       {shop.planExpiry ? new Date(shop.planExpiry).toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                     </td>
-                    {/* Actions */}
+
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {/* View Users */}

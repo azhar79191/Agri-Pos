@@ -1,6 +1,7 @@
+import Modal from "../ui/Modal";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState, useRef, useEffect } from "react";
-import { X, Mail, KeyRound, Lock, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Mail, KeyRound, Lock, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { requestPasswordReset, verifyResetCode, resetPassword, resendResetCode } from "../../api/authApi";
 
 /**
@@ -74,7 +75,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
   const handleVerifyCode = async (e) => {
     e.preventDefault();
     const codeString = code.join("");
-    
+
     if (codeString.length !== 6) {
       setError("Please enter the complete 6-digit code");
       return;
@@ -86,7 +87,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
     try {
       const response = await verifyResetCode({ email, code: codeString });
       const token = response.data?.data?.resetToken || response.data?.resetToken;
-      
+
       if (!token) {
         throw new Error("Reset token not received");
       }
@@ -177,13 +178,13 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     const newCode = [...code];
-    
+
     for (let i = 0; i < pastedData.length; i++) {
       newCode[i] = pastedData[i];
     }
-    
+
     setCode(newCode);
-    
+
     if (pastedData.length === 6) {
       codeInputs.current[5]?.focus();
     } else if (pastedData.length > 0) {
@@ -194,41 +195,21 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
-        {/* Header */}
-        <div className="relative px-6 py-5 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <KeyRound className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Reset Password</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Step {step} of 3
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
-          </div>
-
-          {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-800">
+    <Modal
+          isOpen
+          onClose={onClose}
+          title={<>Reset Password</>}
+          size="sm"
+          subtitle={<>Step {step} of 3</>}
+          icon={KeyRound}><div className="space-y-4"><div className="h-1 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
             <div
               className="h-full bg-blue-600 transition-all duration-300"
               style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
-        </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="">
           {/* Error/Success Messages */}
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-2">
@@ -444,8 +425,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
             </form>
           )}
         </div>
-      </div>
-    </div>
+      </div></Modal>
   );
 };
 

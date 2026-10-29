@@ -1,34 +1,28 @@
 import { useEffect } from 'react';
 
-/**
- * Custom hook to lock body scroll when a modal/overlay is open
- * @param {boolean} isLocked - Whether to lock the body scroll
- */
-const useBodyScrollLock = (isLocked = true) => {
+let locks = 0;
+let originalOverflow = '';
+let originalPaddingRight = '';
+
+/** Keep scrolling locked until the last stacked dialog or overlay closes. */
+export default function useBodyScrollLock(isLocked = true) {
   useEffect(() => {
     if (!isLocked) return;
-
-    // Store original overflow value
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
-
-    // Get scrollbar width to prevent layout shift
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-
-    // Lock scroll
-    document.body.style.overflow = 'hidden';
-    
-    // Add padding to prevent layout shift when scrollbar disappears
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    if (locks === 0) {
+      originalOverflow = document.body.style.overflow;
+      originalPaddingRight = document.body.style.paddingRight;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const padding = parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) document.body.style.paddingRight = `${padding + scrollbarWidth}px`;
     }
-
-    // Cleanup function
+    locks += 1;
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
+      locks -= 1;
+      if (locks === 0) {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      }
     };
   }, [isLocked]);
-};
-
-export default useBodyScrollLock;
+}

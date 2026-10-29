@@ -1,10 +1,8 @@
+import Modal from "../components/ui/Modal";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
 import React, { useState, useEffect } from "react";
-import {
-  FileText, Search, Download, CheckCircle, Clock,
-  Wifi, WifiOff, RefreshCw, RotateCcw, Trash2, X, TrendingUp,
-} from "lucide-react";
+import { FileText, Search, Download, CheckCircle, Clock, Wifi, WifiOff, RefreshCw, RotateCcw, Trash2, X, TrendingUp } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useInvoices } from "../hooks/useInvoices";
 import { useInvoiceActions } from "../hooks/useInvoiceActions";
@@ -18,7 +16,6 @@ import { CardSkeleton } from "../components/ui/Skeleton";
 import { ConfirmModal } from "../components/ui/ModernModal";
 import Pagination from "../components/ui/Pagination";
 import Select from "../components/ui/Select";
-import useBodyScrollLock from "../hooks/useBodyScrollLock";
 
 const LIMIT = 12;
 
@@ -46,7 +43,6 @@ const InvoiceManagement = () => {
   const [emailInvoice, setEmailInvoice] = useState(null);
 
   // Lock body scroll when invoice modal is open
-  useBodyScrollLock(showModal);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchInvoices({ page, limit: LIMIT, sort: sortOrder, search: search.trim() || undefined, status: filterStatus === "all" ? undefined : filterStatus, paymentMethod: filterPayment === "all" ? undefined : filterPayment }), 250);
@@ -76,7 +72,7 @@ const InvoiceManagement = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      {/* Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200/50 dark:shadow-blue-900/30">
@@ -182,32 +178,16 @@ const InvoiceManagement = () => {
       {emailInvoice && <EmailInvoiceModal invoice={emailInvoice} onClose={() => setEmailInvoice(null)} />}
       {/* Invoice view modal */}
       {showModal && selectedInvoice && (
-        <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:block" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm modal-backdrop" />
-          <div
-            className=" z-10 w-full  max-w-6xl flex flex-col overflow-y-auto h-[80vh] rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 shadow-premium-lg border border-slate-200 dark:border-slate-700 animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
-                  <FileText className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Invoice #{selectedInvoice.invoiceNumber}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <Modal
+          isOpen
+          onClose={() => setShowModal(false)}
+          title={<>Invoice #{selectedInvoice.invoiceNumber}</>}
+          size="2xl"
+          subtitle={<>
                     {selectedInvoice.customerName || "Walk-in Customer"} • {new Date(selectedInvoice.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all flex-shrink-0"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+                  </>}
+          icon={FileText}
+          bodyClassName="app-modal__body--flush">
 
             {/* Modal Content - Scrollable */}
             <div className="flex-1">
@@ -219,8 +199,7 @@ const InvoiceManagement = () => {
                 onEmail={() => { setShowModal(false); setEmailInvoice(selectedInvoice); }}
               />
             </div>
-          </div>
-        </div>
+          </Modal>
       )}
 
       <ConfirmModal isOpen={!!refundTarget} onClose={() => setRefundTarget(null)} onConfirm={handleRefund} title="Refund Invoice" message={`Refund Invoice #${refundTarget?.invoiceNumber}? Stock will be restored and any credit reversed.`} confirmText="Refund" confirmVariant="danger" loading={refunding} icon={RotateCcw} iconColor="amber" />

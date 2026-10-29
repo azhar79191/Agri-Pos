@@ -1,9 +1,8 @@
+import Modal from "../ui/Modal";
 import { scopedStorageKey } from "../../utils/browserScope";
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { PauseCircle, PlayCircle, Trash2, X, ShoppingCart } from "lucide-react";
+import { PauseCircle, PlayCircle, Trash2, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
-import useBodyScrollLock from "../../hooks/useBodyScrollLock";
 
 const storageKey = () => scopedStorageKey("pos_held_sales");
 
@@ -32,9 +31,6 @@ export const removeHeldSale = (id) => {
 const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {
   const [held, setHeld] = useState([]);
 
-  // Lock body scroll when modal is open
-  useBodyScrollLock(isOpen);
-
   useEffect(() => {
     if (isOpen) setHeld(getHeldSales());
   }, [isOpen]);
@@ -52,27 +48,17 @@ const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div
-        className="relative z-10000 w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-            <PauseCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Held Sales</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{held.length} sale{held.length !== 1 ? "s" : ""} on hold</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+  return (
+    <Modal
+          isOpen
+          onClose={onClose}
+          title={<>Held Sales</>}
+          size="sm"
+          subtitle={<>{held.length} sale{held.length !== 1 ? "s" : ""} on hold</>}
+          icon={PauseCircle}><div className="space-y-4">
 
-        <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
+
+        <div className="space-y-2">
           {held.length === 0 ? (
             <div className="text-center py-10">
               <ShoppingCart className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
@@ -107,9 +93,7 @@ const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {
             })
           )}
         </div>
-      </div>
-    </div>,
-    document.body
+      </div></Modal>
   );
 };
 

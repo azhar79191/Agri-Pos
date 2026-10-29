@@ -1,7 +1,8 @@
+import Modal from "../ui/Modal";
 import React, { useState } from "react";
 import EmailInvoiceModal from "../invoices/EmailInvoiceModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { Receipt, Printer, Download, X, CheckCircle, Clock, MessageCircle, Mail } from "lucide-react";
+import { Receipt, Printer, Download, MessageCircle, Mail } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import { downloadInvoicePDF } from "../../utils/pdfGenerator";
 import { shareReceiptOnWhatsApp } from "../../utils/whatsappShare";
@@ -14,55 +15,43 @@ const ReceiptEmail = ({ transaction }) => {
 const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName }) => (
   <AnimatePresence>
     {isOpen && transaction && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: "rgba(2,6,23,0.7)", backdropFilter: "blur(8px)" }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.92, y: 24 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.92, y: 24 }}
-          transition={{ type: "spring", stiffness: 280, damping: 22 }}
-          className="receipt-modal bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 overflow-hidden"
+      <Modal
+          isOpen
+          onClose={onClose}
+          title="Receipt"
+          size="md"
+          subtitle={<>{transaction.invoiceNumber || transaction.id}</>}
+          icon={Receipt}
+          className="receipt-modal"
           data-receipt-template={settings.receiptTemplate || "standard"}
-        >
-          {/* Modal header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.15 }}
-                className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                  transaction.status === "Pending"
-                    ? "bg-amber-100 dark:bg-amber-900/30"
-                    : "bg-emerald-100 dark:bg-blue-900/20"
-                }`}
-              >
-                {transaction.status === "Pending"
-                  ? <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  : <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                }
-              </motion.div>
-              <div>
-                <p className="font-bold text-slate-900 dark:text-white text-sm">Receipt</p>
-                <p className="text-xs text-slate-400 font-mono">{transaction.invoiceNumber || transaction.id}</p>
-              </div>
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
-            >
-              <X className="w-4 h-4" />
+          footer={<div className="flex flex-wrap gap-2 print:hidden">
+            <ReceiptEmail transaction={transaction} />
+            <motion.button whileTap={{ scale: 0.96 }} onClick={onClose}
+              className="py-2.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              Close
             </motion.button>
-          </div>
+            <motion.button whileTap={{ scale: 0.96 }} onClick={() => window.print()}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <Printer className="w-4 h-4" />Print
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+              onClick={() => shareReceiptOnWhatsApp(transaction, settings, transaction.customerPhone)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-sm transition-all"
+            >
+              <MessageCircle className="w-4 h-4" />WhatsApp
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+              onClick={() => downloadInvoicePDF(transaction, settings)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-all"
+            >
+              <Download className="w-4 h-4" />PDF
+            </motion.button>
+          </div>}><div className="space-y-4">
 
           {/* Receipt content */}
-          <div className="flex-1 overflow-y-auto p-5">
+          <div className="">
             <div className="receipt receipt-paper bg-white rounded-lg border border-dashed border-slate-200 p-5">
               {/* Pending notice */}
               {transaction.status === "Pending" && (
@@ -146,34 +135,7 @@ const ReceiptModal = ({ isOpen, onClose, transaction, settings, currentUserName 
             </div>
           </div>
 
-          {/* Footer actions */}
-          <div className="flex flex-wrap gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800 print:hidden">
-            <ReceiptEmail transaction={transaction} />
-            <motion.button whileTap={{ scale: 0.96 }} onClick={onClose}
-              className="py-2.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              Close
-            </motion.button>
-            <motion.button whileTap={{ scale: 0.96 }} onClick={() => window.print()}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <Printer className="w-4 h-4" />Print
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
-              onClick={() => shareReceiptOnWhatsApp(transaction, settings, transaction.customerPhone)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-bold shadow-sm transition-all"
-            >
-              <MessageCircle className="w-4 h-4" />WhatsApp
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
-              onClick={() => downloadInvoicePDF(transaction, settings)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-all"
-            >
-              <Download className="w-4 h-4" />PDF
-            </motion.button>
-          </div>
-        </motion.div>
-      </motion.div>
+        </div></Modal>
     )}
   </AnimatePresence>
 );

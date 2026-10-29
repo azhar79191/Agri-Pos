@@ -35,7 +35,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
   return (
     <div className="bg-white dark:bg-slate-900">
       {/* Header Actions - Hidden in print */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 sm:p-5 print:hidden">
+      <div className="invoice-actions p-4 sm:p-5 print:hidden">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">

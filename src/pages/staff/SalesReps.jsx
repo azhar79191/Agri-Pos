@@ -1,7 +1,8 @@
+import Modal from "../../components/ui/Modal";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
-import { UserCheck, Plus, DollarSign, TrendingUp, X, Edit2, Trash2, BarChart3, Phone, MapPin, RefreshCw } from "lucide-react";
+import { UserCheck, Plus, DollarSign, TrendingUp, Edit2, Trash2, BarChart3, Phone, MapPin, RefreshCw } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import EmptyState from "../../components/ui/EmptyState";
@@ -85,7 +86,7 @@ const SalesReps = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      {/* Header */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
@@ -177,7 +178,6 @@ const SalesReps = () => {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
                   <button onClick={() => openStats(r)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
                     <BarChart3 className="w-3.5 h-3.5" />Stats
@@ -203,14 +203,20 @@ const SalesReps = () => {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-10000 w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-bold text-slate-900 dark:text-white">{editing ? "Edit Sales Rep" : "Add Sales Rep"}</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="w-5 h-5" /></button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
+        <Modal
+          isOpen
+          onClose={() => setShowModal(false)}
+          title={<>{editing ? "Edit Sales Rep" : "Add Sales Rep"}</>}
+          size="sm"
+          footer={<div className="flex gap-3">
+              <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all" style={{ background: "var(--pos-primary)" }}>
+                {saving ? <LoadingIndicator /> : <UserCheck className="w-4 h-4" />}
+                {editing ? "Update" : "Add Rep"}
+              </button>
+            </div>}><div className="space-y-4">
+
+            <div className="space-y-4">
               {[{ l: "Full Name *", k: "name", t: "text" }, { l: "Phone", k: "phone", t: "tel" }, { l: "Territory / Area", k: "territory", t: "text" }, { l: "Commission Rate (%)", k: "commission", t: "number" }].map(({ l, k, t }) => (
                 <div key={k}>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label>
@@ -227,38 +233,21 @@ const SalesReps = () => {
                 </SearchableSelect>
               </div>
             </div>
-            <div className="flex gap-3 px-6 pb-5">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all" style={{ background: "var(--pos-primary)" }}>
-                {saving ? <LoadingIndicator /> : <UserCheck className="w-4 h-4" />}
-                {editing ? "Update" : "Add Rep"}
-              </button>
-            </div>
-          </div>
-        </div>
+
+          </div></Modal>
       )}
 
       {/* Stats Modal */}
       {statsModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setStatsModal(null)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative z-10000 w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200/80 dark:border-slate-700 animate-scale-in max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold">{statsModal.name?.[0]}</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">{statsModal.name}</h3>
-                  <p className="text-xs text-slate-400">{statsModal.territory} · {statsModal.commission}% commission</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button onClick={() => openStats(statsModal)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><RefreshCw className="w-4 h-4" /></button>
-                <button onClick={() => setStatsModal(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="w-5 h-5" /></button>
-              </div>
-            </div>
-            <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+        <Modal
+          isOpen
+          onClose={() => setStatsModal(null)}
+          title={<>{statsModal.name}</>}
+          size="md"
+          subtitle={<>{statsModal.territory} · {statsModal.commission}% commission</>}
+          headerActions={<button type="button" aria-label="Refresh stats" onClick={() => openStats(statsModal)} className="app-modal__close"><RefreshCw size={16} /></button>}><div className="space-y-4">
+
+            <div className="space-y-5">
               {statsLoading ? (
                 <LoadingState label="Loading stats" />
               ) : statsData ? (
@@ -301,8 +290,7 @@ const SalesReps = () => {
                 <div className="text-center py-8 text-slate-400 text-sm">No sales data available for this rep yet.</div>
               )}
             </div>
-          </div>
-        </div>
+          </div></Modal>
       )}
     </div>
   );

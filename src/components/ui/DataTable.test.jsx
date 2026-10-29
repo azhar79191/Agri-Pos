@@ -9,7 +9,7 @@ it('keeps headers during loading and delegates server sorting without reordering
   const content = <><thead><tr><th>Name</th></tr></thead><tbody><tr><td>Zebra</td></tr><tr><td>Apple</td></tr></tbody></>;
   const view = render(<DataTable loading>{content}</DataTable>);
   expect(screen.getByRole('columnheader', { name: /Name/ })).toBeTruthy();
-  expect(document.querySelector('tbody .loading-table')).toBeTruthy();
+  expect(document.querySelector('tbody .loading-page__ring')).toBeTruthy();
   view.rerender(<DataTable sort={{ index: null, direction: 'asc' }} onSortChange={onSortChange}>{content}</DataTable>);
   fireEvent.click(screen.getByRole('button', { name: 'Sort by Name' }));
   expect(onSortChange).toHaveBeenCalledWith({ index: 0, direction: 'asc' });

@@ -99,8 +99,8 @@ const Sidebar = () => {
                           <button key={child.id} onClick={() => go(child.id)}
                             className={`app-nav-subitem w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium ${a ? "is-active" : ""}`}
                             aria-current={a ? "page" : undefined}>
-                            <CI aria-hidden="true" strokeWidth={1.75} className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">{child.label}</span>
+                            <CI aria-hidden="true" strokeWidth={1.75} className="app-nav-subitem__icon w-4 h-4 flex-shrink-0" />
+                            <span className="min-w-0 text-left">{child.label}</span>
                             {a && <span className="app-nav-subitem__marker ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0" />}
                           </button>
                         );
@@ -121,7 +121,8 @@ const Sidebar = () => {
           </button>
         </div>
       </nav>
-      <div className="app-sidebar__footer px-4 py-3 flex-shrink-0">
+      <div className="app-sidebar__footer px-4 py-3 flex-shrink-0 flex items-center gap-2">
+        <span className="app-sidebar__footer-mark" aria-hidden="true" />
         <p className="text-[11px] truncate">{companyName(settings)}</p>
       </div>
     </div>
