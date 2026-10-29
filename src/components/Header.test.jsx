@@ -10,8 +10,9 @@ vi.mock('./ui/UserAvatar',()=>({default:()=>null}));
 vi.mock('../hooks/usePWAInstall',()=>({default:()=>({isInstalled:true})}));
 afterEach(cleanup);
 it('shows the page title without repeating company branding',()=>{
- render(<MemoryRouter initialEntries={['/products']}><Header /></MemoryRouter>);
- expect(screen.getByRole('heading',{name:'Products'})).toBeTruthy();
+ render(<MemoryRouter initialEntries={['/products']}><Header /><main><h1>Products</h1></main></MemoryRouter>);
+ expect(screen.getAllByRole('heading',{name:'Products'})).toHaveLength(1);
+ expect(screen.getByRole('banner').querySelector('p').textContent).toBe('Products');
  expect(screen.queryByLabelText('Company identity')).toBeNull();
  expect(screen.queryByText('Company Co')).toBeNull();
  expect(document.querySelector('img[src="/company.png"]')).toBeNull();

@@ -31,6 +31,7 @@ try {
   const user = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Test Cashier', role: 'admin', permissions: [],
     shop: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Test Agri Shop', isApproved: true, isActive: true, planStatus: 'active', taxRate: 0, currency: 'Rs.' } };
   await context.addInitScript(user => {
+    if (window.top !== window) return;
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('posUser', JSON.stringify(user));
     sessionStorage.setItem('token', 'isolated-browser-fixture');
@@ -38,6 +39,7 @@ try {
   const apiRequests = [];
   const directorySearches = [];
   let directoryFailure = true;
+  let marginFailure = true;
   let stock = 5;
   const stockAttempts = [];
   const supplier = { _id: 'dddddddddddddddddddddddd', name: 'Test Supplier', outstanding: 120, creditBalance: 0, totalPurchases: 120, paymentTerms: 'Net 30' };
@@ -81,6 +83,8 @@ try {
       Object.assign(brandSettings, JSON.parse(settings[1]), { brandLogo: `data:image/png;base64,${logoImage}` });
       Object.assign(user.shop, brandSettings); data = { settings: brandSettings };
     }
+    else if (path === '/settings/email-check') data={success:true,verified:false,provider:'sendgrid-api',message:'API configuration is present. Verify the sender before sending.'};
+    else if(path === '/settings/email-preview') data={subject:'Test shop receipt',html:'<html><body><h1>Company email preview</h1></body></html>'};
     else if (path === '/settings/email-status') data = { workerEnabled: false, providerConfigured: false, jobs: [] };
     else if (path === '/settings') {
       if (route.request().method() === 'PUT') { Object.assign(brandSettings, route.request().postDataJSON()); Object.assign(user.shop, brandSettings); }
@@ -132,6 +136,9 @@ try {
     } else if (path === `/suppliers/${supplier._id}/ledger`) data = { entries: supplierMovements, pagination: { page: 1, pages: 1, total: supplierMovements.length } };
     else if (path === '/invoices' && route.request().method() === 'POST') {
       return route.fulfill({ status: 409, json: { success: false, message: 'Insufficient stock — browser fixture' } });
+    } else if(path==='/reports/margin') {
+      if(marginFailure){return route.fulfill({status:503,json:{success:false,message:'Report temporarily unavailable - browser fixture'}});}
+      data={categories:[{category:'Verified report fixture',revenue:1200,profit:300,margin:25}]};
     } else if (url.origin !== origin) return route.abort();
     else return route.continue();
     return route.fulfill({ json: { success: true, data } });
@@ -279,7 +286,7 @@ try {
   await page.getByLabel('Tagline', { exact: true }).fill('Your crop partner');
   await page.getByLabel('Email footer', { exact: true }).fill('Thank you for choosing Green Fields');
   await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
-  await page.getByText('Branding and email preferences saved. Delivery also requires the server email worker and provider configuration.', { exact: true }).waitFor();
+  await page.getByText('Company identity, global appearance and email preferences saved. Email delivery also requires valid server provider settings.', { exact: true }).waitFor();
   assert.equal(brandSettings.brandName, 'Green Fields');
   assert.equal(await page.title(), 'Green Fields');
   assert.equal(brandSettings.actionEmailsEnabled, false);
@@ -384,11 +391,66 @@ try {
   await page.getByRole('dialog').getByLabel('Full Name').fill('New farmer');
   await page.getByRole('dialog').getByLabel('Address', { exact: true }).fill('Village address');
   await page.keyboard.press('Escape');
+  await page.getByRole('group', { name: 'Unsaved changes' }).waitFor();
+  await page.screenshot({ path: 'artifacts/shared-form-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.getByRole('button', { name: 'Keep editing', exact: true }).click();
+  assert.equal(await page.getByRole('dialog').getByLabel('Full Name').inputValue(), 'New farmer');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'artifacts/shared-form-desktop.png', fullPage: true, animations: 'disabled' });
+  await page.getByRole('button', { name: 'Close dialog', exact: true }).click();
+  await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
   await page.getByRole('dialog').waitFor({ state: 'hidden' });
+  await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Customer directory must fit mobile width');
   await page.screenshot({ path: 'artifacts/customers-directory-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.goto(`${origin}/reports/margin`);
+  await page.getByRole('heading', {name:'This report could not be loaded',exact:true}).waitFor();
+  assert.equal(await page.getByText('No margin data available. Make some sales first.',{exact:true}).count(),0,'Failed reports must not appear empty');
+  await page.screenshot({path:'artifacts/report-error-mobile.png',fullPage:true,animations:'disabled'});
+  marginFailure=false;
+  await page.getByRole('button',{name:'Retry report',exact:true}).click();
+  await page.getByText('Verified report fixture',{exact:true}).waitFor();
+  await page.screenshot({path:'artifacts/report-recovered-mobile.png',fullPage:true,animations:'disabled'});
+  await page.goto(`${origin}/settings`);
+  await page.getByRole('heading',{name:'Brand studio',exact:true}).waitFor();
+  await page.getByLabel('Brand name',{exact:true}).fill('Unsaved browser draft');
+  // Use the visible app navigation to exercise client-side blocking.
+  await page.setViewportSize({width:1440,height:1000});
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Reports',exact:true}).click();
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Margin Analysis',exact:true}).click();
+  await page.getByRole('dialog',{name:'Unsaved changes',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  assert.equal(await page.getByLabel('Brand name',{exact:true}).inputValue(),'Unsaved browser draft');
+  await page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name:'Margin Analysis',exact:true}).click();
+  await page.getByRole('button',{name:'Discard and leave',exact:true}).click();
+  await page.getByRole('heading',{name:'Margin Analysis',exact:true}).waitFor();
+
+  await page.goto(`${origin}/settings`);
+  await page.getByRole('heading',{name:'Brand studio',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Check email configuration',exact:true}).click();
+  await page.getByText('API configuration is present. Verify the sender before sending.',{exact:true}).waitFor();
+  await pickOption(page.getByLabel('Email template',{exact:true}),'letterhead');
+  await page.getByRole('button',{name:'Preview saved email identity',exact:true}).click();
+  await page.frameLocator('iframe[title="Email template preview"]').getByRole('heading',{name:'Company email preview'}).waitFor();
+  await pickOption(page.getByLabel('Global font',{exact:true}),'serif');
+  await pickOption(page.getByLabel('Text size',{exact:true}),'large');
+  await pickOption(page.getByLabel('Logo shape',{exact:true}),'circle');
+  await page.getByRole('button',{name:'Save brand settings',exact:true}).click();
+  await page.getByText('Company settings are up to date',{exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue('--brand-font')),'Georgia, serif');
+  assert.equal(await page.evaluate(()=>document.documentElement.style.getPropertyValue('--brand-logo-radius')),'50%');
+  await page.screenshot({path:'artifacts/company-email-appearance-desktop.png',fullPage:true,animations:'disabled'});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'Brand studio appearance controls fit mobile width');
+  await page.screenshot({path:'artifacts/company-email-appearance-mobile.png',fullPage:true,animations:'disabled'});
+  await pickOption(page.getByLabel('Global font',{exact:true}),'inter');
+  await pickOption(page.getByLabel('Text size',{exact:true}),'default');
+  await pickOption(page.getByLabel('Logo shape',{exact:true}),'rounded');
+  await page.getByRole('button',{name:'Save brand settings',exact:true}).click();
+  await page.getByText('Company settings are up to date',{exact:true}).waitFor();
   const platformContext = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
   await platformContext.addInitScript(() => {
+    if (window.top !== window) return;
     const user = { _id: 'platform-fixture', name: 'Platform Admin', role: 'superadmin', permissions: ['superadmin:all'], isActive: true, shop: null };
     localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('posUser', JSON.stringify(user)); sessionStorage.setItem('token', 'platform-fixture');
   });

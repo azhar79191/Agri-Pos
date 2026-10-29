@@ -1,3 +1,4 @@
+import PageHeader from "../components/ui/PageHeader";
 import Modal from "../components/ui/Modal";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
@@ -73,31 +74,14 @@ const InvoiceManagement = () => {
   return (
     <div className="space-y-6 animate-fade-up">
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200/50 dark:shadow-blue-900/30">
-            <FileText className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Invoices</h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xs text-slate-500 dark:text-slate-400">{invoices.length} of {pagination.total} invoices</p>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${isOnline ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"}`}>
-                {isOnline ? <Wifi className="w-2.5 h-2.5" /> : <WifiOff className="w-2.5 h-2.5" />}
-                {isOnline ? "Online" : "Offline"}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader title={<>Invoices</>} icon={FileText} actions={<><div className="flex flex-wrap gap-2">
           <button disabled={loading || !!error || !invoices.length} onClick={() => exportInvoices(invoices, settings.currency)} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
             <Download className="w-4 h-4" /> Export loaded page
           </button>
           <button aria-label="Refresh invoices" onClick={() => fetchInvoices()} className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
-        </div>
-      </div>
+        </div></>}></PageHeader>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -170,7 +154,7 @@ const InvoiceManagement = () => {
       )}
 
       {!loading && !error && totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
           <Pagination page={page} totalPages={totalPages} total={pagination.total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}

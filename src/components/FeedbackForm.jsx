@@ -1,3 +1,5 @@
+import SharedButton from "./ui/Button";
+import FormField from "./ui/FormField";
 import { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, Star, Send, CheckCircle } from 'lucide-react';
@@ -12,12 +14,12 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (helpful === null) {
       setError('Please indicate if this advisory was helpful');
       return;
     }
-    
+
     if (rating === 0) {
       setError('Please provide a rating');
       return;
@@ -28,7 +30,7 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
 
     try {
       const { submitAdvisoryFeedback } = await import('../api/cropAdvisoryApi');
-      
+
       await submitAdvisoryFeedback(advisoryId, {
         helpful,
         rating,
@@ -66,7 +68,7 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
+    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
       <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-4">
         Rate This Advisory
       </h3>
@@ -140,10 +142,10 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
         </div>
 
         {/* Comment */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <FormField label={<>
             Additional Comments (Optional)
-          </label>
+          </>}>
+
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -151,7 +153,7 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
             rows={3}
             className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
           />
-        </div>
+        </FormField>
 
         {/* Error Message */}
         {error && (
@@ -161,10 +163,10 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
         )}
 
         {/* Submit Button */}
-        <button
+        <SharedButton
           type="submit"
           disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? (
             <>
@@ -177,7 +179,7 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
               Submit Feedback
             </>
           )}
-        </button>
+        </SharedButton>
       </form>
     </div>
   );

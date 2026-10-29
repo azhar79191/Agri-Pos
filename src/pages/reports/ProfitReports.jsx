@@ -1,29 +1,24 @@
+import { reportSchemas } from '../../utils/reportSchemas';
+import ReportState from "../../components/ui/ReportState";
+import useReportResource from '../../hooks/useReportResource';
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { DollarSign } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { getProfitReport } from "../../api/reportsApi";
 import DateRangePicker from "../../components/ui/DateRangePicker";
 
-const useProfitReport = (dateRange) => {
-  const [data, setData]       = useState({ rows: [], summary: { totalRevenue: 0, totalCost: 0, totalProfit: 0, avgMargin: 0 } });
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    setLoading(true);
-    const params = dateRange?.start && dateRange?.end ? { startDate: dateRange.start, endDate: dateRange.end } : {};
-    getProfitReport(params).then((res) => setData(res.data.data)).catch(() => {}).finally(() => setLoading(false));
-  }, [dateRange?.start, dateRange?.end]); // eslint-disable-line
-  return { ...data, loading };
-};
+const useProfitReport = dateRange => { const params = dateRange?.start && dateRange?.end ? {startDate:dateRange.start,endDate:dateRange.end} : {}; const result = useReportResource(getProfitReport, params, reportSchemas.profit); return { ...result, rows:result.data?.rows || [], summary:result.data?.summary || {} }; };
 
 const ProfitReports = () => {
   const { state }    = useApp();
   const { settings } = state;
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const { rows, summary, loading } = useProfitReport(dateRange);
+  const { rows, summary, loading, error, retry } = useProfitReport(dateRange);
 
   const STATS = [
     { l: "Total Revenue", v: formatCurrency(summary.totalRevenue, settings.currency), c: "text-blue-600 dark:text-blue-400",    bg: "bg-blue-100 dark:bg-blue-900/30" },
@@ -33,14 +28,12 @@ const ProfitReports = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Profit Reports</h1><p className="text-sm text-slate-500 dark:text-slate-400">Revenue, cost, and profit analysis</p></div>
-      </div>
+      <PageHeader icon={DollarSign} title={<>Profit Reports</>} description={<>Revenue, cost, and profit analysis</>}  />
       {summary.incompleteCostInvoices > 0 && <p role="status" className="rounded-lg bg-amber-50 p-3 text-amber-900">{summary.incompleteCostInvoices} historical invoices have unknown costs. Profit totals include only invoices with recorded costs.</p>}
       <FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
+<ReportState loading={loading} error={error} onRetry={retry}>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {STATS.map(({ l, v, c, bg }) => (
           <div key={l} className="stat-card-premium">
             <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}><DollarSign className={`w-5 h-5 ${c}`} /></div>
@@ -50,7 +43,7 @@ const ProfitReports = () => {
         ))}
       </div>
 
-      <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel overflow-x-auto bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         {loading ? (
           <LoadingState variant="table" label="Loading profit report" />
         ) : (
@@ -72,7 +65,8 @@ const ProfitReports = () => {
           </DataTable>
         )}
       </div>
-    </div>
+    </ReportState>
+</div>
   );
 };
 

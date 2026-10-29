@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import Modal from "../ui/Modal";
 import { scopedStorageKey } from "../../utils/browserScope";
 import React, { useState, useEffect } from "react";
@@ -76,12 +77,12 @@ const HeldSalesModal = ({ isOpen, onClose, onRecall, currency }) => {
                       {sale.cart.length} item{sale.cart.length !== 1 ? "s" : ""} · {formatCurrency(total, currency)} · {sale.heldAt}
                     </p>
                   </div>
-                  <button
+                  <SharedButton
                     onClick={() => handleRecall(sale)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                   >
                     <PlayCircle className="w-3.5 h-3.5" />Recall
-                  </button>
+                  </SharedButton>
                   <button
                     onClick={() => handleDelete(sale.id)}
                     className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

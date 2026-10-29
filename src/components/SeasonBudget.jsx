@@ -1,3 +1,4 @@
+import { usePageUnsaved, useSafeTransition } from '../context/UnsavedChangesContext';
 import SearchableSelect from "./ui/Select";
 import LoadingState from "./ui/LoadingState";
 import { useEffect, useState } from 'react';
@@ -7,6 +8,7 @@ import HarvestSchedule from './HarvestSchedule';
 
 const input = 'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:bg-slate-800 dark:text-white';
 export default function SeasonBudget({ season, canEdit, currency }) {
+  const safeTransition=useSafeTransition();
   const [data, setData] = useState(null);
   const [lines, setLines] = useState([]);
   const [error, setError] = useState('');
@@ -38,12 +40,13 @@ export default function SeasonBudget({ season, canEdit, currency }) {
     } catch (e) { setError(e.response?.data?.message || e.message); }
     finally { setBusy(false); }
   };
+  usePageUnsaved({dirty:!!data&&JSON.stringify(lines)!==JSON.stringify(data.lines),busy,onDiscard:()=>setLines(data?.lines||[])});
   const fmt = value => `${currency || ''} ${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   return <section aria-label="Crop budget" className="mt-4 space-y-3 border-t pt-4">
     <h4 className="font-semibold">Crop budget</h4>
     <p className="text-sm">Plan costs for {season.area} {season.areaUnit}. Actual costs are manually recorded totals for this season; they are not automatically calculated from invoices.</p>
     {error && <p role="alert" className="text-red-700 dark:text-red-400">{error}</p>}
-    <button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload saved budget</button>
+    <button type="button" disabled={busy} className="min-h-11 underline" onClick={() => safeTransition(()=>setReload(value => value + 1))}>Reload saved budget</button>
     {!data ? <div>{error ? <p>Budget unavailable.</p> : <LoadingState label="Loading budget" />}</div> : <>
       <p className="text-sm">Saved plan: {fmt(data.planned)} · Recorded actual: {fmt(data.actual)} · Remaining: {fmt(data.remaining)}</p>
       {saved && <p role="status">Budget saved.</p>}

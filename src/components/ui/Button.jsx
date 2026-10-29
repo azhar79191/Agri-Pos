@@ -13,10 +13,10 @@ const Button = ({
     danger:    "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-sm hover:shadow active:scale-[0.98]",
     warning:   "bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500 shadow-sm hover:shadow",
     success:   "bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-blue-500 shadow-sm hover:shadow",
-    outline:   "border border-blue-500 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 focus:ring-blue-500",
+    outline:   "ui-button-outline focus:ring-[var(--pos-primary)]",
     ghost:     "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white focus:ring-slate-400",
     gold:      "bg-amber-500 text-white font-semibold hover:bg-amber-600 focus:ring-amber-400 shadow-sm hover:shadow",
-    link:      "text-blue-600 dark:text-blue-400 hover:text-blue-700 underline-offset-4 hover:underline focus:ring-blue-500 p-0",
+    link:      "ui-button-link underline-offset-4 hover:underline focus:ring-blue-500 p-0",
   };
 
   const sizes = {

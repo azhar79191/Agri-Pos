@@ -1,3 +1,5 @@
+import SharedButton from "../../../components/ui/Button";
+import FormField from "../../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import EmptyState from "../../../components/ui/EmptyState";
 import FilterBar from "../../../components/ui/FilterBar";
@@ -23,23 +25,23 @@ const PermModal = ({ user, isOpen, onClose, onToggle, onGrantAll, onRevokeAll, s
   const perms = user?.permissions || [];
   const pct = Math.round((perms.length / PERM_KEYS.length) * 100);
   return (
-    <ModernModal isOpen={isOpen} onClose={onClose} size="xl"
+    <ModernModal busy={submitting} isOpen={isOpen} onClose={onClose} size="xl"
       title={`Permissions — ${user?.name ?? ""}`}
       subtitle={`${perms.length} of ${PERM_KEYS.length} permissions granted`}
       icon={Shield} iconColor="purple"
       footer={
         <div className="flex items-center justify-between w-full">
           <div className="flex gap-2">
-            <button onClick={() => onGrantAll(user._id)} disabled={submitting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-colors">
+            <SharedButton onClick={() => onGrantAll(user._id)} disabled={submitting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50 transition-colors">
               <UserCheck className="w-3.5 h-3.5" /> Grant All
-            </button>
+            </SharedButton>
             <button onClick={() => onRevokeAll(user._id)} disabled={submitting}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white transition-colors">
               <UserX className="w-3.5 h-3.5" /> Revoke All
             </button>
           </div>
-          <button onClick={onClose} className="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <button onClick={onClose} className="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>
             Close
           </button>
         </div>
@@ -93,7 +95,7 @@ const UserCard = ({ user, roleName, isAdmin, onEdit, onPerms, onDelete }) => {
   const permPct = Math.round(((user.permissions?.length || 0) / PERM_KEYS.length) * 100);
 
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 hover:-translate-y-1 transition-all duration-200">
+    <div className="workspace-panel group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 hover:-translate-y-1 transition-all duration-200">
       {/* Top accent bar */}
       <div className={`h-1.5 w-full bg-gradient-to-r ${rc.grad}`} />
 
@@ -307,11 +309,11 @@ const UsersPanel = () => {
       )}
 
       {/* Add/Edit Modal */}
-      <ModernModal isOpen={showForm} onClose={() => { setShowForm(false); setEditingUser(null); }}
+      <ModernModal busy={submitting} isOpen={showForm} onClose={() => { setShowForm(false); setEditingUser(null); }}
         title={editingUser ? "Edit User" : "Add New User"} icon={editingUser ? Edit3 : Plus} iconColor="blue"
         footer={
           <div className="flex justify-end gap-3">
-            <button onClick={() => { setShowForm(false); setEditingUser(null); }} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+            <button onClick={() => { setShowForm(false); setEditingUser(null); }} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>Cancel</button>
             <button onClick={handleSubmit} disabled={submitting} className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-50 text-white transition-all">
               {submitting ? <LoadingIndicator /> : null}
               {submitting ? "Saving..." : editingUser ? "Update User" : "Add User"}
@@ -320,27 +322,27 @@ const UsersPanel = () => {
         }>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Full Name *</label><input value={form.name} onChange={e => f("name", e.target.value)} className={inp} placeholder="John Doe" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email *</label><input type="email" value={form.email} onChange={e => f("email", e.target.value)} className={inp} placeholder="john@shop.com" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Phone</label><input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} className={inp} placeholder="+92 300 0000000" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Role</label>
+            <FormField label={<>Full Name *</>}><input value={form.name} onChange={e => f("name", e.target.value)} className={inp} placeholder="John Doe" /></FormField>
+            <FormField label={<>Email *</>}><input type="email" value={form.email} onChange={e => f("email", e.target.value)} className={inp} placeholder="john@shop.com" /></FormField>
+            <FormField label={<>Phone</>}><input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} className={inp} placeholder="+92 300 0000000" /></FormField>
+            <FormField label={<>Role</>}>
               <Select aria-label="Role" value={form.customRoleId ? `custom:${form.customRoleId}` : form.role}
                 onChange={event => { const value = event.target.value; setForm(current => ({ ...current, role: value.startsWith('custom:') ? 'cashier' : value, customRoleId: value.startsWith('custom:') ? value.slice(7) : '' })); }}
                 options={[{ value: 'admin', label: 'Administrator' }, { value: 'manager', label: 'Manager' }, { value: 'cashier', label: 'Cashier' }, ...customRoles.map(role => ({ value: `custom:${role._id}`, label: role.name }))]} />
               {rolesError && <p role="alert" className="mt-2 text-xs text-red-600">{rolesError}</p>}
-            </div>
+            </FormField>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          <FormField label={<>
               Password {editingUser && <span className="text-slate-400 font-normal">(leave blank to keep)</span>}
-            </label>
+            </>}>
+
             <div className="relative">
               <input type={showPass ? "text" : "password"} value={form.password} onChange={e => f("password", e.target.value)} className={inp + " pr-10"} placeholder="Min 8 characters" />
               <button type="button" onClick={() => setShowPass(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-          </div>
+          </FormField>
         </div>
       </ModernModal>
 

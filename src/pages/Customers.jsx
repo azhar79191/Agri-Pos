@@ -1,3 +1,6 @@
+import useRecoveryRefresh from '../hooks/useRecoveryRefresh';
+import { confirmAction } from "../utils/feedback";
+import PageHeader from "../components/ui/PageHeader";
 import FilterBar from "../components/ui/FilterBar";
 import DataTable from "../components/ui/DataTable";
 import ListFeedback from "../components/ui/ListFeedback";
@@ -60,27 +63,17 @@ const Customers = () => {
 
   const filteredCustomers = customers;
 
+  useRecoveryRefresh(()=>reloadList());
   const totalWalletBalance = useMemo(() => customers.reduce((sum, c) => sum + (c.walletBalance || 0), 0), [customers]);
   const totalCreditBalance = useMemo(() => customers.reduce((sum, c) => sum + (c.creditBalance || 0), 0), [customers]);
 
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Page header */}
-      <div className="workspace-hero flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
-            <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Customers</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Manage your customer database</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader title={<>Customers</>} description={<>Manage your customer database</>} icon={Users} actions={<><div className="flex flex-wrap gap-2">
           <ModernButton variant="outline" onClick={() => exportCustomers(customers, settings.currency)} disabled={loading || !!error} icon={Download} size="sm">Export page</ModernButton>
           <ModernButton disabled={!actions.hasPermission("customers:create")} onClick={openAdd} icon={Plus}>Add Customer</ModernButton>
-        </div>
-      </div>
+        </div></>}></PageHeader>
 
       <CustomerStatsCards
         totalCustomers={customers.length}
@@ -130,14 +123,14 @@ const Customers = () => {
       </div>
 
       {/* Add / Edit modal */}
-      <ModernModal
+      <ModernModal busy={submitting}
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title={editingCustomer ? "Edit Customer" : "Add New Customer"}
         size="md"
         footer={
           <div className="flex justify-end gap-3">
-            <ModernButton variant="secondary" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</ModernButton>
+            <ModernButton variant="secondary" onClick={() => { setIsModalOpen(false); resetForm(); }} data-modal-dismiss data-dirty-change>Cancel</ModernButton>
             <ModernButton onClick={handleSubmit} loading={submitting}>{editingCustomer ? "Update" : "Add Customer"}</ModernButton>
           </div>
         }
@@ -172,7 +165,7 @@ const Customers = () => {
         busy={bulkBusy}
         deleteLabel="Archive"
         onDelete={actions.hasPermission("customers:delete") ? async () => {
-          if (!window.confirm(`Archive ${selected.size} selected customer records? History will be retained.`)) return;
+          if (!(await confirmAction(`Archive ${selected.size} selected customer records? History will be retained.`))) return;
           setBulkBusy(true);
           const ids = [...selected];
           const results = await Promise.allSettled(ids.map(id => deleteCustomer(id)));

@@ -43,7 +43,7 @@ const RolesPanel = () => (
     {/* Role cards */}
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {ROLES.map(role => (
-        <div key={role.name} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <div key={role.name} className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className={`w-2.5 h-2.5 rounded-full ${role.dot}`} />
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${role.color}`}>{role.name}</span>

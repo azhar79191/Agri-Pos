@@ -44,6 +44,8 @@ API.interceptors.request.use((req) => attachAuthHeader(req));
 API.interceptors.response.use(
   (res) => res,
   (error) => {
+    if (error.code === 'ECONNABORTED') error.message = 'The request timed out. Check the connection and retry the original request.';
+    else if (error.message === 'Network Error') error.message = 'Connection unavailable. Reconnect and retry.';
     const status = error.response?.status;
     const code = error.response?.data?.code;
 

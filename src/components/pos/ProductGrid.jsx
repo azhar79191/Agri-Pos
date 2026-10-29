@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import SearchableSelect from "../ui/Select";
 import LoadingState from "../ui/LoadingState";
 import React, { useState } from "react";
@@ -36,7 +37,7 @@ const ProductCard = ({ product, inCart, cartQuantity, onAddToCart, onUpdateQuant
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-cover absolute inset-0" />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 flex items-center justify-center border border-slate-100 dark:border-slate-600 z-10">
+          <div className="workspace-panel w-12 h-12 rounded-xl bg-white dark:bg-slate-700 flex items-center justify-center border border-slate-100 dark:border-slate-600 z-10">
             <Package className="w-6 h-6 text-slate-400" />
           </div>
         )}
@@ -270,12 +271,12 @@ const ProductGrid = ({
             <div className="relative flex-1">
               <Search className="absolute right-3.5  top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input value={searchTerm} onChange={onSearchChange} placeholder="Search products, brands, barcodes..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all outline-none" />
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all outline-none"  aria-label="Search products, brands, barcodes..."/>
             </div>
             <div className="flex gap-2">
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <SearchableSelect value={selectedCategory} onChange={onCategoryChange}
+                <SearchableSelect aria-label="Product category" value={selectedCategory} onChange={onCategoryChange}
                   className="appearance-none pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer outline-none">
                   <option value="">All Categories</option>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -355,13 +356,13 @@ const ProductGrid = ({
                         <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/15 rounded-xl p-1 border border-emerald-200 dark:border-emerald-800 shrink-0">
                           <button onClick={() => onUpdateQuantity(productId, cartQuantity - 1)} className="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors"><Minus className="w-3 h-3" /></button>
                           <span className="font-black text-emerald-700 dark:text-emerald-400 text-sm w-5 text-center">{cartQuantity}</span>
-                          <button onClick={() => onUpdateQuantity(productId, cartQuantity + 1)} disabled={cartQuantity >= product.stock} className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center text-white hover:bg-emerald-600 disabled:opacity-40 transition-colors"><Plus className="w-3 h-3" /></button>
+                          <SharedButton onClick={() => onUpdateQuantity(productId, cartQuantity + 1)} disabled={cartQuantity >= product.stock} className="w-6 h-6 rounded-lg flex items-center justify-center disabled:opacity-40 transition-colors"><Plus className="w-3 h-3" /></SharedButton>
                         </div>
                       ) : (
-                        <button onClick={() => onAddToCart(product)} disabled={outOfStock}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-xs font-bold transition-colors shrink-0">
+                        <SharedButton onClick={() => onAddToCart(product)} disabled={outOfStock}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl disabled:opacity-40 text-xs font-bold transition-colors shrink-0">
                           <Plus className="w-3 h-3" />Add
-                        </button>
+                        </SharedButton>
                       )}
                     </motion.div>
                   );

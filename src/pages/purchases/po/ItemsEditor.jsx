@@ -14,13 +14,13 @@ const ItemRow = ({ item, index, onChange, onRemove }) => (
       value={item.quantity}
       onChange={e => onChange(index, "quantity", Math.max(1, Number(e.target.value)))}
       className="col-span-2 px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white text-center"
-    />
+     aria-label="Quantity"/>
     <input
       type="number" min="0" step="0.01"
       value={item.unitPrice}
       onChange={e => onChange(index, "unitPrice", Math.max(0, Number(e.target.value)))}
       className="col-span-3 px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white text-right"
-    />
+     aria-label="Price"/>
     <div className="col-span-1 text-right text-xs font-semibold text-emerald-600 dark:text-emerald-400">
       {(item.quantity * item.unitPrice).toFixed(0)}
     </div>
@@ -75,9 +75,9 @@ const ItemsEditor = ({ items, setItems }) => {
           onChange={e => setQuery(e.target.value)}
           placeholder="Search product to add..."
           className="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white"
-        />
+         aria-label="Search product to add..."/>
         {(results.length > 0 || searching) && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <div className="workspace-panel absolute z-50 top-full mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
             {searching && <p className="px-3 py-2 text-xs text-slate-400">Searching...</p>}
             {results.map(p => (
               <button key={p._id} onClick={() => addProduct(p)}

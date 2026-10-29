@@ -66,7 +66,7 @@ const OverviewPanel = () => {
       </div>
 
       {/* Role breakdown */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-violet-500" />
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">Team Breakdown by Role</h3>
@@ -101,7 +101,7 @@ const OverviewPanel = () => {
 
       {/* Rep leaderboard */}
       {sortedReps.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-500" />
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sales Rep Leaderboard</h3>
@@ -140,7 +140,7 @@ const OverviewPanel = () => {
       )}
 
       {/* All team members */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex items-center gap-2">
           <Users className="w-4 h-4 text-violet-500" />
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Team Members</h3>

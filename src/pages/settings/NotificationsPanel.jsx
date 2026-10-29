@@ -1,3 +1,4 @@
+import { usePageUnsaved } from '../../context/UnsavedChangesContext';
 import React, { useState, useEffect } from "react";
 import { Bell, BellOff, CheckCircle } from "lucide-react";
 import SettingsCard from "./SettingsCard";
@@ -21,20 +22,23 @@ const ITEMS = [
 ];
 
 const NotificationsPanel = () => {
+  const [baseline,setBaseline] = useState(DEFAULTS);
   const [prefs, setPrefs] = useState(DEFAULTS);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(PREFS_KEY));
-      if (stored) setPrefs({ ...DEFAULTS, ...stored });
+      if (stored) { setPrefs({ ...DEFAULTS, ...stored });setBaseline({ ...DEFAULTS, ...stored }); }
     } catch {}
   }, []);
 
+  usePageUnsaved({dirty:JSON.stringify(prefs)!==JSON.stringify(baseline),onDiscard:()=>setPrefs(baseline)});
   const toggle = (key) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
   const handleSave = () => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    setBaseline({...prefs});
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

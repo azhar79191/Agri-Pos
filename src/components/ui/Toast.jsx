@@ -32,7 +32,7 @@ const Toast = ({ message, type = "info", onClose, duration = 3000, position = "b
       <div className={`flex items-center gap-3 px-4 py-3.5 rounded-lg border shadow-premium-lg min-w-[320px] max-w-md ${style.bg} ${style.border}`}>
         <Icon className={`w-5 h-5 flex-shrink-0 ${style.icon}`} />
         <p className={`text-sm font-medium flex-1 ${style.text}`}>{message}</p>
-        <button onClick={onClose} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors">
+        <button onClick={onClose} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-colors" aria-label="Close">
           <X className={`w-4 h-4 ${style.text} opacity-60`} />
         </button>
       </div>

@@ -4,7 +4,7 @@ import { STAFF_NAV } from "./staffConfig";
 
 const StaffNav = ({ active, onChange, userCount }) => (
   <aside className="w-full lg:w-64 shrink-0">
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-violet-600 to-purple-600">
         <div className="flex items-center gap-3">

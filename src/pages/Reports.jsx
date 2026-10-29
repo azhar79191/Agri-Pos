@@ -1,8 +1,10 @@
+import ReportState from "../components/ui/ReportState";
+import PageHeader from "../components/ui/PageHeader";
 import SearchableSelect from "../components/ui/Select";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
 import DataTable from "../components/ui/DataTable";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Download, TrendingUp, Package, AlertTriangle, DollarSign, ShoppingCart, BarChart3, PieChart as PieIcon, ChevronDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { useApp } from "../context/AppContext";
@@ -19,7 +21,7 @@ const selectCls = "appearance-none pl-3.5 pr-8 py-2 rounded-lg border border-sla
 const ChartTooltip = ({ active, payload, label, currency }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-premium-lg px-3.5 py-2.5">
+    <div className="workspace-panel bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-premium-lg px-3.5 py-2.5">
       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">{label}</p>
       <p className="text-sm font-bold text-blue-600">{formatCurrency(payload[0].value, currency)}</p>
     </div>
@@ -36,24 +38,9 @@ const Reports = () => {
   const { state, actions } = useApp();
   const { settings }       = state;
   const { fetchExport }    = useReports();
-  const {
-    loading,
-    summary, dailySalesData, paymentMethodData, topProducts, inventoryData,
-    getDateParams, loadSalesReport, loadPaymentDistribution, loadTopProducts, loadInventory,
-  } = useReportData();
-
   const [reportType, setReportType] = useState("daily");
-  const [dateRange, setDateRange]   = useState("7");
-
-  useEffect(() => {
-    const params = getDateParams(dateRange);
-    if (reportType === "daily") {
-      loadSalesReport(params).catch(() => {});
-      loadPaymentDistribution(params).catch(() => {});
-    }
-    if (reportType === "products")  loadTopProducts(params).catch(() => {});
-    if (reportType === "inventory") loadInventory().catch(() => {});
-  }, [reportType, dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [dateRange, setDateRange] = useState("7");
+  const {loading,error,retry,summary,dailySalesData,paymentMethodData,topProducts,inventoryData,getDateParams} = useReportData(reportType,dateRange);
 
   const handleExport = async () => {
     try {
@@ -78,18 +65,7 @@ const Reports = () => {
   return (
     <div className="space-y-6 animate-fade-up">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-sm flex-shrink-0">
-            <BarChart3 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Reports</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Sales analytics and inventory insights</p>
-          </div>
-        </div>
-        <ModernButton variant="outline" onClick={handleExport} icon={Download} loading={loading}>Export Report</ModernButton>
-      </div>
+      <PageHeader title={<>Reports</>} description={<>Sales analytics and inventory insights</>} icon={BarChart3} actions={<><ModernButton variant="outline" onClick={handleExport} icon={Download} loading={loading} disabled={!!error}>Export Report</ModernButton></>}></PageHeader>
 
       {/* Tabs + date range */}
       <FilterBar label="Report filters" className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -109,9 +85,10 @@ const Reports = () => {
           </SearchableSelect>
         </div>
       </FilterBar>
+<ReportState loading={loading} error={error} onRetry={retry}>
 
       {/* Summary stats */}
-      {reportType !== "inventory" && (
+      {reportType === "daily" && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {SUMMARY_STATS.map(({ label, value, icon: Icon, cls, bg }, i) => (
             <div key={label} className={`stat-card-premium animate-fade-up stagger-${i + 1}`}>
@@ -132,7 +109,7 @@ const Reports = () => {
       {/* Daily sales charts */}
       {reportType === "daily" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+          <div className="workspace-panel lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
             <div className="flex items-center gap-2 mb-5">
               <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <h3 className="font-bold text-slate-900 dark:text-white text-sm">Sales Trend</h3>
@@ -155,7 +132,7 @@ const Reports = () => {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
             <div className="flex items-center gap-2 mb-5">
               <PieIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <h3 className="font-bold text-slate-900 dark:text-white text-sm">Payment Methods</h3>
@@ -177,7 +154,7 @@ const Reports = () => {
 
       {/* Top products */}
       {reportType === "products" && (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
             <h3 className="font-bold text-slate-900 dark:text-white text-sm">Top Selling Products</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest revenue in selected period</p>
@@ -223,7 +200,7 @@ const Reports = () => {
               </div>
             ))}
           </div>
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm">Low Stock Products</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Products that need restocking</p>
@@ -253,7 +230,8 @@ const Reports = () => {
           </div>
         </div>
       )}
-    </div>
+    </ReportState>
+</div>
   );
 };
 

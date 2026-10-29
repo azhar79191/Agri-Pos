@@ -87,12 +87,12 @@ const SplashScreen = ({ onComplete }) => {
           <div className="relative">
             {/* Glow effect */}
             <div className="absolute inset-0 bg-white/30 rounded-3xl blur-3xl animate-pulse" />
-            
+
             {/* Logo background */}
             <div className="relative w-32 h-32 bg-white rounded-3xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-cyan-500/20 rounded-3xl" />
-              
+
               {/* Icon */}
               <div className="relative">
                 <Sprout className="w-16 h-16 text-transparent bg-gradient-to-br from-blue-600 via-purple-600 to-cyan-600 bg-clip-text" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }} />
@@ -141,15 +141,15 @@ const SplashScreen = ({ onComplete }) => {
             animation: "fadeInUp 0.6s ease-out 1.4s both",
           }}
         >
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
+          <div className="workspace-panel flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
             <TrendingUp className="w-4 h-4 text-white" />
             <span className="text-white text-sm font-medium">Real-time Analytics</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
+          <div className="workspace-panel flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
             <Shield className="w-4 h-4 text-white" />
             <span className="text-white text-sm font-medium">Secure & Reliable</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
+          <div className="workspace-panel flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30">
             <Sparkles className="w-4 h-4 text-white" />
             <span className="text-white text-sm font-medium">AI-Powered</span>
           </div>

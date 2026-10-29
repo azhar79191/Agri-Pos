@@ -1,3 +1,5 @@
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import API from "../../api/axios";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
@@ -58,10 +60,10 @@ const TeamPanel = ({ shopId }) => {
       <ShopCard title="Team Members" desc={`${users.length} member${users.length !== 1 ? "s" : ""} in your shop`}
         action={
           !showForm && (
-            <button onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+            <SharedButton onClick={() => setShowForm(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
               <Plus className="w-4 h-4" /> Add Member
-            </button>
+            </SharedButton>
           )
         }>
         {loading ? (
@@ -102,27 +104,27 @@ const TeamPanel = ({ shopId }) => {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Full Name *</label>
+                  <FormField label={<>Full Name *</>}>
+
                     <input value={form.name} onChange={e => f("name", e.target.value)} placeholder="John Doe" className={inp} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email *</label>
+                  </FormField>
+                  <FormField label={<>Email *</>}>
+
                     <input type="email" value={form.email} onChange={e => f("email", e.target.value)} placeholder="john@shop.com" className={inp} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Phone</label>
+                  </FormField>
+                  <FormField label={<>Phone</>}>
+
                     <input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} placeholder="+92 300 0000000" className={inp} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Role</label>
+                  </FormField>
+                  <FormField label={<>Role</>}>
+
                     <SearchableSelect aria-label="Role" value={form.customRoleId ? `custom:${form.customRoleId}` : form.role} onChange={e => { const value = e.target.value; setForm(current => ({ ...current, role: value.startsWith("custom:") ? "cashier" : value, customRoleId: value.startsWith("custom:") ? value.slice(7) : "" })); }} className={inp}>
                       <option value="manager">Manager</option>
                       <option value="cashier">Cashier</option>{customRoles.map(role => <option key={role._id} value={`custom:${role._id}`}>{role.name}</option>)}
                     </SearchableSelect>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>
+                  </FormField>
+                  <FormField className="sm:col-span-2" label={<>Password *</>}>
+
                     <div className="relative">
                       <input type={showPass ? "text" : "password"} value={form.password}
                         onChange={e => f("password", e.target.value)} placeholder="Min 8 characters" className={inp + " pr-10"} />
@@ -131,18 +133,18 @@ const TeamPanel = ({ shopId }) => {
                         {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                  </div>
+                  </FormField>
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <button onClick={() => { setShowForm(false); setForm(EMPTY); }}
                     className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                     Cancel
                   </button>
-                  <button onClick={handleAdd} disabled={adding}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors">
+                  <SharedButton onClick={handleAdd} disabled={adding}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
                     {adding ? <LoadingIndicator /> : <Plus className="w-4 h-4" />}
                     {adding ? "Adding..." : "Add Member"}
-                  </button>
+                  </SharedButton>
                 </div>
               </div>
             )}

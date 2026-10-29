@@ -1,3 +1,5 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
@@ -42,23 +44,12 @@ const PurchaseOrders = () => {
     <div className="space-y-6 animate-fade-up">
 
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-            <ShoppingBag className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Purchase Orders</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{total} order{total !== 1 ? "s" : ""}</p>
-          </div>
-        </div>
-        <button
+      <PageHeader title={<>Purchase Orders</>} description={<>{total} order{total !== 1 ? "s" : ""}</>} icon={ShoppingBag} actions={<><SharedButton
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all"
         >
           <Plus className="w-4 h-4" /> New PO
-        </button>
-      </div>
+        </SharedButton></>}></PageHeader>
 
       {/* ── Filters ── */}
       <FilterBar className="flex flex-col sm:flex-row gap-3">
@@ -123,7 +114,7 @@ const PurchaseOrders = () => {
 
       {/* ── Pagination ── */}
       {!loading && totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
           <Pagination
             page={page}
             totalPages={totalPages}

@@ -1,3 +1,5 @@
+import SharedButton from "../ui/Button";
+import FormField from "../ui/FormField";
 import Modal from "../ui/Modal";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState, useRef, useEffect } from "react";
@@ -195,7 +197,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <Modal
+    <Modal busy={loading}
           isOpen
           onClose={onClose}
           title={<>Reset Password</>}
@@ -228,13 +230,13 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Step 1: Email */}
           {step === 1 && (
             <form onSubmit={handleRequestReset} className="space-y-4">
-              <div>
+              <FormField label={<>
+                  Email Address
+                </>}>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Enter your email address and we'll send you a 6-digit verification code.
                 </p>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Email Address
-                </label>
+
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -246,12 +248,12 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                     className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                   />
                 </div>
-              </div>
+              </FormField>
 
-              <button
+              <SharedButton
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 py-3 px-6 font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <LoadingIndicator />
@@ -261,24 +263,25 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </SharedButton>
             </form>
           )}
 
           {/* Step 2: Verify Code */}
           {step === 2 && (
             <form onSubmit={handleVerifyCode} className="space-y-4">
-              <div>
+              <FormField label={<>
+                  Verification Code
+                </>}>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   We sent a 6-digit code to <span className="font-medium text-slate-900 dark:text-white">{email}</span>
                 </p>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                  Verification Code
-                </label>
+
                 <div className="flex gap-2 justify-between">
                   {code.map((digit, index) => (
                     <input
                       key={index}
+                      aria-label={`Verification code digit ${index + 1}`}
                       ref={(el) => (codeInputs.current[index] = el)}
                       type="text"
                       inputMode="numeric"
@@ -291,7 +294,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                     />
                   ))}
                 </div>
-              </div>
+              </FormField>
 
               {/* Resend Code */}
               <div className="flex items-center justify-between text-sm">
@@ -322,10 +325,10 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back</span>
                 </button>
-                <button
+                <SharedButton
                   type="submit"
                   disabled={loading || code.join("").length !== 6}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-6 font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <LoadingIndicator />
@@ -335,7 +338,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
-                </button>
+                </SharedButton>
               </div>
             </form>
           )}
@@ -348,10 +351,10 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                   Create a strong password for your account.
                 </p>
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <FormField label={<>
                       New Password
-                    </label>
+                    </>}>
+
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
@@ -364,12 +367,12 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                       />
                     </div>
-                  </div>
+                  </FormField>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <FormField label={<>
                       Confirm Password
-                    </label>
+                    </>}>
+
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
@@ -382,7 +385,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                         className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
                       />
                     </div>
-                  </div>
+                  </FormField>
                 </div>
 
                 {newPassword && (
@@ -408,10 +411,10 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              <button
+              <SharedButton
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 py-3 px-6 font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <LoadingIndicator />
@@ -421,7 +424,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                     <CheckCircle2 className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </SharedButton>
             </form>
           )}
         </div>

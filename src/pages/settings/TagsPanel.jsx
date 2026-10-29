@@ -1,3 +1,5 @@
+import { usePageUnsaved } from '../../context/UnsavedChangesContext';
+import SharedButton from "../../components/ui/Button";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, X, Tag } from "lucide-react";
@@ -22,6 +24,7 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const inputRef = useRef(null);
+  usePageUnsaved({dirty:!!input.trim(),busy:adding||!!deleting,onDiscard:()=>setInput('')});
 
   useEffect(() => {
     getMyShop()
@@ -87,14 +90,14 @@ const TagsPanel = ({ title, desc, placeholder, emptyNote, addFn, deleteFn, listK
               placeholder={placeholder}
               className="flex-1 px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all outline-none"
             />
-            <button
+            <SharedButton
               onClick={handleAdd}
               disabled={!input.trim() || adding}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold transition-colors"
             >
               {adding ? <LoadingIndicator /> : <Plus className="w-4 h-4" />}
               Add
-            </button>
+            </SharedButton>
           </div>
 
           {/* Tags */}

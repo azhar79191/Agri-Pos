@@ -1,3 +1,4 @@
+import PageHeader from "../ui/PageHeader";
 import { LoadingIndicator } from "../ui/LoadingState";
 import { companyName } from "../../utils/company";
 import React from "react";
@@ -20,22 +21,11 @@ const DashboardHeader = ({
   };
 
   return (
-    <section className="workspace-hero dashboard-welcome animate-fade-up" aria-labelledby="dashboard-welcome-title">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
-            <Calendar className="w-4 h-4 text-[var(--pos-primary)]" aria-hidden="true" />
-            <span>{formatDate(getTodayDate())}</span>
-          </div>
-          <h1 id="dashboard-welcome-title" className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-1">
+    <PageHeader title={<>
             {greeting()}{currentUser?.name ? `, ${currentUser.name.split(" ")[0]}` : ""}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300 text-sm">
+          </>} description={<>
             Here’s what’s happening at <span className="font-semibold text-slate-900 dark:text-white">{companyName(settings)}</span> today.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
+          </>} titleId="dashboard-welcome-title" icon={Calendar} actions={<div className="flex flex-wrap items-center gap-2">
           {canPOS && (
             <button type="button" onClick={() => onNavigate("/pos")} className="dashboard-welcome__primary inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold">
               <ShoppingCart className="h-4 w-4" aria-hidden="true" />
@@ -51,8 +41,11 @@ const DashboardHeader = ({
             {refreshing ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} aria-hidden="true" />}
             {refreshing ? "Updating" : "Refresh"}
           </button>
-        </div>
-      </div>
+        </div>}><div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
+            <Calendar className="w-4 h-4 text-[var(--pos-primary)]" aria-hidden="true" />
+            <span>{formatDate(getTodayDate())}</span>
+          </div>
+
 
       {(lowStock > 0 || expiringProducts.length > 0) && (
         <div className="dashboard-welcome__alerts mt-5 flex flex-wrap gap-2 border-t border-slate-200/70 pt-4 dark:border-slate-700/70">
@@ -72,7 +65,7 @@ const DashboardHeader = ({
           )}
         </div>
       )}
-    </section>
+    </PageHeader>
   );
 };
 

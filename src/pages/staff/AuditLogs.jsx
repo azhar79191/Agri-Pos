@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import SearchableSelect from "../../components/ui/Select";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useMemo, useEffect } from "react";
@@ -45,10 +46,7 @@ const AuditLogs = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-sm"><Shield className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Audit Logs</h1><p className="text-sm text-slate-500 dark:text-slate-400">{logs.length} activities tracked</p></div>
-      </div>
+      <PageHeader icon={Shield} title={<>Audit Logs</>} description={<>{logs.length} activities tracked</>}  />
 
       <FilterBar className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input aria-label="Search logs" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search logs..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white" /></div>
@@ -61,7 +59,7 @@ const AuditLogs = () => {
           const Icon = cfg.icon;
           const ts = new Date(log.timestamp);
           return (
-            <div key={log._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4 flex items-center gap-4 hover:shadow-sm transition-all">
+            <div key={log._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4 flex items-center gap-4 hover:shadow-sm transition-all">
               <div className={`w-10 h-10 rounded-lg ${cfg.color} flex items-center justify-center flex-shrink-0`}><Icon className="w-4 h-4" /></div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-white text-sm">{log.description}</p>

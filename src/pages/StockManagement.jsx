@@ -1,3 +1,7 @@
+import useRecoveryRefresh from '../hooks/useRecoveryRefresh';
+import PageHeader from "../components/ui/PageHeader";
+import SharedButton from "../components/ui/Button";
+import FormField from "../components/ui/FormField";
 import SearchableSelect from "../components/ui/Select";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
@@ -54,6 +58,7 @@ const StockManagement = () => {
     reloadLevels();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useRecoveryRefresh(()=>Promise.all([reloadLevels(),fetchLogs(),fetchAlerts()]));
   const displayLevels = stockLevels ?? products;
 
   return (
@@ -61,21 +66,10 @@ const StockManagement = () => {
       <PendingInventoryOperations pathPrefix="/stock/adjust" onRecovered={async () => { actions.hideToast(); setSelectedProduct(null); setQuantity(""); setReason(""); await reloadLevels(); await fetchLogs(); await fetchAlerts(); }} />
       {levelError && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{levelError}</p>}
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Management</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+      <PageHeader title={<>Stock Management</>} description={<>
               Monitor and adjust inventory levels
               {!isAdmin && <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><Lock className="w-3 h-3" />View Only</span>}
-            </p>
-          </div>
-        </div>
-        <button type="button" disabled={refreshingLevels} onClick={reloadLevels} className="min-h-11 rounded-lg border border-slate-200 px-4 text-sm font-semibold disabled:opacity-50">{refreshingLevels ? "Refreshing..." : "Refresh stock"}</button>
-      </div>
+            </>} icon={Package} actions={<><button type="button" disabled={refreshingLevels} onClick={reloadLevels} className="min-h-11 rounded-lg border border-slate-200 px-4 text-sm font-semibold disabled:opacity-50">{refreshingLevels ? "Refreshing..." : "Refresh stock"}</button></>}></PageHeader>
 
       {/* View-only notice */}
       {!isAdmin && (
@@ -110,7 +104,7 @@ const StockManagement = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Adjustment panel — admin only */}
         {isAdmin && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-blue-900/20 flex items-center justify-center">
                 <Edit3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -140,23 +134,23 @@ const StockManagement = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">
+              <FormField label={<>
                   {adjustmentType === "set" ? "New Stock Level" : "Quantity"}
-                </label>
+                </>}>
+
                 <input id="stock-quantity" aria-label={adjustmentType === "set" ? "Counted stock" : "Adjustment quantity"} type="number" min={adjustmentType === "set" ? 0 : 1} step="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className={inputCls} placeholder="Enter quantity" />
-              </div>
+              </FormField>
 
               {adjustmentType === "set" && <p className="text-xs text-slate-500">Enter the physical count, including zero. If stock changes while you are counting, refresh and review before applying it.</p>}
-              <div>
-                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Reason</label>
-                <input aria-label="Adjustment reason" type="text" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} placeholder="Enter reason for adjustment" />
-              </div>
+              <FormField label={<>Reason</>}>
 
-              <button onClick={handleAdjust} disabled={!selectedProduct || quantity === "" || !reason.trim() || submitting}
-                className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+                <input aria-label="Adjustment reason" type="text" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} placeholder="Enter reason for adjustment" />
+              </FormField>
+
+              <SharedButton onClick={handleAdjust} disabled={!selectedProduct || quantity === "" || !reason.trim() || submitting}
+                className="w-full py-2.5 px-4 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                 {submitting ? "Applying..." : "Apply Adjustment"}
-              </button>
+              </SharedButton>
             </div>
           </div>
         )}
@@ -199,7 +193,7 @@ const StockManagement = () => {
       </div>
 
       {/* Stock levels table */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
           <BarChart2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <h2 className="font-bold text-slate-900 dark:text-white text-sm">Current Stock Levels</h2>

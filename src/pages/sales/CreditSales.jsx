@@ -1,3 +1,7 @@
+import ReportState from "../../components/ui/ReportState";
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
@@ -20,7 +24,7 @@ const STATUS_CLS = {
 const CreditSales = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const {
+  const { error, retry,
     rows, totalOutstanding, loading,
     paymentModal, setPaymentModal,
     paymentAmount, setPaymentAmount,
@@ -53,10 +57,7 @@ const CreditSales = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-sm"><CreditCard className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Credit Sales</h1><p className="text-sm text-slate-500 dark:text-slate-400">Outstanding: {formatCurrency(totalOutstanding, settings.currency)} · {overdueCount} overdue</p></div>
-      </div>
+      <PageHeader icon={CreditCard} title={<>Credit Sales</>} description={<>Outstanding: {formatCurrency(totalOutstanding, settings.currency)} · {overdueCount} overdue</>}  />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map(({ label, value, color, bg, icon: Icon }) => (
@@ -75,8 +76,9 @@ const CreditSales = () => {
           ))}
         </div>
       </FilterBar>
+<ReportState loading={loading} error={error} onRetry={retry}>
 
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
 
           <div className="overflow-x-auto">
             <DataTable loading={loading} loadingLabel="Loading credit sales" emptyState={false} className="w-full table-premium min-w-[800px]">
@@ -107,13 +109,13 @@ const CreditSales = () => {
       </div>
 
       {/* Payment modal */}
-      <ModernModal isOpen={!!paymentModal} onClose={() => setPaymentModal(null)} title="Record Payment" size="md"
+      <ModernModal busy={processing} isOpen={!!paymentModal} onClose={() => setPaymentModal(null)} title="Record Payment" size="md"
         footer={
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
-            <button onClick={() => setPaymentModal(null)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors order-2 sm:order-1">Cancel</button>
-            <button onClick={handlePayment} disabled={processing} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors order-1 sm:order-2">
+            <button onClick={() => setPaymentModal(null)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors order-2 sm:order-1" data-modal-dismiss>Cancel</button>
+            <SharedButton onClick={handlePayment} disabled={processing} className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors order-1 sm:order-2">
               {processing ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}Record Payment
-            </button>
+            </SharedButton>
           </div>
         }
       >
@@ -130,28 +132,29 @@ const CreditSales = () => {
                 <p className="text-xl font-black text-red-600 dark:text-red-400">{formatCurrency(paymentModal.balance, settings.currency)}</p>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Payment Amount <span className="text-red-500">*</span></label>
+            <FormField label={<>Payment Amount <span className="text-red-500">*</span></>}>
+
               <input type="number" min="0" max={paymentModal.balance} step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" placeholder="Enter amount" />
               <div className="flex gap-2 mt-2">
-                <button onClick={() => setPaymentAmount((paymentModal.balance / 2).toFixed(2))} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Half</button>
-                <button onClick={() => setPaymentAmount(paymentModal.balance.toString())} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors">Full Amount</button>
+                <button onClick={() => setPaymentAmount((paymentModal.balance / 2).toFixed(2))} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-dirty-change>Half</button>
+                <button onClick={() => setPaymentAmount(paymentModal.balance.toString())} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors" data-dirty-change>Full Amount</button>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Payment Method <span className="text-red-500">*</span></label>
+            </FormField>
+            <FormField label={<>Payment Method <span className="text-red-500">*</span></>}>
+
               <SearchableSelect value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
                 {["Cash", "Card", "Online Transfer", "Cheque"].map((m) => <option key={m} value={m}>{m}</option>)}
               </SearchableSelect>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Notes (Optional)</label>
+            </FormField>
+            <FormField label={<>Notes (Optional)</>}>
+
               <textarea value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} rows={2} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" placeholder="Add payment notes..." />
-            </div>
+            </FormField>
           </div>
         )}
       </ModernModal>
-    </div>
+    </ReportState>
+</div>
   );
 };
 

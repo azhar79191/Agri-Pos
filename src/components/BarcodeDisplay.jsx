@@ -18,7 +18,7 @@ const BarcodeDisplay = ({ barcode, productName, sku, className = "" }) => {
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     const svg = generateEAN13SVG(barcode, { width: 300, height: 150 });
-    
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -122,13 +122,13 @@ const BarcodeDisplay = ({ barcode, productName, sku, className = "" }) => {
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Barcode Image */}
-      <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+      <div className="workspace-panel p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
         <div
           ref={svgRef}
           className="flex items-center justify-center"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
-        
+
         {/* Validation Status */}
         {!isValid && (
           <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 text-center">
@@ -148,7 +148,7 @@ const BarcodeDisplay = ({ barcode, productName, sku, className = "" }) => {
         >
           Print
         </ModernButton>
-        
+
         <ModernButton
           variant="outline"
           size="sm"
@@ -158,7 +158,7 @@ const BarcodeDisplay = ({ barcode, productName, sku, className = "" }) => {
         >
           Download
         </ModernButton>
-        
+
         <ModernButton
           variant="outline"
           size="sm"

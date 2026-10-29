@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import SearchableSelect from "../../components/ui/Select";
 import Pagination from "../../components/ui/Pagination";
 import FilterBar from "../../components/ui/FilterBar";
@@ -42,15 +45,9 @@ const BatchExpiry = () => {
       {error && <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800 dark:bg-red-950 dark:text-red-200">
         <p>{error}</p><button type="button" onClick={reload} className="mt-2 min-h-11 underline font-semibold">Retry loading batches</button>
       </div>}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-sm"><Calendar className="w-5 h-5 text-white" /></div>
-          <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Batch & Expiry</h1><p className="text-sm text-slate-500 dark:text-slate-400">Track batches, lots, and expiry dates</p></div>
-        </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm">
+      <PageHeader title={<>Batch & Expiry</>} description={<>Track batches, lots, and expiry dates</>} icon={Calendar} actions={<><SharedButton onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all">
           <Plus className="w-4 h-4" />Add Batch
-        </button>
-      </div>
+        </SharedButton></>}></PageHeader>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {STATS_CFG(stats).map(({ label, value, color, bg, icon: Icon }) => (
@@ -77,7 +74,7 @@ const BatchExpiry = () => {
         </div>
       </FilterBar>
 
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
           <DataTable loading={loading} loadingLabel="Loading batches" emptyState={false} className="w-full table-premium">
             <thead>
@@ -111,19 +108,19 @@ const BatchExpiry = () => {
       </div>
 
       <Pagination page={page} totalPages={totalPages} total={total} limit={15} onPageChange={setPage} />
-      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Batch"
-        footer={<button onClick={handleAdd} disabled={saving} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">{saving ? "Saving..." : "Add Batch"}</button>}>
+      <ModernModal busy={saving} isOpen={showModal} onClose={() => setShowModal(false)} title="Add New Batch"
+        footer={<SharedButton onClick={handleAdd} disabled={saving} className="px-5 py-2.5 disabled:opacity-50 rounded-lg text-sm font-semibold transition-colors">{saving ? "Saving..." : "Add Batch"}</SharedButton>}>
         <div className="space-y-4">
-          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Product Name *</label><input value={form.productName} onChange={set("productName")} className={inputCls} placeholder="Product name" /></div>
+          <FormField label={<>Product Name *</>}><input value={form.productName} onChange={set("productName")} className={inputCls} placeholder="Product name" /></FormField>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Batch/Lot # *</label><input value={form.batchNo} onChange={set("batchNo")} className={inputCls} /></div>
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Quantity</label><input type="number" value={form.quantity} onChange={set("quantity")} className={inputCls} /></div>
+            <FormField label={<>Batch/Lot # *</>}><input value={form.batchNo} onChange={set("batchNo")} className={inputCls} /></FormField>
+            <FormField label={<>Quantity</>}><input type="number" value={form.quantity} onChange={set("quantity")} className={inputCls} /></FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Mfg Date</label><input type="date" value={form.mfgDate} onChange={set("mfgDate")} className={inputCls} /></div>
-            <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Expiry Date *</label><input type="date" value={form.expiryDate} onChange={set("expiryDate")} className={inputCls} /></div>
+            <FormField label={<>Mfg Date</>}><input type="date" value={form.mfgDate} onChange={set("mfgDate")} className={inputCls} /></FormField>
+            <FormField label={<>Expiry Date *</>}><input type="date" value={form.expiryDate} onChange={set("expiryDate")} className={inputCls} /></FormField>
           </div>
-          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cost Price</label><input type="number" value={form.costPrice} onChange={set("costPrice")} className={inputCls} placeholder="0" /></div>
+          <FormField label={<>Cost Price</>}><input type="number" value={form.costPrice} onChange={set("costPrice")} className={inputCls} placeholder="0" /></FormField>
         </div>
       </ModernModal>
     </div>

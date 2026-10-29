@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import SearchableSelect from "../../components/ui/Select";
 import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState } from "react";
@@ -49,22 +52,22 @@ const WeatherAdvisory = () => {
       }
 
       const response = await getWeatherAdvisory(requestData);
-      
+
       console.log('Weather Advisory Response:', response);
-      
+
       if (response.success === false) {
         throw new Error(response.message || 'Failed to get weather advisory');
       }
 
       const data = response.data || response;
       setAdvisory(data);
-      
+
       // Extract advisory ID for feedback form
       const id = response.data?.id || response.id || data.id || data._id;
       setAdvisoryId(id);
     } catch (err) {
       console.error('Weather Advisory Error:', err);
-      
+
       // Check if it's a 404 error (endpoint not implemented)
       if (err.response?.status === 404 || err.response?.data?.error?.statusCode === 404) {
         setError('Weather Advisory API is not yet implemented on the backend. Please contact your system administrator to enable this feature.');
@@ -79,15 +82,7 @@ const WeatherAdvisory = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-sm flex-shrink-0">
-          <Cloud className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Weather-Based Advisory</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Get farming recommendations based on weather conditions</p>
-        </div>
-      </div>
+      <PageHeader icon={Cloud} title={<>Weather-Based Advisory</>} description={<>Get farming recommendations based on weather conditions</>}  />
 
       {/* Backend Notice */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-4">
@@ -103,14 +98,14 @@ const WeatherAdvisory = () => {
       </div>
 
       {/* Input Form */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6 space-y-4">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Location Input */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+          <FormField label={<>
               <MapPin className="w-4 h-4 text-blue-500" />
               Location *
-            </label>
+            </>}>
+
             <input
               type="text"
               value={location}
@@ -118,14 +113,14 @@ const WeatherAdvisory = () => {
               placeholder="e.g., Lahore, Punjab"
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
-          </div>
+          </FormField>
 
           {/* Crop Selection */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+          <FormField label={<>
               <Sprout className="w-4 h-4 text-green-500" />
               Crop (Optional)
-            </label>
+            </>}>
+
             <SearchableSelect
               value={selectedCrop}
               onChange={(e) => setSelectedCrop(e.target.value)}
@@ -136,15 +131,15 @@ const WeatherAdvisory = () => {
                 <option key={crop.id} value={crop.name}>{crop.name}</option>
               ))}
             </SearchableSelect>
-          </div>
+          </FormField>
         </div>
 
         {/* Weather Data (Optional) */}
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Weather Data (Optional - Leave empty for auto-fetch)</p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Temperature (°C)</label>
+            <FormField label={<>Temperature (°C)</>}>
+
               <input
                 type="number"
                 value={weatherData.temp}
@@ -152,9 +147,9 @@ const WeatherAdvisory = () => {
                 placeholder="32"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Humidity (%)</label>
+            </FormField>
+            <FormField label={<>Humidity (%)</>}>
+
               <input
                 type="number"
                 value={weatherData.humidity}
@@ -162,9 +157,9 @@ const WeatherAdvisory = () => {
                 placeholder="75"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Rainfall (mm)</label>
+            </FormField>
+            <FormField label={<>Rainfall (mm)</>}>
+
               <input
                 type="number"
                 value={weatherData.rainfall}
@@ -172,9 +167,9 @@ const WeatherAdvisory = () => {
                 placeholder="0"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Wind Speed (km/h)</label>
+            </FormField>
+            <FormField label={<>Wind Speed (km/h)</>}>
+
               <input
                 type="number"
                 value={weatherData.windSpeed}
@@ -182,9 +177,9 @@ const WeatherAdvisory = () => {
                 placeholder="12"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Forecast</label>
+            </FormField>
+            <FormField label={<>Forecast</>}>
+
               <input
                 type="text"
                 value={weatherData.forecast}
@@ -192,15 +187,15 @@ const WeatherAdvisory = () => {
                 placeholder="Partly cloudy"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
-            </div>
+            </FormField>
           </div>
         </div>
 
         {/* Get Advisory Button */}
-        <button
+        <SharedButton
           onClick={handleGetAdvisory}
           disabled={loading || !location.trim()}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? (
             <>
@@ -213,7 +208,7 @@ const WeatherAdvisory = () => {
               Get Weather Advisory
             </>
           )}
-        </button>
+        </SharedButton>
       </div>
 
       {/* Error Display */}
@@ -252,7 +247,7 @@ const WeatherAdvisory = () => {
           {(advisory.sprayingConditions || advisory.irrigationAdvice) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {advisory.sprayingConditions && (
-                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
+                <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                     <CloudRain className="w-4 h-4 text-blue-500" />
                     Spraying Conditions
@@ -269,7 +264,7 @@ const WeatherAdvisory = () => {
                 </div>
               )}
               {advisory.irrigationAdvice && (
-                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
+                <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
                   <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-2 flex items-center gap-2">
                     <Droplets className="w-4 h-4 text-cyan-500" />
                     Irrigation Advice
@@ -282,7 +277,7 @@ const WeatherAdvisory = () => {
 
           {/* Recommendations */}
           {advisory.recommendations && advisory.recommendations.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
               <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-green-500" />
                 Farming Recommendations
@@ -302,7 +297,7 @@ const WeatherAdvisory = () => {
 
           {/* Best Activities */}
           {advisory.bestActivities && advisory.bestActivities.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
               <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-4 flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-emerald-500" />
                 Best Activities for Today
@@ -356,7 +351,7 @@ const WeatherAdvisory = () => {
 
           {/* Feedback Form */}
           {advisoryId && (
-            <FeedbackForm 
+            <FeedbackForm
               advisoryId={advisoryId}
               onSubmitSuccess={() => {
                 console.log('Weather advisory feedback submitted successfully');

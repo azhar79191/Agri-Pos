@@ -1,10 +1,12 @@
+import SharedButton from "../ui/Button";
+import FormField from "../ui/FormField";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 
 const Field = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra }) => (
-  <div>
-    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{label}</label>
+  <FormField label={<>{label}</>}>
+
     <div className="relative">
       {Icon && <Icon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />}
       <input
@@ -13,7 +15,7 @@ const Field = ({ label, type = "text", icon: Icon, value, onChange, placeholder,
       />
       {extra}
     </div>
-  </div>
+  </FormField>
 );
 
 /**
@@ -40,9 +42,9 @@ const SetupForm = ({ onSubmit, loading }) => {
         }
       />
       <Field label="Confirm Password" type="password" icon={Lock} value={form.confirmPassword} onChange={set("confirmPassword")} placeholder="Repeat password" required />
-      <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+      <SharedButton type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 px-6 font-medium rounded-md transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2">
         {loading ? <LoadingIndicator /> : <><span>Create Admin Account</span><ArrowRight className="w-4 h-4" /></>}
-      </button>
+      </SharedButton>
     </form>
   );
 };

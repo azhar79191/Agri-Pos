@@ -5,7 +5,7 @@ import { Check, ChevronDown } from 'lucide-react';
 const CustomSelect = forwardRef(function CustomSelect({
   label, error, helperText, options, children, onSearchChange, loading = false, value: controlledValue, defaultValue = '', onChange, placeholder = 'Select an option',
   disabled = false, required = false, name, id, className = '', containerClassName = '', labelClassName = '',
-  'aria-label': ariaLabel, onBlur, onFocus,
+  'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, 'aria-describedby': ariaDescribedBy, 'aria-invalid': ariaInvalid, onBlur, onFocus,
 }, ref) {
   const [internalValue, setInternalValue] = useState(defaultValue);
   const value = controlledValue ?? internalValue;
@@ -32,6 +32,7 @@ const CustomSelect = forwardRef(function CustomSelect({
   const choose = index => {
     const option = normalized[index];
     if (!option || option.disabled || unavailable()) return;
+    trigger.current?.dispatchEvent(new CustomEvent('workspace-field-change', { bubbles:true, detail:{ value:option.value, previousValue:String(value ?? '') } }));
     setInternalValue(option.value);
     onChange?.({ target: { value: option.value, name }, currentTarget: { value: option.value, name } });
     setInvalid(false); close(true);
@@ -78,7 +79,7 @@ const CustomSelect = forwardRef(function CustomSelect({
   const layoutClasses = className.split(/\s+/).filter(token => /(^|:)(col-span-|row-span-|flex-1$|w-|min-w-|max-w-|self-|order-)/.test(token)).join(' ');
   return <div className={`min-w-0 ${layoutClasses} ${containerClassName}`}>
     {label && <label htmlFor={fieldId} className={`mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300 ${labelClassName}`}>{label}{required && <span className="ml-1 text-red-500">*</span>}</label>}
-    <button ref={trigger} id={fieldId} type="button" role="combobox" aria-label={ariaLabel} aria-expanded={open} aria-controls={listId} aria-haspopup="listbox" aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined} aria-required={required || undefined} aria-invalid={!!error || invalid || undefined} aria-describedby={error || helperText || invalid ? helpId : undefined} disabled={disabled} onClick={() => open ? close() : show()} onKeyDown={keyDown} onBlur={onBlur} onFocus={onFocus}
+    <button ref={trigger} id={fieldId} type="button" role="combobox" data-form-value={String(value ?? '')} aria-label={ariaLabel} aria-labelledby={ariaLabelledBy} aria-expanded={open} aria-controls={listId} aria-haspopup="listbox" aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined} aria-required={required || undefined} aria-invalid={ariaInvalid || !!error || invalid || undefined} aria-describedby={[ariaDescribedBy, error || helperText || invalid ? helpId : null].filter(Boolean).join(' ') || undefined} disabled={disabled} onClick={() => open ? close() : show()} onKeyDown={keyDown} onBlur={onBlur} onFocus={onFocus}
       className={`custom-select-trigger flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border bg-white px-3 py-2 text-left text-sm text-slate-900 dark:bg-slate-800 dark:text-white ${error || invalid ? 'border-red-400' : 'border-slate-300 dark:border-slate-600'} disabled:cursor-not-allowed disabled:opacity-50 ${className}`}>
       <span className={`min-w-0 truncate ${!selected ? 'text-slate-500 dark:text-slate-400' : ''}`}>{selected?.label ?? placeholder}</span><ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} />
     </button>

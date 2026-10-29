@@ -1,3 +1,5 @@
+import { usePageUnsaved } from '../../context/UnsavedChangesContext';
+import FormField from "../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
 import { Save, Building2, DollarSign, Receipt, CheckCircle } from "lucide-react";
@@ -14,6 +16,7 @@ const ShopPanel = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [baseline,setBaseline] = useState(null);
   const [form, setForm] = useState({ taxRate: "", currency: "", receiptFooter: "" });
 
   useEffect(() => {
@@ -22,6 +25,7 @@ const ShopPanel = () => {
         const s = r.data.data?.shop;
         if (s) {
           setShop(s);
+          setBaseline({ taxRate:s.taxRate ?? 5,currency:s.currency||"Rs.",receiptFooter:s.receiptFooter||"Thank you for your purchase!" });
           setForm({ taxRate: s.taxRate ?? 5, currency: s.currency || "Rs.", receiptFooter: s.receiptFooter || "Thank you for your purchase!" });
         }
       })
@@ -29,6 +33,7 @@ const ShopPanel = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  usePageUnsaved({dirty:!!baseline&&JSON.stringify(form)!==JSON.stringify(baseline),busy:saving,onDiscard:()=>baseline&&setForm(baseline)});
   const f = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
@@ -41,6 +46,7 @@ const ShopPanel = () => {
         receiptFooter: form.receiptFooter,
       });
       actions.updateSettings({ taxRate: parseFloat(form.taxRate) || 0, currency: form.currency, receiptFooter: form.receiptFooter });
+      setBaseline({...form});
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       actions.showToast({ message: "Shop settings saved", type: "success" });
@@ -79,34 +85,34 @@ const ShopPanel = () => {
         <div className="space-y-5">
           {/* Tax + Currency row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+            <FormField label={<>
                 <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Tax Rate (%)
-              </label>
+              </>}>
+
               <input type="number" min="0" max="100" step="0.1" value={form.taxRate}
                 onChange={e => f("taxRate", e.target.value)} className={inp} placeholder="e.g. 5" />
               <p className="text-[11px] text-slate-400 mt-1">Applied to all taxable sales</p>
-            </div>
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+            </FormField>
+            <FormField label={<>
                 <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Currency Symbol
-              </label>
+              </>}>
+
               <input type="text" value={form.currency}
                 onChange={e => f("currency", e.target.value)} className={inp} placeholder="e.g. Rs. or $" />
               <p className="text-[11px] text-slate-400 mt-1">Shown on invoices and receipts</p>
-            </div>
+            </FormField>
           </div>
 
           {/* Receipt footer */}
-          <div>
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          <FormField label={<>
               <Receipt className="w-3.5 h-3.5 text-slate-400" /> Receipt Footer Message
-            </label>
+            </>}>
+
             <textarea rows={3} value={form.receiptFooter}
               onChange={e => f("receiptFooter", e.target.value)}
               className={inp + " resize-none"} placeholder="Thank you for your purchase!" />
             <p className="text-[11px] text-slate-400 mt-1">Printed at the bottom of every receipt</p>
-          </div>
+          </FormField>
 
           {/* Preview */}
           <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40">

@@ -1,3 +1,4 @@
+import SharedButton from "../../components/ui/Button";
 import LoadingState from "../../components/ui/LoadingState";
 import React, { useState } from 'react';
 import { getCropAdvisory } from '../../api/cropAdvisoryApi';
@@ -55,13 +56,13 @@ const TestCropAPI = () => {
         <p><strong>Token Preview:</strong> {readAuthToken() ? `${readAuthToken().slice(0, 20)}...` : 'No token'}</p>
       </div>
 
-      <button
+      <SharedButton
         onClick={testAPI}
         disabled={loading}
-        className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+        className="px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
       >
         {loading ? 'Testing...' : 'Test API Call'}
-      </button>
+      </SharedButton>
 
       {loading && (
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded">

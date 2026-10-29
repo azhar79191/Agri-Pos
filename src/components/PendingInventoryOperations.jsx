@@ -1,20 +1,8 @@
 import { useEffect, useState } from 'react';
 import { financialCommand, commandIsRunning } from '../api/financialCommand';
-import { scopedStorageKey } from '../utils/browserScope';
+import { readRecoveryCommands } from '../utils/recoveryCommands';
 
-function loadPending(pathPrefix) {
-  const scopeSuffix = scopedStorageKey('');
-  const entries = [];
-  for (let index = 0; index < sessionStorage.length; index++) {
-    const key = sessionStorage.key(index);
-    if (!key.startsWith('financial-command:') || !key.endsWith(scopeSuffix)) continue;
-    try {
-      const item = JSON.parse(sessionStorage.getItem(key));
-      if (['clientOperationId', 'clientSaleId'].includes(item.idField) && item.path?.startsWith(pathPrefix) && /^\/(products|invoices|stock\/adjust|purchase-returns|suppliers|loyalty|farmer-workspace|dealer-records|customer-orders|dealer-network)(\/|$)/.test(item.path)) entries.push({ ...item, key });
-    } catch { /* Keep unreadable recovery records for manual investigation. */ }
-  }
-  return entries;
-}
+function loadPending(pathPrefix) { return readRecoveryCommands().filter(item=>item.replayable && !commandIsRunning(item.key) && item.idField==='clientOperationId' && item.path.startsWith(pathPrefix)); }
 
 export default function PendingInventoryOperations({ pathPrefix, onRecovered }) {
   const [pending, setPending] = useState(() => loadPending(pathPrefix));

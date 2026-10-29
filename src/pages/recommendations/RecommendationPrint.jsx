@@ -1,3 +1,5 @@
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import React, { useState } from "react";
 import { Printer, FileText } from "lucide-react";
 
@@ -14,16 +16,16 @@ const RecommendationPrint = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6 space-y-4 no-print">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6 space-y-4 no-print">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">Fill Recommendation Details</h3>
           {[{ l: "Customer/Farmer Name", k: "customer" }, { l: "Crop", k: "crop" }, { l: "Issue/Disease", k: "issue" }, { l: "Recommended Products", k: "products" }, { l: "Dosage Instructions", k: "dosage" }].map(({ l, k }) => (
-            <div key={k}><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label><input value={form[k]} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white" /></div>
+            <FormField key={k} label={<>{l}</>}><input value={form[k]} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white" /></FormField>
           ))}
-          <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Additional Notes</label><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none" /></div>
-          <button onClick={handlePrint} className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg font-semibold text-sm shadow-sm"><Printer className="w-4 h-4" />Print Recommendation</button>
+          <FormField label={<>Additional Notes</>}><textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={3} className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none" /></FormField>
+          <SharedButton onClick={handlePrint} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-sm"><Printer className="w-4 h-4" />Print Recommendation</SharedButton>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 shadow-premium p-8 receipt">
+        <div className="workspace-panel bg-white rounded-lg border border-slate-200 shadow-premium p-8 receipt">
           <div className="text-center border-b border-slate-200 pb-4 mb-4"><h2 className="text-lg font-bold text-slate-900">🌱 Agri-Care Recommendation</h2><p className="text-xs text-slate-400 mt-1">{new Date().toLocaleDateString()}</p></div>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-slate-500">Farmer:</span><span className="font-semibold text-slate-900">{form.customer || "—"}</span></div>

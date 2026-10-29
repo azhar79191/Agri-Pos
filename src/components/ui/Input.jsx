@@ -7,6 +7,7 @@ const Input = forwardRef(({
 }, ref) => {
   const generatedId = useId();
   const fieldId = props.id || generatedId;
+  const messageId = `${fieldId}-message`;
   const base = "input-premium";
   const errorStyles = error ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500" : "";
   const iconPadding = LeftIcon ? "pl-10" : "px-4";
@@ -26,10 +27,12 @@ const Input = forwardRef(({
           </div>
         )}
         <input
-          id={fieldId} aria-invalid={error ? true : undefined}
+          id={fieldId}
           ref={ref} type={type}
           className={[base, errorStyles, iconPadding, rightIconPadding, className].filter(Boolean).join(" ")}
           {...props}
+          aria-invalid={error || props['aria-invalid'] ? true : undefined}
+          aria-describedby={[props['aria-describedby'], error || helperText ? messageId : null].filter(Boolean).join(' ') || undefined}
         />
         {RightIcon && (
           <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
@@ -37,8 +40,8 @@ const Input = forwardRef(({
           </div>
         )}
       </div>
-      {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
-      {helperText && !error && <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{helperText}</p>}
+      {error && <p id={messageId} role="alert" className="form-field__error">{error}</p>}
+      {helperText && !error && <p id={messageId} className="form-field__help">{helperText}</p>}
     </div>
   );
 });

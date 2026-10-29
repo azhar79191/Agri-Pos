@@ -1,3 +1,5 @@
+import SharedButton from "../components/ui/Button";
+import FormField from "../components/ui/FormField";
 import Modal from "../components/ui/Modal";
 import React, { useState, useMemo } from "react";
 import { ShoppingCart, Plus, Minus, Trash2, Receipt, X, Package, Zap } from "lucide-react";
@@ -90,7 +92,7 @@ const DemoPOS = () => {
           </div>
 
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..."
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"  aria-label="Search products..."/>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {filtered.map(product => {
@@ -112,10 +114,10 @@ const DemoPOS = () => {
                         <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-0.5 border border-emerald-200 dark:border-emerald-800">
                           <button onClick={() => updateQty(product._id, inCart.quantity - 1)} className="w-5 h-5 rounded flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors"><Minus className="w-3 h-3" /></button>
                           <span className="w-5 text-center text-xs font-bold text-emerald-700 dark:text-emerald-400">{inCart.quantity}</span>
-                          <button onClick={() => updateQty(product._id, inCart.quantity + 1)} className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-white hover:bg-emerald-600 transition-colors"><Plus className="w-3 h-3" /></button>
+                          <SharedButton onClick={() => updateQty(product._id, inCart.quantity + 1)} className="w-5 h-5 rounded flex items-center justify-center transition-colors"><Plus className="w-3 h-3" /></SharedButton>
                         </div>
                       ) : (
-                        <button onClick={() => addToCart(product)} className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition-colors">Add</button>
+                        <SharedButton onClick={() => addToCart(product)} className="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors">Add</SharedButton>
                       )}
                     </div>
                   </div>
@@ -171,8 +173,8 @@ const DemoPOS = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Cash Received</label>
+              <FormField label={<>Cash Received</>}>
+
                 <input type="number" value={cashReceived} onChange={e => setCash(e.target.value)} placeholder={`Min ${formatCurrency(total, currency)}`}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 {parseFloat(cashReceived) > 0 && (
@@ -181,7 +183,7 @@ const DemoPOS = () => {
                     <span className="font-black">{formatCurrency(Math.abs(change), currency)}</span>
                   </div>
                 )}
-              </div>
+              </FormField>
 
               <button onClick={checkout}
                 className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-black text-sm bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg">
@@ -203,9 +205,9 @@ const DemoPOS = () => {
           size="xs"
           subtitle={<>{receipt.invoiceNumber}</>}
           footer={<div className="">
-              <button onClick={() => setReceipt(null)} className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-colors">
+              <SharedButton onClick={() => setReceipt(null)} className="w-full py-2.5 rounded-xl font-bold text-sm transition-colors">
                 New Sale
-              </button>
+              </SharedButton>
             </div>}><div className="space-y-4">
 
             <div className="">

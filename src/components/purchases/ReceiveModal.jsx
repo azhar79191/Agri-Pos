@@ -1,3 +1,5 @@
+import SharedButton from "../ui/Button";
+import FormField from "../ui/FormField";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState, useEffect } from "react";
 import { CheckCircle, AlertCircle, ClipboardCheck } from "lucide-react";
@@ -61,7 +63,7 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
   const allFull = items.every((i) => i.received >= i.ordered);
 
   return (
-    <ModernModal
+    <ModernModal busy={saving}
       isOpen={isOpen} onClose={onClose}
       title={`Receive Goods — ${po?.poNumber ?? ""}`}
       size="lg" icon={ClipboardCheck} iconColor="emerald"
@@ -70,11 +72,11 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
         <div className="flex items-center justify-between w-full">
           <span className="text-xs text-slate-400">{allFull ? "Full receipt" : "Partial receipt — PO stays open"}</span>
           <div className="flex gap-3">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-            <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>Cancel</button>
+            <SharedButton onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-5 py-2 disabled:opacity-50 rounded-lg text-sm font-semibold transition-colors">
               {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
               {saving ? "Saving..." : hasPendingReceipt ? "Recover original receipt" : "Confirm Receipt"}
-            </button>
+            </SharedButton>
           </div>
         </div>
       }
@@ -99,7 +101,7 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
                   <td className="px-3 py-3 text-center">
                     <input type="number" min="0" max={item.ordered} value={item.received} onChange={(e) => setQty(i, e.target.value)}
                       className={`w-20 text-center px-2 py-1.5 border rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-500/30 transition-colors ${item.received < item.ordered ? "border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"}`}
-                    />
+                     aria-label="Quantity"/>
                   </td>
                   <td className="px-4 py-3 text-right text-slate-500">{formatCurrency(item.unitPrice, currency)}</td>
                 </tr>
@@ -108,11 +110,11 @@ const ReceiveModal = ({ po, isOpen, onClose, onReceived, currency }) => {
           </table>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Notes (optional)</label>
+        <FormField label={<>Notes (optional)</>}>
+
           <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. 2 units damaged on arrival..."
             className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none outline-none focus:ring-2 focus:ring-emerald-500/30" />
-        </div>
+        </FormField>
 
         {!allFull && (
           <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">

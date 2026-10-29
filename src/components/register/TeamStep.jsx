@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import SearchableSelect from "../ui/Select";
 import { LoadingIndicator } from "../ui/LoadingState";
 import { Plus, Trash2, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
@@ -28,14 +29,14 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
               onChange={(e) => onUpdate(i, "name", e.target.value)}
               placeholder="Full Name"
               className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            />
+             aria-label="Full Name"/>
             <input
               type="email"
               value={m.email}
               onChange={(e) => onUpdate(i, "email", e.target.value)}
               placeholder="Email"
               className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            />
+             aria-label="Email"/>
             <div className="relative">
               <input
                 type={showPasswords[i] ? "text" : "password"}
@@ -43,7 +44,7 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
                 onChange={(e) => onUpdate(i, "password", e.target.value)}
                 placeholder="Password"
                 className="w-full px-3 py-2 pr-8 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-              />
+               aria-label="Password"/>
               <button type="button" onClick={() => togglePassword(i)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
                 {showPasswords[i] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -52,7 +53,7 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
               value={m.role}
               onChange={(e) => onUpdate(i, "role", e.target.value)}
               className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            >
+             aria-label="Date">
               <option value="manager">Manager</option>
               <option value="cashier">Cashier</option>
             </SearchableSelect>
@@ -79,13 +80,13 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
       >
         Skip
       </button>
-      <button
+      <SharedButton
         onClick={() => onSubmit(false)}
         disabled={saving}
-        className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
+        className="flex-1 flex items-center justify-center gap-2 py-3 disabled:opacity-60 rounded-lg font-semibold text-sm transition-colors"
       >
         {saving ? <LoadingIndicator /> : <>Finish Setup <ArrowRight className="w-5 h-5" /></>}
-      </button>
+      </SharedButton>
     </div>
   </>
 );

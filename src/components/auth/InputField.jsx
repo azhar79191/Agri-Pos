@@ -1,8 +1,9 @@
+import FormField from "../ui/FormField";
 export const InputField = ({ label, type = "text", icon: Icon, value, onChange, placeholder, required, extra, className = "" }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+  <FormField label={<>
       {label}
-    </label>
+    </>}>
+
     <div className="relative">
       {Icon && <Icon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />}
       <input
@@ -15,5 +16,5 @@ export const InputField = ({ label, type = "text", icon: Icon, value, onChange, 
       />
       {extra}
     </div>
-  </div>
+  </FormField>
 );

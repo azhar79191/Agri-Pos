@@ -1,3 +1,4 @@
+import { appearanceSettings } from '../utils/appearance';
 import { applyTheme, applySecondaryTheme } from "../utils/theme";
 import { scopedStorageKey } from "../utils/browserScope";
 import React, { createContext, useContext, useReducer, useEffect, useMemo, useRef } from "react";
@@ -32,7 +33,7 @@ const initialState = {
   toast: null,
   modal: null,
   sidebarCollapsed: false,
-  settings: {
+  settings: { ...appearanceSettings(_savedShop || {}),
     shopName:          _savedShop?.name          || "",
     taxRate:           _savedShop?.taxRate        ?? 5,
     currency:          _savedShop?.currency       || "Rs.",
@@ -72,7 +73,7 @@ function appReducer(state, action) {
         currentUser: null,
         isAuthenticated: false,
         cart: [],
-        settings: { ...initialState.settings, shopName: "", brandName: "", brandTagline: "", brandLogo: "", shopLogo: "", secondaryColor: "", brandColor: "", theme: "light" },
+        settings: { ...initialState.settings, ...appearanceSettings({}), shopName: "", brandName: "", brandTagline: "", brandLogo: "", shopLogo: "", secondaryColor: "", brandColor: "", theme: "light" },
         darkMode: false,
         themeColor: "#047857",
       };
@@ -156,7 +157,7 @@ export function AppProvider({ children }) {
       if (incoming) {
         dispatch({ type: A.UPDATE_USER, payload: incoming });
         const shop = incoming.shop && typeof incoming.shop === 'object' ? incoming.shop : {};
-        dispatch({ type: A.UPDATE_SETTINGS, payload: { shopName: shop.name || '', shopLogo: shop.logo || '', brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || '', theme: shop.theme || 'light', address: shop.address || '', phone: shop.phone || '', email: shop.email || '' } });
+        dispatch({ type: A.UPDATE_SETTINGS, payload: { shopName: shop.name || '', shopLogo: shop.logo || '', ...appearanceSettings(shop), brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || '', theme: shop.theme || 'light', address: shop.address || '', phone: shop.phone || '', email: shop.email || '' } });
       }
     };
     window.addEventListener("user-updated", handleUserUpdate);
@@ -215,7 +216,7 @@ export function AppProvider({ children }) {
           currency: shop.currency || "Rs.", address: shop.address || "",
           phone: shop.phone || "", email: shop.email || "",
           shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-        } : { theme: "light", brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
+        } : { ...appearanceSettings({}), theme: "light", brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
       });
       // Welcome toast
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -284,7 +285,7 @@ export function AppProvider({ children }) {
       dispatch({ type: A.UPDATE_SETTINGS, payload: normalized });
       if (current?.shop && typeof current.shop === 'object') {
         const updated = { ...current, shop: { ...current.shop, name: settings.shopName, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail,
-          logo: settings.shopLogo || "", brandName: settings.brandName, brandTagline: settings.brandTagline, brandLogo: settings.brandLogo, secondaryColor: settings.secondaryColor, brandColor: settings.brandColor, theme: settings.theme, receiptFooter: settings.receiptFooter } };
+          ...appearanceSettings(settings), logo: settings.shopLogo || "", brandName: settings.brandName, brandTagline: settings.brandTagline, brandLogo: settings.brandLogo, secondaryColor: settings.secondaryColor, brandColor: settings.brandColor, theme: settings.theme, receiptFooter: settings.receiptFooter } };
         dispatch({ type: A.UPDATE_USER, payload: updated });
         localStorage.setItem('user', JSON.stringify(updated));
       }

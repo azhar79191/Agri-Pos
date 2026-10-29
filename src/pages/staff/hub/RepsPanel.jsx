@@ -1,3 +1,4 @@
+import FormField from "../../../components/ui/FormField";
 import SearchableSelect from "../../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import React, { useState } from "react";
@@ -31,7 +32,7 @@ const RepCard = ({ rep, currency, maxSales, rank, onEdit, onDelete }) => {
   const isTop = rank === 0;
 
   return (
-    <div className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-1 transition-all duration-200">
+    <div className="workspace-panel group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-1 transition-all duration-200">
       {/* Top gradient bar */}
       <div className={`h-1.5 w-full bg-gradient-to-r ${grad}`} />
 
@@ -51,7 +52,7 @@ const RepCard = ({ rep, currency, maxSales, rank, onEdit, onDelete }) => {
               <span className="text-white font-black text-xl">{rep.name?.[0]?.toUpperCase()}</span>
             </div>
             {/* Commission ring overlay */}
-            <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center">
+            <div className="workspace-panel absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center">
               <span className="text-[9px] font-black text-slate-700 dark:text-slate-300">{rep.commission}%</span>
             </div>
           </div>
@@ -206,17 +207,17 @@ const RepsPanel = () => {
       )}
 
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
           <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}
 
       {/* Modal */}
-      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)}
+      <ModernModal busy={saving} isOpen={showModal} onClose={() => setShowModal(false)}
         title={editing ? "Edit Sales Rep" : "Add Sales Rep"} icon={UserCheck} iconColor="blue"
         footer={
           <div className="flex justify-end gap-3">
-            <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+            <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>Cancel</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:opacity-50 text-white transition-all">
               {saving ? <LoadingIndicator /> : null}
               {saving ? "Saving..." : editing ? "Update" : "Add Rep"}
@@ -225,16 +226,16 @@ const RepsPanel = () => {
         }>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Name *</label><input value={form.name} onChange={e => f("name", e.target.value)} className={inp} placeholder="Rep name" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Phone</label><input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} className={inp} placeholder="+92 300 0000000" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Territory</label><input value={form.territory} onChange={e => f("territory", e.target.value)} className={inp} placeholder="e.g. Multan Region" /></div>
-            <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Commission (%)</label><input type="number" min="0" max="100" step="0.5" value={form.commission} onChange={e => f("commission", e.target.value)} className={inp} /></div>
-            <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Status</label>
+            <FormField label={<>Name *</>}><input value={form.name} onChange={e => f("name", e.target.value)} className={inp} placeholder="Rep name" /></FormField>
+            <FormField label={<>Phone</>}><input type="tel" value={form.phone} onChange={e => f("phone", e.target.value)} className={inp} placeholder="+92 300 0000000" /></FormField>
+            <FormField label={<>Territory</>}><input value={form.territory} onChange={e => f("territory", e.target.value)} className={inp} placeholder="e.g. Multan Region" /></FormField>
+            <FormField label={<>Commission (%)</>}><input type="number" min="0" max="100" step="0.5" value={form.commission} onChange={e => f("commission", e.target.value)} className={inp} /></FormField>
+            <FormField className="sm:col-span-2" label={<>Status</>}>
               <SearchableSelect value={form.status} onChange={e => f("status", e.target.value)} className={inp}>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </SearchableSelect>
-            </div>
+            </FormField>
           </div>
         </div>
       </ModernModal>

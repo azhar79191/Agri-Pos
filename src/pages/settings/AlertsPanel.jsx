@@ -1,3 +1,5 @@
+import { usePageUnsaved } from '../../context/UnsavedChangesContext';
+import FormField from "../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, Save, CheckCircle } from "lucide-react";
@@ -14,24 +16,27 @@ const AlertsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [baseline,setBaseline] = useState("5");
   const [threshold, setThreshold] = useState("5");
 
   useEffect(() => {
     getMyShop()
       .then(r => {
         const s = r.data.data?.shop;
-        if (s) { setShop(s); setThreshold(String(s.lowStockThreshold ?? 5)); }
+        if (s) { setShop(s); setThreshold(String(s.lowStockThreshold ?? 5)); setBaseline(String(s.lowStockThreshold ?? 5)); }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  usePageUnsaved({dirty:threshold!==baseline,busy:saving,onDiscard:()=>setThreshold(baseline)});
   const handleSave = async () => {
     if (!shop) return;
     setSaving(true);
     try {
       await updateShop(shop._id, { lowStockThreshold: parseInt(threshold) || 5 });
       actions.updateSettings({ lowStockThreshold: parseInt(threshold) || 5 });
+      setBaseline(threshold);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       actions.showToast({ message: "Alert threshold saved", type: "success" });
@@ -61,13 +66,13 @@ const AlertsPanel = () => {
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="max-w-xs">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+          <FormField className="max-w-xs" label={<>
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Minimum Stock Quantity
-            </label>
+            </>}>
+
             <input type="number" min="1" value={threshold}
               onChange={e => setThreshold(e.target.value)} className={inp} placeholder="e.g. 5" />
-          </div>
+          </FormField>
 
           {/* Visual indicator */}
           <div className="grid grid-cols-3 gap-3">

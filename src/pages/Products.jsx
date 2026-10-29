@@ -1,3 +1,6 @@
+import useRecoveryRefresh from '../hooks/useRecoveryRefresh';
+import { confirmAction } from "../utils/feedback";
+import PageHeader from "../components/ui/PageHeader";
 import DataTable from "../components/ui/DataTable";
 import ListFeedback from "../components/ui/ListFeedback";
 import PendingInventoryOperations from "../components/PendingInventoryOperations";
@@ -69,6 +72,7 @@ const Products = () => {
 
   const filteredProducts = products;
 
+  useRecoveryRefresh(()=>reloadList());
   const stockStats = useMemo(() => ({
     total: products.length,
     low:   products.filter((p) => p.stock > 0 && p.stock <= (p.minStockLevel ?? 5)).length,
@@ -81,22 +85,11 @@ const Products = () => {
     <div className="space-y-5 animate-fade-up">
       <PendingInventoryOperations pathPrefix="/products" onRecovered={() => { actions.hideToast(); return reloadList(); }} />
       {/* Page header */}
-      <div className="workspace-hero flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/15 flex items-center justify-center flex-shrink-0">
-            <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-900 dark:text-white">Products</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{pagination.total} products in inventory</p>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader title={<>Products</>} description={<>{pagination.total} products in inventory</>} icon={Package} actions={<><div className="flex flex-wrap gap-2">
           <ModernButton variant="outline" onClick={() => exportProducts(products, state?.settings?.currency)} disabled={loading || !!error} icon={Download} size="sm">Export page</ModernButton>
           <ModernButton variant="outline" onClick={() => setShowLabelPrinter(true)} icon={Tag} size="sm">Print Labels</ModernButton>
           <ModernButton disabled={!actions.hasPermission("products:create")} onClick={openAdd} icon={Plus}>Add Product</ModernButton>
-        </div>
-      </div>
+        </div></>}></PageHeader>
 
       <ProductStatsCards stats={stockStats} />
       <ProductAuthenticity products={products} canEdit={actions.hasPermission('products:edit')} />
@@ -146,7 +139,7 @@ const Products = () => {
       </div>
 
       {/* Add / Edit modal */}
-      <ModernModal
+      <ModernModal busy={submitting}
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title={editingProduct ? "Edit Product" : "Add Product"}
@@ -245,7 +238,7 @@ const Products = () => {
         busy={bulkBusy}
         deleteLabel="Archive"
         onDelete={actions.hasPermission("products:delete") ? async () => {
-          if (!window.confirm(`Archive ${selected.size} selected product records? History will be retained.`)) return;
+          if (!(await confirmAction(`Archive ${selected.size} selected product records? History will be retained.`))) return;
           setBulkBusy(true);
           const ids = [...selected];
           const results = await Promise.allSettled(ids.map(id => deleteProduct(id)));

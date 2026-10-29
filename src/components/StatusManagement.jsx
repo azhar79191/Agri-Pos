@@ -51,8 +51,7 @@ const StatusManagement = ({ item, type = "invoice", onClose }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <SearchableSelect
-        value={selectedStatus}
+      <SearchableSelect aria-label="Status" value={selectedStatus}
         onChange={(e) => setSelectedStatus(e.target.value)}
         className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
       >

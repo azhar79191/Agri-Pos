@@ -1,3 +1,4 @@
+import { usePageUnsaved } from '../context/UnsavedChangesContext';
 import { useState, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { useStock } from "./useStock";
@@ -44,6 +45,7 @@ export function useStockAdjustment(fetchLevels, setStockLevels, stockLevels = []
     }
   }, [isAdmin, selectedProduct, adjustmentType, quantity, reason, adjust, fetchLogs, fetchAlerts, fetchLevels, setStockLevels, stockLevels, actions]);
 
+  usePageUnsaved({dirty:quantity!==''||reason!=='',busy:submitting,onDiscard:()=>{setQuantity('');setReason('');setSelectedProduct(null);}});
   return {
     isAdmin,
     selectedProduct, setSelectedProduct,

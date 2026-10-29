@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import { useState } from 'react';
 import Select from '../../components/ui/Select';
 import { labelQuantity } from '../../utils/labelQuantity';
@@ -13,7 +14,7 @@ export default function AdvancedDosageCalculator() {
     try { setResult(labelQuantity(form)); } catch (e) { setError(e.message); }
   };
   return <div className="mx-auto max-w-4xl space-y-6">
-    <header className="workspace-hero"><p className="workspace-eyebrow">Label quantity worksheet</p><h1>Calculate from a product label</h1><p>Scale an applicable label rate to your field area. This worksheet performs arithmetic; it does not choose a treatment, validate a label or recommend a rate.</p></header>
+    <PageHeader title={<>Calculate from a product label</>} description={<>Scale an applicable label rate to your field area. This worksheet performs arithmetic; it does not choose a treatment, validate a label or recommend a rate.</>}><p className="workspace-eyebrow">Label quantity worksheet</p></PageHeader>
     <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-100">Use the registered product label for the exact formulation, crop, target and application method. Follow its limits, protective equipment, re-entry and harvest intervals. Obtain qualified advice if the label is unclear. AI-generated and sample rates are unavailable.</p>
     <form onSubmit={calculate} className="card-base space-y-5 p-6">
       <div className="grid gap-5 sm:grid-cols-2">

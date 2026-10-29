@@ -1,3 +1,5 @@
+import SharedButton from "../ui/Button";
+import FormField from "../ui/FormField";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
 import { Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
@@ -13,24 +15,24 @@ const LoginForm = ({ initialEmail = "", onSubmit, loading, onForgotPassword }) =
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
+      <FormField label={<>Email Address</>}>
+
         <div className="relative">
           <Mail className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="email" 
-            value={form.email} 
-            onChange={set("email")} 
-            placeholder="Enter your email" 
+          <input
+            type="email"
+            value={form.email}
+            onChange={set("email")}
+            placeholder="Enter your email"
             required
-            className="w-full pl-3 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm" 
+            className="w-full pl-3 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
           />
         </div>
-      </div>
+      </FormField>
 
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+          <label htmlFor="login-password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
           {onForgotPassword && (
             <button
               type="button"
@@ -42,17 +44,20 @@ const LoginForm = ({ initialEmail = "", onSubmit, loading, onForgotPassword }) =
           )}
         </div>
         <div className="relative">
-          <input 
-            type={showPwd ? "text" : "password"} 
-            value={form.password} 
-            onChange={set("password")} 
-            placeholder="Enter your password" 
+          <input
+            type={showPwd ? "text" : "password"}
+            id="login-password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={set("password")}
+            placeholder="Enter your password"
             required
-            className="w-full pl-3 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm" 
-          />
-          <button 
-            type="button" 
-            onClick={() => setShowPwd((v) => !v)} 
+            className="w-full pl-3 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+           />
+          <button
+            type="button"
+            onClick={() => setShowPwd((v) => !v)}
+            aria-label={showPwd ? "Hide password" : "Show password"}
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           >
             {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -60,10 +65,10 @@ const LoginForm = ({ initialEmail = "", onSubmit, loading, onForgotPassword }) =
         </div>
       </div>
 
-      <button 
-        type="submit" 
-        disabled={loading} 
-        className="w-full flex items-center justify-center gap-2 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+      <SharedButton
+        type="submit"
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 py-3 px-6 font-medium rounded-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
       >
         {loading ? (
           <LoadingIndicator />
@@ -73,7 +78,7 @@ const LoginForm = ({ initialEmail = "", onSubmit, loading, onForgotPassword }) =
             <ArrowRight className="w-4 h-4" />
           </>
         )}
-      </button>
+      </SharedButton>
     </form>
   );
 };

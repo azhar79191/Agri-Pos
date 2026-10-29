@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import { CheckCircle } from "lucide-react";
 
 export const SuccessStep = ({ result, onNavigate }) => (
@@ -17,11 +18,11 @@ export const SuccessStep = ({ result, onNavigate }) => (
     <p className="text-sm text-gray-400 mb-8">
       You are now logged in as admin. Start adding products and processing sales.
     </p>
-    <button
+    <SharedButton
       onClick={onNavigate}
-      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+      className="w-full py-3 rounded-lg font-semibold transition-colors"
     >
       Go to Dashboard
-    </button>
+    </SharedButton>
   </div>
 );

@@ -1,3 +1,4 @@
+import { applyAppearance } from '../utils/appearance';
 import { useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -33,5 +34,7 @@ export default function DocumentBranding() {
     setIdentity(title, logo);
     return () => setIdentity(PLATFORM_BRAND.name, '');
   }, [title, logo]);
+  const appearance=JSON.stringify(useCompany?settings:{});
+  useLayoutEffect(()=>{applyAppearance(JSON.parse(appearance));return()=>applyAppearance({});},[appearance]);
   return null;
 }

@@ -1,3 +1,4 @@
+import FormField from "./ui/FormField";
 import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
 import { Package, Plus, Minus, AlertTriangle, History, RotateCcw } from "lucide-react";
@@ -16,10 +17,10 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const qty = parseInt(quantity) || 0;
     const finalReason = reason || (operation === "add" ? "Purchase" : operation === "remove" ? "Damage" : "Adjustment");
-    
+
     if (operation === "add" && qty > 0) {
       onAddStock(product.id, qty, finalReason);
       resetForm();
@@ -145,10 +146,10 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
 
           {/* Quantity Input */}
           {operation !== "adjust" ? (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <FormField label={<>
                 Quantity
-              </label>
+              </>}>
+
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -173,12 +174,12 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-            </div>
+            </FormField>
           ) : (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <FormField label={<>
                 New Stock Value
-              </label>
+              </>}>
+
               <input
                 type="number"
                 min="0"
@@ -190,14 +191,14 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
               <p className="text-xs text-gray-500 mt-1">
                 This will set the stock to the exact value entered
               </p>
-            </div>
+            </FormField>
           )}
 
           {/* Reason Select */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <FormField label={<>
               Reason
-            </label>
+            </>}>
+
             <SearchableSelect
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -208,20 +209,20 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
                 <option key={r} value={r}>{r}</option>
               ))}
             </SearchableSelect>
-          </div>
+          </FormField>
 
           {/* Preview */}
           {quantity && operation !== "adjust" && (
             <div className={`p-4 rounded-lg ${
-              operation === "add" 
-                ? "bg-green-50 dark:bg-green-900/20 border border-green-200" 
+              operation === "add"
+                ? "bg-green-50 dark:bg-green-900/20 border border-green-200"
                 : "bg-red-50 dark:bg-red-900/20 border border-red-200"
             }`}>
               <p className="text-sm text-gray-600 dark:text-gray-400">New stock will be:</p>
               <p className={`text-xl font-bold ${
                 operation === "add" ? "text-green-600" : "text-red-600"
               }`}>
-                {operation === "add" 
+                {operation === "add"
                   ? product.stock + parseInt(quantity || 0)
                   : Math.max(0, product.stock - parseInt(quantity || 0))
                 } {product.unit}
@@ -235,8 +236,8 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
             variant={operation === "add" ? "success" : operation === "remove" ? "danger" : "info"}
             className="w-full"
             disabled={
-              operation === "adjust" 
-                ? !newStockValue 
+              operation === "adjust"
+                ? !newStockValue
                 : !quantity || parseInt(quantity) <= 0
             }
           >

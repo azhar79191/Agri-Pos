@@ -1,3 +1,4 @@
+import FormField from "../ui/FormField";
 import { LoadingIndicator } from "../ui/LoadingState";
 import React, { useState } from "react";
 import { Crown, Calendar, Check, X, Sparkles } from "lucide-react";
@@ -106,7 +107,7 @@ const PlanManagement = ({ shop, onSuccess }) => {
       });
 
       setSuccess(`${PLANS[selectedPlan].name} plan granted successfully for ${duration} days!`);
-      
+
       setTimeout(() => {
         onSuccess?.();
       }, 2000);
@@ -264,11 +265,11 @@ const PlanManagement = ({ shop, onSuccess }) => {
       </div>
 
       {/* Duration Selection */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+      <FormField label={<>
           <Calendar className="w-4 h-4 inline mr-1" />
           Plan Duration (Days)
-        </label>
+        </>}>
+
         <div className="grid grid-cols-4 gap-2">
           {[30, 90, 180, 365].map((days) => (
             <button
@@ -295,7 +296,7 @@ const PlanManagement = ({ shop, onSuccess }) => {
             placeholder="Custom duration (days)"
           />
         </div>
-      </div>
+      </FormField>
 
       {/* Grant Plan Button */}
       <button

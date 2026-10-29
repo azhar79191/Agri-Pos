@@ -99,7 +99,7 @@ const BarcodeLabelPrinter = ({ products, settings, onClose }) => {
             {selectedProducts.length * copies} label{selectedProducts.length * copies !== 1 ? "s" : ""} will be printed
           </p>
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>
               Cancel
             </button>
             <button onClick={handlePrint} disabled={selectedProducts.length === 0}

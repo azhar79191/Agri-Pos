@@ -1,60 +1,20 @@
-import { useState, useCallback } from "react";
-import { useReports } from "./useReports";
+import { reportSchemas } from '../utils/reportSchemas';
+import { getSalesReport, getPaymentDistribution, getTopProducts, getInventoryReport } from '../api/reportsApi';
+import useReportResource from './useReportResource';
 
-/**
- * useReportData — fetches and transforms report data for the Reports page.
- */
-export function useReportData() {
-  const { fetchSalesReport, fetchTopProducts, fetchInventory, fetchPaymentDistribution, loading } = useReports();
-
-  const [summary, setSummary]               = useState({ totalSales: 0, totalTransactions: 0, avgOrderValue: 0, totalItems: 0 });
-  const [dailySalesData, setDailySalesData] = useState([]);
-  const [paymentMethodData, setPaymentMethodData] = useState([]);
-  const [topProducts, setTopProducts]       = useState([]);
-  const [inventoryData, setInventoryData]   = useState({ products: [], lowStock: [], outOfStock: 0 });
-
-  const getDateParams = useCallback((dateRange) => {
-    const end   = new Date().toISOString().split("T")[0];
-    const start = new Date();
-    start.setDate(start.getDate() - parseInt(dateRange));
-    return { startDate: start.toISOString().split("T")[0], endDate: end };
-  }, []);
-
-  const loadSalesReport = useCallback(async (params) => {
-    const data = await fetchSalesReport(params);
-    if (!data) return;
-    const s = data.summary || {};
-    setSummary({ totalSales: s.totalSales || 0, totalTransactions: s.invoiceCount || 0, avgOrderValue: s.avgOrderValue || 0, totalItems: s.itemCount || 0 });
-    setDailySalesData((data.salesData || []).map((d) => ({
-      date:  new Date(d._id.year, (d._id.month || 1) - 1, d._id.day || 1).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
-      sales: d.totalSales || 0,
-    })));
-  }, [fetchSalesReport]);
-
-  const loadPaymentDistribution = useCallback(async (params) => {
-    const data = await fetchPaymentDistribution(params);
-    if (!data) return;
-    setPaymentMethodData((data.distribution || []).map((d) => ({ name: d._id, value: d.total })));
-  }, [fetchPaymentDistribution]);
-
-  const loadTopProducts = useCallback(async (params) => {
-    const data = await fetchTopProducts(params);
-    if (data) setTopProducts(data.topProducts || data);
-  }, [fetchTopProducts]);
-
-  const loadInventory = useCallback(async () => {
-    const data = await fetchInventory();
-    if (!data) return;
-    setInventoryData({
-      products:   data.products || [],
-      lowStock:   (data.products || []).filter((p) => p.status === "Low Stock"),
-      outOfStock: data.summary?.outOfStockCount || 0,
-    });
-  }, [fetchInventory]);
-
-  return {
-    loading,
-    summary, dailySalesData, paymentMethodData, topProducts, inventoryData,
-    getDateParams, loadSalesReport, loadPaymentDistribution, loadTopProducts, loadInventory,
-  };
+const getDateParams = days => { const end = new Date(); const start = new Date(); start.setDate(start.getDate() - Number(days)); return {startDate:start.toISOString().slice(0,10),endDate:end.toISOString().slice(0,10)}; };
+async function loadReport({type,...params}) {
+  if (type === 'daily') {
+    const [sales,payments] = await Promise.all([getSalesReport(params),getPaymentDistribution(params)]);
+    const data=sales.data.data, distribution=payments.data.data;
+    if (!data || !Array.isArray(data.salesData) || !Array.isArray(distribution?.distribution) || !['totalSales','invoiceCount','itemCount','avgOrderValue'].every(key=>Number.isFinite(data.summary?.[key]))) throw new Error('The report response was incomplete.');
+    const s=data.summary||{};
+    return {summary:{totalSales:s.totalSales||0,totalTransactions:s.invoiceCount||0,avgOrderValue:s.avgOrderValue||0,totalItems:s.itemCount||0},dailySalesData:(data.salesData||[]).map(d=>({date:new Date(d._id.year,(d._id.month||1)-1,d._id.day||1).toLocaleDateString('en-PK',{month:'short',day:'numeric'}),sales:d.totalSales||0})),paymentMethodData:(distribution.distribution||[]).map(d=>({name:d._id,value:d.total}))};
+  }
+  if(type==='products'){const d=(await getTopProducts(params)).data.data;if(!Array.isArray(d?.topProducts||d))throw new Error('The report response was incomplete.');return {topProducts:d.topProducts||d};}
+  const d=(await getInventoryReport()).data.data;if(!reportSchemas.inventory(d))throw new Error('The report response was incomplete.');return {inventoryData:{products:d.products||[],lowStock:(d.products||[]).filter(p=>p.status==='Low Stock'),outOfStock:d.summary?.outOfStockCount||0}};
+}
+export function useReportData(type='daily',days='7') {
+  const result=useReportResource(loadReport,{type,...getDateParams(days)}), data=result.data||{};
+  return {...result,summary:data.summary||{totalSales:0,totalTransactions:0,avgOrderValue:0,totalItems:0},dailySalesData:data.dailySalesData||[],paymentMethodData:data.paymentMethodData||[],topProducts:data.topProducts||[],inventoryData:data.inventoryData||{},getDateParams};
 }

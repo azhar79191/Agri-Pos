@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import { useApp } from "../../context/AppContext";
 import { companyName } from "../../utils/company";
@@ -574,15 +577,7 @@ const EnhancedPestDiagnosis = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       <p role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-100">Draft AI advisory. Identification and treatment suggestions require qualified review and an applicable registered product label. Model confidence is not a validated diagnosis.</p>
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm flex-shrink-0">
-          <Bug className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">AI Crop Advisory & Pest Diagnosis</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Image-based detection with comprehensive recommendations</p>
-        </div>
-      </div>
+      <PageHeader icon={Bug} title={<>AI Crop Advisory & Pest Diagnosis</>} description={<>Image-based detection with comprehensive recommendations</>}  />
 
       <div className="flex items-center gap-2 text-sm">
         <button onClick={reset} className={`font-medium transition-colors ${step >= 1 ? 'text-emerald-600 dark:text-emerald-400 hover:underline' : 'text-slate-400'}`}>Crops</button>
@@ -640,42 +635,42 @@ const EnhancedPestDiagnosis = () => {
                 <button onClick={removeImage} className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors">
                   <X className="w-4 h-4" />
                 </button>
-                <button onClick={detectFromImage} disabled={loading} className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                <SharedButton onClick={detectFromImage} disabled={loading} className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
                   {loading ? <LoadingIndicator /> : <Sparkles className="w-4 h-4" />}
                   {loading ? 'Analyzing...' : 'Detect with AI'}
-                </button>
+                </SharedButton>
               </div>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+            <FormField className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4" label={<>
                 <MapPin className="w-4 h-4 text-emerald-500" />
                 Field Size (acres)
-              </label>
+              </>}>
+
               <input type="number" value={fieldSize} onChange={e => setFieldSize(Number(e.target.value) || 1)} min="0.1" step="0.5"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
-            </div>
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+            </FormField>
+            <FormField className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4" label={<>
                 <MapPin className="w-4 h-4 text-emerald-500" />
                 Location (optional)
-              </label>
+              </>}>
+
               <input type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Faisalabad"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
-            </div>
+            </FormField>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+          <FormField className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4" label={<>
               <Sparkles className="w-4 h-4 text-amber-500" />
               Describe symptoms (optional — improves AI accuracy)
-            </label>
+            </>}>
+
             <textarea value={symptoms} onChange={e => setSymptoms(e.target.value)} rows={2}
               placeholder="e.g. yellowing leaves, white powder on surface, holes in fruit..."
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
-          </div>
+          </FormField>
 
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Common Issues for {cropData?.name}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -693,7 +688,7 @@ const EnhancedPestDiagnosis = () => {
             ))}
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-4">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-4">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Don't see your issue? Describe it:</p>
             <div className="flex gap-2">
               <input id="custom-issue" placeholder="e.g. Brown spots on leaves, wilting plants..."
@@ -714,7 +709,7 @@ const EnhancedPestDiagnosis = () => {
           {loading ? (
             <LoadingState label="Preparing crop advisory" />
           ) : error ? (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
               <div className="flex flex-col items-center gap-4 text-center">
                 <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                   <AlertTriangle className="w-7 h-7 text-red-600 dark:text-red-400" />
@@ -742,7 +737,7 @@ const EnhancedPestDiagnosis = () => {
             </div>
           ) : result ? (
             <div className="space-y-4">
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+              <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedIssue}</h2>
@@ -827,7 +822,7 @@ const EnhancedPestDiagnosis = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                     <FlaskConical className="w-4 h-4 text-emerald-500" />Recommended Products
                   </h3>
@@ -893,7 +888,7 @@ const EnhancedPestDiagnosis = () => {
 
                 <div className="space-y-4">
                   {(result.alternatives || []).length > 0 && (
-                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                       <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Alternative Products</h3>
                       <div className="flex flex-wrap gap-2">
                         {result.alternatives.map(a => (
@@ -903,7 +898,7 @@ const EnhancedPestDiagnosis = () => {
                     </div>
                   )}
                   {(result.preventionTips || []).length > 0 && (
-                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                       <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                         <Leaf className="w-4 h-4 text-emerald-500" />Prevention Tips
                       </h3>
@@ -944,9 +939,9 @@ const EnhancedPestDiagnosis = () => {
                 <button onClick={reset} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
                   <Sprout className="w-4 h-4" />New Diagnosis
                 </button>
-                <button onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                <SharedButton onClick={handlePrint} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors">
                   <Printer className="w-4 h-4" />Save & Print
-                </button>
+                </SharedButton>
               </div>
 
               {/* Feedback Form */}
@@ -984,7 +979,7 @@ const EnhancedPestDiagnosis = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+              <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedIssue || "Unable to detect from image"}</h2>

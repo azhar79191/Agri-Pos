@@ -1,3 +1,5 @@
+import ReportState from "../../components/ui/ReportState";
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState } from "react";
@@ -22,19 +24,13 @@ const Analytics = () => {
   const { settings } = state;
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const data       = useAnalytics(dateRange);
+  const {loading,error,retry}=data;
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-          <BarChart3 className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Analytics</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Deep-dive into your business performance</p>
-        </div>
-      </div>
+      <PageHeader icon={BarChart3} title={<>Analytics</>} description={<>Deep-dive into your business performance</>}  />
       <FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
+<ReportState loading={loading} error={error} onRetry={retry}>
 
       {data.loading ? (
         <LoadingState label="Loading analytics" />
@@ -52,7 +48,7 @@ const Analytics = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="workspace-panel lg:col-span-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Monthly Revenue Trend</h3>
               {data.salesData.length > 0 ? (
                 <div className="h-64">
@@ -71,7 +67,7 @@ const Analytics = () => {
               )}
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Products by Category</h3>
               {data.categoryData.length > 0 ? (
                 <>
@@ -101,7 +97,8 @@ const Analytics = () => {
           </div>
         </>
       )}
-    </div>
+    </ReportState>
+</div>
   );
 };
 

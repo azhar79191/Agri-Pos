@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import SearchableSelect from "../ui/Select";
 import { useState } from 'react';
 import ModernModal from '../ui/ModernModal';
@@ -20,7 +21,7 @@ export default function SupplierPaymentModal({ supplier, currency, onClose, onRe
     } catch (err) { setError(err.response?.data?.message || err.message || 'Payment could not be confirmed'); }
     finally { setSaving(false); }
   };
-  return <ModernModal isOpen onClose={onClose} title={`Record payment - ${supplier.name}`} size="md">
+  return <ModernModal busy={saving} isOpen onClose={onClose} title={`Record payment - ${supplier.name}`} size="md">
     <form onSubmit={submit} className="space-y-4">
       <p className="text-sm">Net amount owed: <strong>{formatCurrency(payable, currency)}</strong></p>
       <p className="text-sm text-slate-500">Record money you have paid. This action does not initiate a bank transfer.</p>
@@ -37,8 +38,8 @@ export default function SupplierPaymentModal({ supplier, currency, onClose, onRe
         <textarea maxLength={1000} value={notes} onChange={event => setNotes(event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border bg-transparent p-3" />
       </label>
       <div className="flex justify-end gap-3">
-        <button type="button" onClick={onClose} className="min-h-11 rounded-lg border px-4">Close</button>
-        <button type="submit" disabled={saving || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || Number(amount) > payable} className="min-h-11 rounded-lg bg-blue-600 px-4 font-semibold text-white disabled:opacity-50">{saving ? 'Recording...' : 'Record payment'}</button>
+        <button type="button" onClick={onClose} className="min-h-11 rounded-lg border px-4" data-modal-dismiss>Close</button>
+        <SharedButton type="submit" disabled={saving || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || Number(amount) > payable} className="min-h-11 rounded-lg px-4 font-semibold disabled:opacity-50">{saving ? 'Recording...' : 'Record payment'}</SharedButton>
       </div>
     </form>
   </ModernModal>;

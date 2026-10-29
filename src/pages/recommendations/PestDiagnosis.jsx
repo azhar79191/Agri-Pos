@@ -1,3 +1,5 @@
+import PageHeader from "../../components/ui/PageHeader";
+import FormField from "../../components/ui/FormField";
 import LoadingState from "../../components/ui/LoadingState";
 import React, { useState } from "react";
 import { Bug, Leaf, Sprout, ChevronRight, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send } from "lucide-react";
@@ -31,13 +33,13 @@ const askAI = async (crop, issue, symptoms) => {
       location: '',
       language: 'en'
     });
-    
+
     // Transform API response to match component expectations
     const data = response.data;
-    
+
     // Extract advisory ID for feedback form
     const advisoryId = response.data?.id || response.id || data.id || data._id;
-    
+
     return {
       advisoryId: advisoryId,
       diagnosis: data.diagnosis,
@@ -100,15 +102,7 @@ const PestDiagnosis = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-sm flex-shrink-0">
-          <Bug className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Crop Advisory & Pest Diagnosis</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">AI-powered recommendations for pest and disease management</p>
-        </div>
-      </div>
+      <PageHeader icon={Bug} title={<>Crop Advisory & Pest Diagnosis</>} description={<>AI-powered recommendations for pest and disease management</>}  />
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
@@ -146,17 +140,17 @@ const PestDiagnosis = () => {
       {step === 2 && selectedCrop && (
         <div className="space-y-4">
           {/* Optional symptoms input */}
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+          <FormField className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4" label={<>
               <Sparkles className="w-4 h-4 text-amber-500" />
               Describe symptoms (optional — improves AI accuracy)
-            </label>
+            </>}>
+
             <div className="flex gap-2">
               <input value={symptoms} onChange={e => setSymptoms(e.target.value)}
                 placeholder="e.g. yellowing leaves, white powder on surface, holes in fruit..."
                 className="flex-1 px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
             </div>
-          </div>
+          </FormField>
 
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Common Issues for {selectedCrop}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -175,7 +169,7 @@ const PestDiagnosis = () => {
           </div>
 
           {/* Custom issue */}
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-4">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-4">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Don't see your issue? Describe it:</p>
             <div className="flex gap-2">
               <input id="custom-issue" placeholder="e.g. Brown spots on leaves, wilting plants..."
@@ -197,7 +191,7 @@ const PestDiagnosis = () => {
           {loading ? (
             <LoadingState label="Loading content" />
           ) : error ? (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-red-200 dark:border-red-800 p-8">
               <div className="flex flex-col items-center gap-4 text-center">
                 <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                   <AlertTriangle className="w-7 h-7 text-red-600 dark:text-red-400" />
@@ -206,14 +200,14 @@ const PestDiagnosis = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white mb-2">Failed to Get Recommendation</h3>
                   <p className="text-sm text-red-600 dark:text-red-400 mb-4">{error}</p>
                   <div className="flex gap-3 justify-center">
-                    <button 
+                    <button
                       onClick={() => getRecommendation(selectedIssue)}
                       className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors"
                     >
                       <RefreshCw className="w-4 h-4" />
                       Try Again
                     </button>
-                    <button 
+                    <button
                       onClick={() => { setStep(2); setError(null); }}
                       className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                     >
@@ -226,7 +220,7 @@ const PestDiagnosis = () => {
           ) : result ? (
             <div className="space-y-4">
               {/* Diagnosis Header */}
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+              <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{selectedIssue}</h2>
@@ -251,7 +245,7 @@ const PestDiagnosis = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Recommended Products */}
-                <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                     <FlaskConical className="w-4 h-4 text-emerald-500" />Recommended Products
                   </h3>
@@ -281,7 +275,7 @@ const PestDiagnosis = () => {
                 {/* Alternatives & Prevention */}
                 <div className="space-y-4">
                   {(result.alternatives || []).length > 0 && (
-                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                       <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Alternative Products</h3>
                       <div className="flex flex-wrap gap-2">
                         {result.alternatives.map(a => (
@@ -291,7 +285,7 @@ const PestDiagnosis = () => {
                     </div>
                   )}
                   {(result.preventionTips || []).length > 0 && (
-                    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+                    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
                       <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
                         <Leaf className="w-4 h-4 text-emerald-500" />Prevention Tips
                       </h3>
@@ -319,7 +313,7 @@ const PestDiagnosis = () => {
 
               {/* Feedback Form */}
               {result.advisoryId && (
-                <FeedbackForm 
+                <FeedbackForm
                   advisoryId={result.advisoryId}
                   onSubmitSuccess={() => {
                     console.log('Feedback submitted successfully');

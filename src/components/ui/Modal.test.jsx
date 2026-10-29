@@ -68,3 +68,49 @@ it('migrates POS quick-add and held-sale dialogs without losing actions', () => 
   expect(screen.getByRole('dialog',{name:'Held Sales'})).toBeTruthy();
   expect(screen.getByText('No held sales')).toBeTruthy();
 });
+it('protects edited fields through Cancel, Escape and backdrop, and supports explicit discard', () => {
+  const close=vi.fn();
+  render(<Modal isOpen title="Edit record" onClose={close} footer={<button data-modal-dismiss onClick={close}>Cancel</button>}><input aria-label="Record name" defaultValue="Original" /></Modal>);
+  fireEvent.input(screen.getByLabelText('Record name'),{target:{value:'Changed'}});
+  fireEvent.click(screen.getByText('Cancel'));
+  expect(close).not.toHaveBeenCalled();
+  expect(screen.getByRole('group',{name:'Unsaved changes'})).toBeTruthy();
+  fireEvent.click(screen.getByText('Keep editing'));
+  fireEvent.keyDown(document,{key:'Escape'});
+  expect(close).not.toHaveBeenCalled();
+  expect(screen.getByText('Discard unsaved changes?')).toBeTruthy();
+  fireEvent.click(screen.getByText('Keep editing'));
+  fireEvent.click(screen.getByRole('dialog').parentElement);
+  expect(close).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByText('Discard changes'));
+  expect(close).toHaveBeenCalledOnce();
+});
+it('allows a reverted field to close and ignores search/filter controls', () => {
+  const close=vi.fn();
+  render(<Modal isOpen onClose={close} title="Search records"><input aria-label="Search" placeholder="Search records" /><input aria-label="Name" defaultValue="Original" /></Modal>);
+  fireEvent.input(screen.getByLabelText('Search'),{target:{value:'query'}});
+  fireEvent.input(screen.getByLabelText('Name'),{target:{value:'Changed'}});
+  fireEvent.input(screen.getByLabelText('Name'),{target:{value:'Original'}});
+  fireEvent.click(screen.getByLabelText('Close dialog'));
+  expect(close).toHaveBeenCalledOnce();
+  expect(screen.queryByText('Discard unsaved changes?')).toBeNull();
+});
+it('blocks dismissal while a submission is pending', () => {
+  const close=vi.fn();
+  render(<Modal isOpen busy onClose={close} title="Saving" footer={<button data-modal-dismiss onClick={close}>Cancel</button>}>Content</Modal>);
+  fireEvent.click(screen.getByRole('dialog').parentElement);
+  fireEvent.click(screen.getByText('Cancel'));
+  fireEvent.keyDown(document,{key:'Escape'});
+  expect(close).not.toHaveBeenCalled();
+  expect(screen.getByLabelText('Close dialog').disabled).toBe(true);
+});
+it('cannot discard through an already-open warning once saving starts', () => {
+  const close=vi.fn();
+  const view=render(<Modal isOpen title="Edit" onClose={close}><input aria-label="Name" defaultValue="Before" /></Modal>);
+  fireEvent.input(screen.getByLabelText('Name'),{target:{value:'After'}});
+  fireEvent.click(screen.getByLabelText('Close dialog'));
+  view.rerender(<Modal isOpen busy title="Edit" onClose={close}><input aria-label="Name" defaultValue="Before" /></Modal>);
+  expect(screen.getByText('Discard changes').disabled).toBe(true);
+  fireEvent.click(screen.getByText('Discard changes'));
+  expect(close).not.toHaveBeenCalled();
+});

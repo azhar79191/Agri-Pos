@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import React from "react";
 import { Eye, Plus } from "lucide-react";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -17,7 +18,7 @@ const GRNCard = ({ po, currency, onReceive, onView }) => {
   const canReceive = po.status === "Sent" || po.status === "Partially Received";
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
+    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
       <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-600" />
       <div className="p-5 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
@@ -59,9 +60,9 @@ const GRNCard = ({ po, currency, onReceive, onView }) => {
             <Eye className="w-3.5 h-3.5" /> View
           </button>
           {canReceive && (
-            <button onClick={() => onReceive(po)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+            <SharedButton onClick={() => onReceive(po)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-colors">
               <Plus className="w-3.5 h-3.5" /> Receive
-            </button>
+            </SharedButton>
           )}
         </div>
       </div>

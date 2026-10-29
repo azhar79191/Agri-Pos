@@ -1,3 +1,6 @@
+import PageHeader from "../components/ui/PageHeader";
+import SharedButton from "../components/ui/Button";
+import FormField from "../components/ui/FormField";
 import Modal from "../components/ui/Modal";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
@@ -41,28 +44,16 @@ const UserManagement = () => {
   return (
     <div className="space-y-6 animate-fade-up">
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
-            <Users className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">User Management</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{users.length} users in system</p>
-            {rolesError && <p role="alert" className="mt-1 text-xs text-amber-700">{rolesError}</p>}
-          </div>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader title={<>User Management</>} description={<>{users.length} users in system</>} icon={Users} actions={<><div className="flex gap-2">
           <button onClick={() => fetchUsers()} className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
             <RefreshCw className="w-4 h-4" />Refresh
           </button>
           {isAdmin && (
-            <button onClick={openAdd} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm">
+            <SharedButton onClick={openAdd} className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all">
               <Plus className="w-4 h-4" />Add User
-            </button>
+            </SharedButton>
           )}
-        </div>
-      </div>
+        </div></>} />
 
       {/* Users grid */}
       {loading ? (
@@ -121,7 +112,7 @@ const UserManagement = () => {
 
       {/* Add / Edit modal */}
       {showAddUser && (
-        <Modal
+        <Modal busy={submitting}
           isOpen
           onClose={() => { setShowAddUser(false); setShowPassword(false); }}
           title={<>{editingUser ? "Edit User" : "Add New User"}</>}
@@ -133,24 +124,24 @@ const UserManagement = () => {
                 { label: "Email",     key: "email", type: "email", required: true },
                 { label: "Phone",     key: "phone", type: "tel" },
               ].map(({ label, key, type, required }) => (
-                <div key={key}>
-                  <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">{label}</label>
+                <FormField key={key} label={<>{label}</>}>
+
                   <input type={type} value={formData[key]} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} className={inputCls} required={required} />
-                </div>
+                </FormField>
               ))}
-              <div>
-                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">
+              <FormField label={<>
                   Password {editingUser && <span className="text-slate-400 font-normal">(leave blank to keep)</span>}
-                </label>
+                </>}>
+
                 <div className="relative">
                   <input type={showPassword ? "text" : "password"} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className={inputCls + " pr-10"} required={!editingUser} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Role</label>
+              </FormField>
+              <FormField label={<>Role</>}>
+
                 <Select
                   aria-label="Role"
                   value={formData.customRoleId ? `custom:${formData.customRoleId}` : formData.role}
@@ -170,12 +161,12 @@ const UserManagement = () => {
                   ]}
                 />
                 {formData.customRoleId && <p className="mt-1 text-xs text-slate-500">The selected role’s permissions will be assigned to this staff account.</p>}
-              </div>
+              </FormField>
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={submitting} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 rounded-lg font-semibold text-sm transition-all">
+                <SharedButton type="submit" disabled={submitting} className="flex-1 disabled:opacity-50 py-2.5 rounded-lg font-semibold text-sm transition-all">
                   {submitting ? "Saving..." : editingUser ? "Update User" : "Add User"}
-                </button>
-                <button type="button" onClick={() => { setShowAddUser(false); }} className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-lg font-semibold text-sm transition-colors">
+                </SharedButton>
+                <button type="button" onClick={() => { setShowAddUser(false); }} className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-lg font-semibold text-sm transition-colors" data-modal-dismiss>
                   Cancel
                 </button>
               </div>
@@ -193,9 +184,9 @@ const UserManagement = () => {
           subtitle={<>{selectedUser.permissions?.length || 0} of {ALL_PERMISSION_KEYS.length} granted</>}><div className="space-y-4">
 
             <div className="border-b border-slate-100 dark:border-slate-800 flex gap-2">
-              <button onClick={() => handleGrantAll(selectedUser._id)} disabled={permSubmitting} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors">
+              <SharedButton onClick={() => handleGrantAll(selectedUser._id)} disabled={permSubmitting} className="flex items-center gap-2 px-4 py-2 disabled:opacity-50 rounded-lg text-xs font-semibold transition-colors">
                 <UserCheck className="w-3.5 h-3.5" />Grant All
-              </button>
+              </SharedButton>
               <button onClick={() => handleRevokeAll(selectedUser._id)} disabled={permSubmitting} className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors">
                 <UserX className="w-3.5 h-3.5" />Revoke All
               </button>

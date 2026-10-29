@@ -1,3 +1,5 @@
+import PageHeader from "../../components/ui/PageHeader";
+import FormField from "../../components/ui/FormField";
 import Modal from "../../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
@@ -38,15 +40,9 @@ const Bundles = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm flex-shrink-0"><PackagePlus className="w-5 h-5 text-white" /></div>
-          <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Product Bundles</h1><p className="text-sm text-slate-500 dark:text-slate-400">{total} bundles · Sell multiple products at a discount</p></div>
-        </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold shadow-sm transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
+      <PageHeader title={<>Product Bundles</>} description={<>{total} bundles · Sell multiple products at a discount</>} icon={PackagePlus} actions={<><button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold shadow-sm transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
           <Plus className="w-4 h-4" />Create Bundle
-        </button>
-      </div>
+        </button></>}></PageHeader>
 
       <FilterBar filters={[{ type: "search", key: "search", placeholder: "Search bundles..." }]} values={{ search }} onChange={(k, v) => setSearch(v)} onClear={() => setSearch("")} total={total} />
 
@@ -57,7 +53,7 @@ const Bundles = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {bundles.map((b) => (
-            <div key={b._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden hover:shadow-premium-lg hover:-translate-y-0.5 transition-all group">
+            <div key={b._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden hover:shadow-premium-lg hover:-translate-y-0.5 transition-all group">
               <div className="h-1 w-full bg-gradient-to-r from-pink-500 to-rose-600" />
               <div className="p-5 space-y-3">
                 <div className="flex items-start justify-between">
@@ -94,20 +90,20 @@ const Bundles = () => {
       )}
 
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
           <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}
 
       {/* Create / Edit Modal */}
       {showModal && (
-        <Modal
+        <Modal busy={saving}
           isOpen
           onClose={() => setShowModal(false)}
           title={<>{editing ? "Edit Bundle" : "Create Bundle"}</>}
           size="lg"
           footer={<div className="flex items-center justify-end gap-3">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
               <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all" style={{ background: "var(--pos-primary)" }}>
                 {saving ? <LoadingIndicator /> : <PackagePlus className="w-4 h-4" />}
                 {editing ? "Update Bundle" : "Create Bundle"}
@@ -117,14 +113,14 @@ const Bundles = () => {
 
             <div className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bundle Name <span className="text-red-500">*</span></label>
+                <FormField className="sm:col-span-2" label={<>Bundle Name <span className="text-red-500">*</span></>}>
+
                   <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Cotton Starter Kit" className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bundle Price <span className="text-red-500">*</span></label>
+                </FormField>
+                <FormField label={<>Bundle Price <span className="text-red-500">*</span></>}>
+
                   <input type="number" min="0" value={form.bundlePrice} onChange={(e) => setForm((p) => ({ ...p, bundlePrice: e.target.value }))} placeholder="0" className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" />
-                </div>
+                </FormField>
                 <div className="flex items-end">
                   {totalValue > 0 && form.bundlePrice && (
                     <div className="w-full p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
@@ -133,10 +129,10 @@ const Bundles = () => {
                     </div>
                   )}
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Description</label>
+                <FormField className="sm:col-span-2" label={<>Description</>}>
+
                   <input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Optional description" className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all" />
-                </div>
+                </FormField>
               </div>
 
               <div>
@@ -148,7 +144,7 @@ const Bundles = () => {
                 {productSearch && filteredProducts.length > 0 && (
                   <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden mb-3 max-h-40 overflow-y-auto">
                     {filteredProducts.map((p) => (
-                      <button key={p._id} onClick={() => addItem(p)} className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left border-b border-slate-100 dark:border-slate-800 last:border-0">
+                      <button key={p._id} onClick={() => addItem(p)} className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left border-b border-slate-100 dark:border-slate-800 last:border-0" data-dirty-change>
                         <span className="text-sm text-slate-900 dark:text-white">{p.name}</span>
                         <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(p.price, settings.currency)}</span>
                       </button>
@@ -164,9 +160,9 @@ const Bundles = () => {
                         <span className="text-xs text-slate-400 flex-shrink-0">{formatCurrency(item.price, settings.currency)}</span>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <span className="text-xs text-slate-500">Qty:</span>
-                          <input type="number" min="1" value={item.quantity || 1} onChange={(e) => updateQty(item.product, e.target.value)} className="w-14 px-2 py-1 text-center text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white" />
+                          <input type="number" min="1" value={item.quantity || 1} onChange={(e) => updateQty(item.product, e.target.value)} className="w-14 px-2 py-1 text-center text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"  aria-label="Quantity"/>
                         </div>
-                        <button onClick={() => removeItem(item.product)} className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"><X className="w-4 h-4" /></button>
+                        <button onClick={() => removeItem(item.product)} className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0" data-dirty-change><X className="w-4 h-4" /></button>
                       </div>
                     ))}
                   </div>

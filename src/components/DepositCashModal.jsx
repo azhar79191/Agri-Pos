@@ -1,3 +1,4 @@
+import FormField from "./ui/FormField";
 import Modal from "./ui/Modal";
 import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
@@ -76,7 +77,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
   const inputCls = "w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all";
 
   return (
-    <Modal
+    <Modal busy={submitting}
           isOpen
           onClose={handleClose}
           title={<>Customer Payment</>}
@@ -84,7 +85,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           subtitle={<>Deposit cash or top up wallet</>}
           icon={DollarSign}
           footer={<div className="flex justify-end gap-3">
-          <ModernButton variant="secondary" onClick={handleClose}>Cancel</ModernButton>
+          <ModernButton variant="secondary" onClick={handleClose} data-modal-dismiss>Cancel</ModernButton>
           <ModernButton variant="primary" onClick={handleSubmit} loading={submitting}
             disabled={!selectedCustomer || !dep || dep <= 0} icon={DollarSign}>
             {tab === TAB_DEPOSIT ? "Confirm Deposit" : "Add to Wallet"}
@@ -112,8 +113,8 @@ const DepositCashModal = ({ isOpen, onClose }) => {
         {/* Body */}
         <div className="space-y-4">
           {/* Customer */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Customer</label>
+          <FormField label={<>Customer</>}>
+
             <SearchableSelect value={selectedCustomer} onChange={e => { setSelectedCustomer(e.target.value); setAmount(""); }}
               className={inputCls + " appearance-none cursor-pointer"}>
               <option value="">Select customer...</option>
@@ -124,7 +125,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
                 return <option key={c._id} value={c._id}>{c.name} ({c.phone}){parts.length ? ` | ${parts.join(" · ")}` : ""}</option>;
               })}
             </SearchableSelect>
-          </div>
+          </FormField>
 
           {/* Current balances from backend */}
           {customer && (
@@ -141,10 +142,10 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Amount */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Amount ({settings.currency})</label>
+          <FormField label={<>Amount ({settings.currency})</>}>
+
             <input type="number" min="1" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Enter amount" className={inputCls} />
-          </div>
+          </FormField>
 
           {/* Preview (indicative only — backend is source of truth) */}
           {dep > 0 && customer && (
@@ -185,10 +186,10 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Note */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Note (optional)</label>
+          <FormField label={<>Note (optional)</>}>
+
             <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Cash received in person" className={inputCls} />
-          </div>
+          </FormField>
         </div>
 
 

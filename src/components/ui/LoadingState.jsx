@@ -5,9 +5,6 @@ import { PLATFORM_BRAND } from '../../constants/platformBrand';
 export function LoadingIndicator({ className = '', ...props }) {
   return <span {...props} aria-hidden="true" className={`loading-indicator ${className}`}><i /><i /><i /></span>;
 }
-export function LoadingSkeleton({ className = '', ...props }) {
-  return <div {...props} aria-hidden="true" className={`loading-skeleton ${className}`} />;
-}
 
 /** One loading design for pages, tables, cards and sections. */
 export default function LoadingState({ variant = 'section', label = 'Loading content', className = '' }) {

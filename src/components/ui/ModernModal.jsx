@@ -16,6 +16,8 @@ export const ConfirmModal = ({
           size="sm"
           icon={Icon}
           iconColor={iconColor}
+          busy={loading}
+          protectChanges={false}
 
           closeOnOverlayClick={!loading}
           closeOnEsc={!loading}

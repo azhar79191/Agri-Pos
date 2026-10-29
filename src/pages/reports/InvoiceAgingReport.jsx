@@ -1,3 +1,5 @@
+import ReportState from "../../components/ui/ReportState";
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState from "../../components/ui/LoadingState";
 import { companyName } from "../../utils/company";
 import React, { useMemo } from "react";
@@ -27,7 +29,7 @@ const getBucket = (days) => BUCKETS.find((b) => days >= b.min && days <= b.max) 
 const InvoiceAgingReport = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const { rows, loading } = useCreditSales();
+  const { error, retry, rows, loading } = useCreditSales();
 
   // Only unpaid / partial rows
   const unpaid = useMemo(
@@ -53,17 +55,10 @@ const InvoiceAgingReport = () => {
   return (
     <div className="space-y-6 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-sm flex-shrink-0">
-          <Clock className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Invoice Aging Report</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+      <PageHeader icon={Clock} title={<>Invoice Aging Report</>} description={<>
             Outstanding receivables bucketed by overdue period
-          </p>
-        </div>
-      </div>
+          </>}  />
+<ReportState loading={loading} error={error} onRetry={retry}>
 
       {loading ? (
         <LoadingState label="Loading" />
@@ -193,7 +188,8 @@ const InvoiceAgingReport = () => {
           )}
         </>
       )}
-    </div>
+    </ReportState>
+</div>
   );
 };
 

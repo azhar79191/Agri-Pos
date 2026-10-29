@@ -63,7 +63,7 @@ const PermsPanel = () => {
         const pct = Math.round((perms.length / PERM_KEYS.length) * 100);
 
         return (
-          <div key={user._id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div key={user._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             {/* User header with gradient */}
             <div className={`bg-gradient-to-r ${rc.grad} px-5 py-4`}>
               <div className="flex items-center justify-between gap-3 flex-wrap">

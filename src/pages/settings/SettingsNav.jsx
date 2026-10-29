@@ -5,8 +5,8 @@ import { SETTINGS_NAV } from "./settingsConfig";
 
 const SettingsNav = ({ active, onChange }) => (
   <aside className="w-full lg:w-64 shrink-0">
-    <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900 lg:hidden"><Select label="Settings section" aria-label="Settings section" value={active} onChange={event => onChange(event.target.value)} options={SETTINGS_NAV.flatMap(group => group.items.map(item => ({ value: item.id, label: item.label })))} /></div>
-    <div className="hidden lg:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+    <div className="workspace-panel rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900 lg:hidden"><Select label="Settings section" aria-label="Settings section" value={active} onChange={event => onChange(event.target.value)} options={SETTINGS_NAV.flatMap(group => group.items.map(item => ({ value: item.id, label: item.label })))} /></div>
+    <div className="workspace-panel hidden lg:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">

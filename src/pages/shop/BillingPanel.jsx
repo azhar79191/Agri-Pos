@@ -1,3 +1,4 @@
+import FormField from "../../components/ui/FormField";
 import SearchableSelect from "../../components/ui/Select";
 import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
@@ -29,22 +30,22 @@ const BillingPanel = ({ form, setForm, saving, saved, onSave, shopName }) => {
         }>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <FormField label={<>
                 <Percent className="w-3.5 h-3.5 text-slate-400" /> Tax Rate (%)
-              </label>
+              </>}>
+
               <input type="number" min="0" max="100" step="0.1" value={form.taxRate}
                 onChange={e => f("taxRate", e.target.value)} className={inp} placeholder="e.g. 5" />
               <p className="text-[11px] text-slate-400 mt-1">Applied to all taxable sales at checkout</p>
-            </div>
-            <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            </FormField>
+            <FormField label={<>
                 <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Currency
-              </label>
+              </>}>
+
               <SearchableSelect value={form.currency} onChange={e => f("currency", e.target.value)} className={inp}>
                 {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
               </SearchableSelect>
-            </div>
+            </FormField>
           </div>
 
           {/* Tax preview */}
@@ -64,13 +65,13 @@ const BillingPanel = ({ form, setForm, saving, saved, onSave, shopName }) => {
 
       <ShopCard title="Receipt Settings" desc="Footer message printed at the bottom of every receipt">
         <div className="space-y-4">
-          <div>
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          <FormField label={<>
               <Receipt className="w-3.5 h-3.5 text-slate-400" /> Footer Message
-            </label>
+            </>}>
+
             <textarea rows={2} value={form.receiptFooter} onChange={e => f("receiptFooter", e.target.value)}
               placeholder="Thank you for your purchase!" className={inp + " resize-none"} />
-          </div>
+          </FormField>
 
           {/* Receipt preview */}
           <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 font-mono text-xs">

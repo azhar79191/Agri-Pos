@@ -4,7 +4,9 @@ import "./index.css";
 import "./styles/sdp-design.css";
 import "./styles/workspace.css";
 import App from "./App.jsx";
-import { BrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { UnsavedChangesProvider } from './context/UnsavedChangesContext';
+import FeedbackHost from './components/FeedbackHost';
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ProductsProvider } from "./context/ProductsContext.jsx";
 import { CustomersProvider } from "./context/CustomersContext.jsx";
@@ -46,7 +48,7 @@ if ("serviceWorker" in navigator) {
 }
 
 const tree = (
-  <BrowserRouter>
+  <UnsavedChangesProvider>
     <AuthProvider>
       <ProductsProvider>
         <CustomersProvider>
@@ -54,9 +56,10 @@ const tree = (
         </CustomersProvider>
       </ProductsProvider>
     </AuthProvider>
-  </BrowserRouter>
+  <FeedbackHost /></UnsavedChangesProvider>
 );
 
+const router = createBrowserRouter([{ path: '*', element: tree }]);
 createRoot(document.getElementById("root")).render(
-  import.meta.env.DEV ? <StrictMode>{tree}</StrictMode> : tree
+  import.meta.env.DEV ? <StrictMode><RouterProvider router={router} /></StrictMode> : <RouterProvider router={router} />
 );

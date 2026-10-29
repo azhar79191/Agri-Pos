@@ -1,7 +1,10 @@
+import useReportResource from '../hooks/useReportResource';
+import ReportState from '../components/ui/ReportState';
+import PageHeader from "../components/ui/PageHeader";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import DataTable from "../components/ui/DataTable";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ArrowLeft, Download, ShoppingBag, Wallet, TrendingUp, Calendar, User, MapPin, Phone, Mail } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
@@ -19,42 +22,17 @@ const paymentCls = {
   Cash:   "bg-emerald-100 text-emerald-700 dark:bg-blue-900/20 dark:text-emerald-400",
 };
 
+async function loadStatement({id,page}) { const [c,i,l]=await Promise.all([getCustomer(id),getCustomerPurchases(id,{page,limit:10}),getCustomerLedger(id)]);if(!c.data.data?.customer)throw new Error('Customer details could not be confirmed.');return {customer:c.data.data.customer,invoices:i.data.data?.invoices||[],ledger:l.data.data.entries||[],pagination:i.data.data?.pagination||{total:0,pages:1}};}
 const CustomerStatement = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { state } = useApp();
   const { settings } = state;
 
-  const [ledger, setLedger] = useState([]);
-  const [customer, setCustomer] = useState(null);
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
-
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [custRes, invRes, ledgerRes] = await Promise.all([
-          getCustomer(id),
-          getCustomerPurchases(id, { page, limit: 10 }),
-          getCustomerLedger(id),
-        ]);
-        setCustomer(custRes.data.data?.customer);
-        setLedger(ledgerRes.data.data.entries || []);
-        const invData = invRes.data.data;
-        setInvoices(invData?.invoices || []);
-        if (invData?.pagination) setPagination(invData.pagination);
-      } catch { navigate("/customers"); }
-      finally { setLoading(false); }
-    };
-    load();
-  }, [id, page]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (loading) return (
-    <LoadingState label="Loading content" />
-  );
+  const [page,setPage]=useState(1);
+  const {data,loading,error,retry}=useReportResource(loadStatement,{id,page});
+  const {customer,invoices=[],ledger=[],pagination={total:0,pages:1}}=data||{};
+  if(loading||error)return <div className="space-y-5"><PageHeader title="Customer statement"/><ReportState loading={loading} error={error} onRetry={retry}/></div>;
 
   if (!customer) return null;
 
@@ -65,15 +43,7 @@ const CustomerStatement = () => {
         <button onClick={() => navigate("/customers")} className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-400">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-            <User className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Customer Statement</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{customer.name} · {customer.phone}</p>
-          </div>
-        </div>
+        <PageHeader icon={User} title={<>Customer Statement</>} description={<>{customer.name} · {customer.phone}</>}  />
       </div>
 
       {/* Stats */}
@@ -98,7 +68,7 @@ const CustomerStatement = () => {
       </div>
 
       {/* Customer Info */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
         <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Customer Details</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {[
@@ -133,7 +103,7 @@ const CustomerStatement = () => {
 
       </section>
       {/* Purchase History */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">Purchase History</h3>
           <span className="text-xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">{pagination.total} invoices</span>

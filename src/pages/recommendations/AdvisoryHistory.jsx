@@ -1,3 +1,5 @@
+import { confirmAction } from "../../utils/feedback";
+import PageHeader from "../../components/ui/PageHeader";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
@@ -65,7 +67,7 @@ const AdvisoryHistory = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this advisory?')) return;
+    if (!(await confirmAction('Are you sure you want to delete this advisory?'))) return;
 
     try {
       await deleteAdvisory(id);
@@ -113,19 +115,7 @@ const AdvisoryHistory = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
-            <History className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Advisory History</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">View and manage past AI advisories</p>
-          </div>
-        </div>
-
-        {/* Export Buttons */}
-        <div className="flex gap-2">
+      <PageHeader title={<>Advisory History</>} description={<>View and manage past AI advisories</>} icon={History} actions={<><div className="flex gap-2">
           <button
             onClick={() => handleExport('excel')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
@@ -140,11 +130,10 @@ const AdvisoryHistory = () => {
             <Download className="w-4 h-4" />
             PDF
           </button>
-        </div>
-      </div>
+        </div></>} />
 
       {/* Filters */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
         <FilterBar className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* Search */}
           <div className="md:col-span-2">
@@ -199,7 +188,7 @@ const AdvisoryHistory = () => {
       </div>
 
       {/* Advisories List */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-hidden">
 
           <div className="overflow-x-auto">
             <DataTable loading={loading} loadingLabel="Loading advisories" emptyTitle="No advisories found" sortScope="Sorting applies to this page" className="w-full">

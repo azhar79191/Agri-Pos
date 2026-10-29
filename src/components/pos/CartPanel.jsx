@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import React from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -144,7 +145,7 @@ const CartPanel = ({
                 layout
                 className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 hover:border-slate-200 dark:hover:border-slate-600 transition-colors group">
                 {/* Product icon/image */}
-                <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="workspace-panel w-8 h-8 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0 overflow-hidden">
                   {item.image
                     ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     : <Package className="w-4 h-4 text-slate-400" />}
@@ -154,7 +155,7 @@ const CartPanel = ({
                   <p className="text-[10px] text-slate-400">{formatCurrency(item.price, currency)} each</p>
                 </div>
                 {/* Qty controls */}
-                <div className="flex items-center gap-0.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                <div className="workspace-panel flex items-center gap-0.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
                   <button onClick={() => item.quantity <= 1 ? onRemoveItem(item.productId) : onUpdateQuantity(item.productId, item.quantity - 1)}
                     className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors text-sm font-bold rounded-l-lg">−</button>
                   <span className="w-6 text-center text-xs font-bold text-slate-900 dark:text-white">{item.quantity}</span>
@@ -191,7 +192,7 @@ const CartPanel = ({
               <span className="text-[10px] text-slate-400">{discountType === "flat" ? currency : "%"}</span>
               <input type="number" min="0" max={discountType === "percent" ? 100 : cartCalculations.subtotal}
                 value={discount} onChange={onDiscountChange}
-                className="w-16 px-2 py-1 text-right text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/30 outline-none transition-all" />
+                className="w-16 px-2 py-1 text-right text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/30 outline-none transition-all"  aria-label="Discount"/>
             </div>
 
             {/* Order totals */}
@@ -265,9 +266,9 @@ const CartPanel = ({
       </AnimatePresence>
       </div>
       {cart.length > 0 && <div className="hidden shrink-0 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 lg:block">{checkoutControls}</div>}
-      {cart.length > 0 && createPortal(<div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 lg:hidden">
+      {cart.length > 0 && createPortal(<div className="workspace-panel fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 lg:hidden">
         <div className="mb-2 flex items-center justify-between text-sm font-bold"><span>Total payable</span><span>{formatCurrency(cartCalculations.payableAmount, currency)}</span></div>
-        {mobileCartVisible ? checkoutControls : <button type="button" onClick={onReviewCart} className="min-h-11 w-full rounded-lg bg-emerald-600 font-bold text-white">Review cart</button>}
+        {mobileCartVisible ? checkoutControls : <SharedButton type="button" onClick={onReviewCart} className="min-h-11 w-full rounded-lg font-bold">Review cart</SharedButton>}
       </div>, document.body)}
     </motion.div>
   );

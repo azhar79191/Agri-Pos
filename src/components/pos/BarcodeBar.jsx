@@ -46,7 +46,7 @@ const BarcodeBar = ({ value, onChange, onSubmit, inputRef }) => {
               onBlur={() => setFocused(false)}
               placeholder="Scan or type barcode and press Enter..."
               className="w-full pl-11 pr-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono border border-transparent focus:outline-none focus:bg-white dark:focus:bg-slate-900 transition-all placeholder:text-slate-400"
-            />
+             aria-label="Scan or type barcode and press Enter..."/>
           </div>
 
           <motion.button

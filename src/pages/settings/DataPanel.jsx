@@ -1,3 +1,4 @@
+import SharedButton from "../../components/ui/Button";
 import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState } from "react";
 import { Download, Trash2, RefreshCw, CheckCircle, AlertTriangle, Database } from "lucide-react";
@@ -74,11 +75,11 @@ const DataPanel = () => {
             icon={Download} iconBg="bg-blue-100 dark:bg-blue-900/30" iconColor="text-blue-600 dark:text-blue-400"
             title="Export Products" desc="Download all products with prices and stock levels"
             action={
-              <button onClick={() => exportData("products")} disabled={exporting === "products"}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors">
+              <SharedButton onClick={() => exportData("products")} disabled={exporting === "products"}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
                 {exporting === "products" ? <LoadingIndicator /> : <Download className="w-3.5 h-3.5" />}
                 Export
-              </button>
+              </SharedButton>
             }
           />
           <ActionRow

@@ -1,10 +1,13 @@
+import { useApp } from '../context/AppContext';
+import { canAccessPath } from '../utils/navigationAccess';
+import { scopedStorageKey } from '../utils/browserScope';
 import Modal from "./ui/Modal";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Search, X, ArrowRight, Command, Clock, Zap, CornerDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MENU_GROUPS } from "../constants/menuGroups";
 
-const RECENT_KEY = "agrinest_recent_searches";
+const recentKey = () => scopedStorageKey('agrinest_recent_searches');
 const MAX_RECENT = 5;
 
 // Flatten all pages from MENU_GROUPS
@@ -58,20 +61,24 @@ const Highlight = ({ text, query }) => {
 };
 
 const getRecent = () => {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); }
+  try { const parsed=JSON.parse(localStorage.getItem(recentKey()) || '[]');return Array.isArray(parsed)?parsed.filter(item=>item&&typeof item.id==='string'&&typeof item.path==='string'):[]; }
   catch { return []; }
 };
 
 const saveRecent = (item) => {
   const prev = getRecent().filter((r) => r.id !== item.id);
-  localStorage.setItem(RECENT_KEY, JSON.stringify([item, ...prev].slice(0, MAX_RECENT)));
+  localStorage.setItem(recentKey(), JSON.stringify([item, ...prev].slice(0, MAX_RECENT)));
 };
 
 const removeRecent = (id) => {
-  localStorage.setItem(RECENT_KEY, JSON.stringify(getRecent().filter((r) => r.id !== id)));
+  localStorage.setItem(recentKey(), JSON.stringify(getRecent().filter((r) => r.id !== id)));
 };
 
 const GlobalSearch = () => {
+  const {state,actions} = useApp();
+  const allowed = useCallback(path => canAccessPath(path,actions.hasPermission,state.currentUser),[actions,state.currentUser]);
+  const permittedPages = useMemo(() => ALL_PAGES.filter(page => allowed(page.path)),[allowed]);
+  const quickActions = useMemo(() => QUICK_ACTIONS.filter(action => allowed(action.path) && (!({'qa-product':'products:create','qa-customer':'customers:create','qa-pos':'pos:process'}[action.id]) || actions.hasPermission({'qa-product':'products:create','qa-customer':'customers:create','qa-pos':'pos:process'}[action.id]))),[allowed,actions]);
   const [open, setOpen]         = useState(false);
   const [query, setQuery]       = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
@@ -99,26 +106,29 @@ const GlobalSearch = () => {
   const pageResults = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    return ALL_PAGES.filter(
+    return permittedPages.filter(
       (p) => p.label.toLowerCase().includes(q) || p.group.toLowerCase().includes(q)
     ).slice(0, 12);
-  }, [query]);
+  }, [query, permittedPages]);
+
+  const visibleRecent = useMemo(() => recent.filter(item => permittedPages.some(page => page.path === item.path)),[recent,permittedPages]);
 
   // Flat list of all navigable items for keyboard nav
   const flatItems = useMemo(() => {
-    if (!query.trim()) return [...QUICK_ACTIONS, ...recent.map((r) => ({ ...r, isRecent: true }))];
+    if (!query.trim()) return [...quickActions, ...visibleRecent.map((r) => ({ ...r, isRecent: true }))];
     return pageResults;
-  }, [query, pageResults, recent]);
+  }, [query, pageResults, visibleRecent, quickActions]);
 
   // Reset active index when results change
   useEffect(() => setActiveIdx(0), [flatItems]);
 
   const go = useCallback((item) => {
+    if (!allowed(item.path) || ![...permittedPages,...quickActions].some(page => page.path === item.path)) return;
     saveRecent({ id: item.id, label: item.label, path: item.path, group: item.group || "Recent", icon: item.icon });
     setRecent(getRecent());
     navigate(item.path);
     setOpen(false);
-  }, [navigate]);
+  }, [navigate,allowed,permittedPages,quickActions]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -197,7 +207,7 @@ const GlobalSearch = () => {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search pages, features, settings..."
                 className="flex-1 px-4 py-2 bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none"
-              />
+               aria-label="Search pages, features, settings..."/>
               {query && (
                 <button
                   onClick={() => setQuery("")}
@@ -223,7 +233,7 @@ const GlobalSearch = () => {
                       <Zap className="w-3 h-3" /> Quick Actions
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {QUICK_ACTIONS.map((action, idx) => (
+                      {quickActions.map((action, idx) => (
                         <button
                           key={action.id}
                           data-idx={idx}
@@ -248,21 +258,21 @@ const GlobalSearch = () => {
                   </div>
 
                   {/* Recent Searches */}
-                  {recent.length > 0 && (
+                  {visibleRecent.length > 0 && (
                     <div className="px-4 pt-3 pb-2">
                       <div className="flex items-center justify-between mb-1.5">
                         <p className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                           <Clock className="w-3 h-3" /> Recent
                         </p>
                         <button
-                          onClick={() => { localStorage.removeItem(RECENT_KEY); setRecent([]); }}
+                          onClick={() => { localStorage.removeItem(recentKey()); setRecent([]); }}
                           className="text-[10px] text-slate-400 hover:text-red-500 transition-colors"
-                        >
+                         >
                           Clear all
                         </button>
                       </div>
-                      {recent.map((item, i) => {
-                        const idx = QUICK_ACTIONS.length + i;
+                      {visibleRecent.map((item, i) => {
+                        const idx = quickActions.length + i;
                         return (
                           <div
                             key={item.id}

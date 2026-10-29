@@ -1,3 +1,4 @@
+import PageHeader from "../components/ui/PageHeader";
 import SearchableSelect from "../components/ui/Select";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
@@ -51,15 +52,7 @@ const StatusManagementPage = () => {
   return (
     <div className="space-y-6 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm">
-          <Activity className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Status Management</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Manage invoice and transaction statuses</p>
-        </div>
-      </div>
+      <PageHeader icon={Activity} title={<>Status Management</>} description={<>Manage invoice and transaction statuses</>}  />
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -110,7 +103,7 @@ const StatusManagementPage = () => {
       </FilterBar>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
         <div className="overflow-x-auto">
           <DataTable emptyState={false} className="w-full table-premium">
             <thead>

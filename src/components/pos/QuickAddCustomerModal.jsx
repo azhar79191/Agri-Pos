@@ -1,51 +1,19 @@
-import Modal from "../ui/Modal";
-import React from "react";
-import { UserPlus } from "lucide-react";
+import React from 'react';
+import { UserPlus } from 'lucide-react';
+import Modal from '../ui/Modal';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
 
-/**
- * QuickAddCustomerModal — lightweight modal for adding a customer directly from POS.
- */
-const QuickAddCustomerModal = ({ form, onChange, onSubmit, onClose, loading }) => {
-
-  return (
-  <Modal
-          isOpen
-          onClose={onClose}
-          title={<>Quick Add Customer</>}
-          size="xs"
-          icon={UserPlus}
-          footer={<div className="flex gap-3">
-        <button
-          onClick={onClose}
-          className="flex-1 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onSubmit}
-          disabled={loading}
-          className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
-        >
-          {loading ? "Adding..." : "Add & Select"}
-        </button>
-      </div>}><div className="space-y-4">
-
-
-      {["name", "phone", "address"].map((field, i) => (
-        <input
-          key={field}
-          autoFocus={i === 0}
-          placeholder={field === "name" ? "Customer name" : field === "phone" ? "Phone number" : "Address (optional)"}
-          value={form[field]}
-          onChange={(e) => onChange(field, e.target.value)}
-          onKeyDown={field === "address" ? (e) => e.key === "Enter" && onSubmit() : undefined}
-          className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-        />
-      ))}
-
-
-    </div></Modal>
-  );
-};
-
-export default QuickAddCustomerModal;
+export default function QuickAddCustomerModal({ form, onChange, onSubmit, onClose, loading }) {
+  return <Modal isOpen busy={loading} onClose={onClose} title="Quick Add Customer" size="xs" icon={UserPlus}
+    footer={<div className="flex justify-end gap-3">
+      <Button variant="secondary" data-modal-dismiss onClick={onClose}>Cancel</Button>
+      <Button type="submit" form="pos-quick-customer" disabled={loading}>{loading ? 'Adding...' : 'Add & Select'}</Button>
+    </div>}>
+    <form id="pos-quick-customer" className="space-y-4" onSubmit={event => { event.preventDefault(); if (!loading) onSubmit(); }}>
+      <Input label="Customer name" name="name" autoComplete="name" required autoFocus value={form.name} onChange={event => onChange('name', event.target.value)} />
+      <Input label="Phone number" name="phone" type="tel" autoComplete="tel" value={form.phone} onChange={event => onChange('phone', event.target.value)} />
+      <Input label="Address (optional)" name="address" autoComplete="street-address" value={form.address} onChange={event => onChange('address', event.target.value)} />
+    </form>
+  </Modal>;
+}

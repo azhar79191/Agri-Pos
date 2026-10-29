@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState } from "react";
@@ -22,15 +23,7 @@ const Forecasting = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm">
-          <TrendingUp className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sales Forecasting</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Trend analysis and revenue projections</p>
-        </div>
-      </div>
+      <PageHeader icon={TrendingUp} title={<>Sales Forecasting</>} description={<>Trend analysis and revenue projections</>}  />
       <p className="text-sm text-slate-500">Rule-based estimate: average of up to three recent months with recorded sales. No assumed growth, seasonality or AI prediction. Partial months and missing history can distort the estimate.</p><FilterBar label="Filter by date"><DateRangePicker value={dateRange} onChange={setDateRange} /></FilterBar>
 
       {data.error ? <div role="alert" className="rounded-lg bg-red-50 p-4 text-red-800"><p>{data.error}</p><button type="button" onClick={data.retry} className="mt-2 min-h-11 underline">Retry forecast</button></div> : data.loading ? (
@@ -46,7 +39,7 @@ const Forecasting = () => {
             ))}
           </div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Revenue: Actual vs Forecast</h3>
             {data.combined.length > 0 ? (
               <div className="h-72">

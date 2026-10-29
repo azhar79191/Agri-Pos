@@ -1,5 +1,8 @@
+import { usePageUnsaved } from '../context/UnsavedChangesContext';
+import SharedButton from "../components/ui/Button";
+import FormField from "../components/ui/FormField";
 import SearchableSelect from "../components/ui/Select";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Building2, Users, CheckCircle, ArrowRight, ArrowLeft, Plus, Trash2, Eye, EyeOff, Sprout, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +42,9 @@ const SetupWizard = () => {
   // Step 2 — users
   const [users, setUsers] = useState([{ ...emptyUser }]);
   const [showPasswords, setShowPasswords] = useState([false]);
+
+  const initialShop=useRef(JSON.stringify(shopForm));
+  usePageUnsaved({dirty:step===1&&JSON.stringify(shopForm)!==initialShop.current||step===2&&JSON.stringify(users)!==JSON.stringify([{...emptyUser}]),busy:saving});
 
   // ── Logo upload ───────────────────────────────────────────────
   const handleLogo = (e) => {
@@ -100,7 +106,7 @@ const SetupWizard = () => {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999]9 bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[9999] bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4 overflow-y-auto">
       <div className="w-full max-w-2xl">
 
         {/* Logo */}
@@ -136,7 +142,7 @@ const SetupWizard = () => {
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-100 dark:border-gray-800">
+        <div className="workspace-panel bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-100 dark:border-gray-800">
 
           {/* ── Step 1: Shop Info ── */}
           {step === 1 && (
@@ -167,54 +173,54 @@ const SetupWizard = () => {
 
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Shop Name <span className="text-red-500">*</span></label>
+                  <FormField label={<>Shop Name <span className="text-red-500">*</span></>}>
+
                     <input value={shopForm.name} onChange={e => setShopForm(p => ({ ...p, name: e.target.value }))}
                       placeholder="e.g. AgriNest Pesticides"
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  </FormField>
+                  <FormField label={<>Phone</>}>
+
                     <input value={shopForm.phone} onChange={e => setShopForm(p => ({ ...p, phone: e.target.value }))}
                       placeholder="+92 300 0000000"
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
+                  </FormField>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <FormField label={<>Email</>}>
+
                     <input type="email" value={shopForm.email} onChange={e => setShopForm(p => ({ ...p, email: e.target.value }))}
                       placeholder="shop@example.com"
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                  </FormField>
+                  <FormField label={<>Address</>}>
+
                     <input value={shopForm.address} onChange={e => setShopForm(p => ({ ...p, address: e.target.value }))}
                       placeholder="Shop address"
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
+                  </FormField>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Rate (%)</label>
+                  <FormField label={<>Tax Rate (%)</>}>
+
                     <input type="number" min="0" max="100" value={shopForm.taxRate} onChange={e => setShopForm(p => ({ ...p, taxRate: e.target.value }))}
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
+                  </FormField>
+                  <FormField label={<>Currency</>}>
+
                     <SearchableSelect value={shopForm.currency} onChange={e => setShopForm(p => ({ ...p, currency: e.target.value }))}
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                       {["Rs.", "₹", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
                     </SearchableSelect>
-                  </div>
+                  </FormField>
                 </div>
               </div>
 
               <div className="flex justify-end mt-8">
-                <button onClick={handleCreateShop} disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
+                <SharedButton onClick={handleCreateShop} disabled={saving}
+                  className="flex items-center gap-2 px-6 py-3 disabled:opacity-60 rounded-lg font-semibold text-sm transition-colors">
                   {saving ? "Creating..." : "Create Shop"} <ArrowRight className="w-4 h-4" />
-                </button>
+                </SharedButton>
               </div>
             </div>
           )}
@@ -240,18 +246,18 @@ const SetupWizard = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <input value={u.name} onChange={e => updateUser(i, "name", e.target.value)} placeholder="Full Name"
-                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"  aria-label="Full Name"/>
                       <input type="email" value={u.email} onChange={e => updateUser(i, "email", e.target.value)} placeholder="Email"
-                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"  aria-label="Email"/>
                       <div className="relative">
                         <input type={showPasswords[i] ? "text" : "password"} value={u.password} onChange={e => updateUser(i, "password", e.target.value)} placeholder="Password"
-                          className="w-full px-3 py-2 pr-9 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                          className="w-full px-3 py-2 pr-9 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"  aria-label="Password"/>
                         <button type="button" onClick={() => togglePass(i)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
                           {showPasswords[i] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                       <SearchableSelect value={u.role} onChange={e => updateUser(i, "role", e.target.value)}
-                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
+                        className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" aria-label="Date">
                         <option value="manager">Manager</option>
                         <option value="cashier">Cashier</option>
                       </SearchableSelect>
@@ -272,10 +278,10 @@ const SetupWizard = () => {
                   <button onClick={() => setStep(3)} className="px-5 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     Skip for now
                   </button>
-                  <button onClick={handleAddUsers} disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm">
+                  <SharedButton onClick={handleAddUsers} disabled={saving}
+                    className="flex items-center gap-2 px-6 py-2.5 disabled:opacity-60 rounded-lg font-semibold text-sm transition-colors">
                     {saving ? "Adding..." : "Add Users"} <ArrowRight className="w-4 h-4" />
-                  </button>
+                  </SharedButton>
                 </div>
               </div>
             </div>
@@ -307,10 +313,10 @@ const SetupWizard = () => {
                 ))}
               </div>
 
-              <button onClick={handleFinish}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors shadow-sm">
+              <SharedButton onClick={handleFinish}
+                className="w-full py-3 rounded-lg font-semibold transition-colors">
                 Go to Dashboard
-              </button>
+              </SharedButton>
             </div>
           )}
         </div>

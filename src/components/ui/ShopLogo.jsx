@@ -15,7 +15,7 @@ const ShopLogo = ({ logo, name, size = "w-8 h-8" }) => {
   const px = PX_MAP[sizeKey] || 32;
 
   return (
-    <div className={`${size} rounded-lg flex-shrink-0 overflow-hidden bg-white`}>
+    <div className={`company-logo ${size} rounded-lg flex-shrink-0 overflow-hidden bg-white`}>
       {logo && imgError !== logo ? (
         <img
           src={logo}

@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
@@ -19,7 +20,7 @@ const LIMIT = 12;
 /** Inline detail modal — lightweight, no need for a separate file */
 const DetailModal = ({ po, isOpen, onClose, currency }) => (
   <ModernModal isOpen={isOpen} onClose={onClose} title={po?.poNumber ?? "PO Detail"} size="lg" icon={Package} iconColor="blue"
-    footer={<div className="flex justify-end"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Close</button></div>}>
+    footer={<div className="flex justify-end"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>Close</button></div>}>
     {po && (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
@@ -86,16 +87,11 @@ const GoodsReceiving = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm"><ClipboardCheck className="w-5 h-5 text-white" /></div>
-          <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Goods Receiving</h1><p className="text-sm text-slate-500 dark:text-slate-400">{total} purchase order{total !== 1 ? "s" : ""}</p></div>
-        </div>
-      </div>
+      <PageHeader title={<>Goods Receiving</>} description={<>{total} purchase order{total !== 1 ? "s" : ""}</>} icon={ClipboardCheck}></PageHeader>
 
       <div className="grid grid-cols-3 gap-4">
         {STAT_CARDS.map(({ label, value, color, bg, icon: Icon }) => (
-          <div key={label} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
+          <div key={label} className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center shrink-0`}><Icon className={`w-5 h-5 ${color}`} /></div>
             <div><p className={`text-xl font-bold ${color}`}>{value}</p><p className="text-xs text-slate-500 dark:text-slate-400">{label}</p></div>
           </div>
@@ -131,7 +127,7 @@ const GoodsReceiving = () => {
       )}
       {!loading && !error && orders.length === 0 && <EmptyState icon={ClipboardCheck} title="No purchase orders found" description="Sent purchase orders will appear here for receiving" />}
       {!loading && totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
           <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}

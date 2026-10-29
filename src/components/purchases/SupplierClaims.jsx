@@ -1,3 +1,4 @@
+import { confirmAction } from "../../utils/feedback";
 import SearchableSelect from "../ui/Select";
 import LoadingState from "../ui/LoadingState";
 import { useEffect, useState } from 'react';
@@ -32,7 +33,7 @@ export default function SupplierClaims({ suppliers, currency, onRecorded }) {
     finally { setBusy(false); }
   };
   const resolve = async (item, status) => {
-    if (status === 'credited' && !window.confirm(`Post supplier credit of ${currency} ${item.amount}? Confirm that the supplier has issued this credit. It will reduce the amount owed or create a supplier credit balance.`)) return;
+    if (status === 'credited' && !(await confirmAction(`Post supplier credit of ${currency} ${item.amount}? Confirm that the supplier has issued this credit. It will reduce the amount owed or create a supplier credit balance.`))) return;
     setBusy(true); setError(''); setMessage('');
     try {
       await financialCommand('post', `${path}/${item._id}/resolve`, { status, response: responses[item._id] || '' }, { idField: 'clientOperationId', label: 'supplier claim resolution' });

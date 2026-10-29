@@ -1,3 +1,6 @@
+import useRecoveryRefresh from '../hooks/useRecoveryRefresh';
+import { usePageUnsaved, useSafeTransition } from '../context/UnsavedChangesContext';
+import PageHeader from "../components/ui/PageHeader";
 import SearchableSelect from "../components/ui/Select";
 import LoadingState from "../components/ui/LoadingState";
 import { useEffect, useState } from 'react';
@@ -17,6 +20,7 @@ const guidance = {
   'supplier-offers': 'Compare offers for the SAME product and base unit. Costs include goods tax after discount and untaxed freight. Payment terms and supplier eligibility require separate review.',
 };
 export default function DealerWorkspace() {
+  const safeTransition=useSafeTransition();
   const [schemas, setSchemas] = useState({});
   const [kind, setKind] = useState('');
   const [data, setData] = useState(null);
@@ -38,7 +42,10 @@ export default function DealerWorkspace() {
     if (kind) API.get(`/dealer-records/${kind}`, { params: { page } }).then(r => { if (active) setData(r.data.data); }).catch(e => { if (active) setError(e.response?.data?.message || 'Records unavailable'); });
     return () => { active = false; };
   }, [kind, page, reload]);
+  useRecoveryRefresh(()=>setReload(value=>value+1));
   const schema = schemas[kind];
+  const originalReview=data?.items?.find(item=>item._id===editing?._id);
+  usePageUnsaved({dirty:Object.values(form).some(value=>value!==''&&value!=null)||!!editing&&(editing.status!==originalReview?.status||(editing.reviewNotes||'')!==(originalReview?.reviewNotes||'')),busy,onDiscard:()=>{setForm({});setEditing(null);}});
   const update = (key, value) => setForm(current => ({ ...current, [key]: value }));
   const save = async event => {
     event.preventDefault(); setBusy(true); setError(''); setMessage('');
@@ -57,10 +64,10 @@ export default function DealerWorkspace() {
     } catch (e) { setError(e.response?.data?.message || e.message); }
     finally { setBusy(false); }
   };
-  return <main className="space-y-5 text-slate-900 dark:text-white"><header className="workspace-hero p-5"><h1 className="text-2xl font-bold">Dealer workspace</h1><p className="mt-2 text-sm">Field service, reviewed records, purchasing decisions and customer orders.</p></header>
+  return <main className="space-y-5 text-slate-900 dark:text-white"><PageHeader title={<>Dealer workspace</>} description={<>Field service, reviewed records, purchasing decisions and customer orders.</>}></PageHeader>
     <PackWorkspace /><CustomerOrders /><DealerNetwork />
     <PendingInventoryOperations pathPrefix="/dealer-records" onRecovered={() => setReload(value => value + 1)} />
-    <div className="flex flex-wrap gap-2">{Object.entries(schemas).map(([key, value]) => <button type="button" disabled={busy} aria-pressed={kind === key} key={key} onClick={() => { setKind(key); setPage(1); setForm({}); setEditing(null); setMessage(''); }} className={`min-h-11 rounded-lg border px-4 ${kind === key ? 'bg-emerald-700 text-white' : ''}`}>{value.title}</button>)}</div>
+    <div className="flex flex-wrap gap-2">{Object.entries(schemas).map(([key, value]) => <button type="button" disabled={busy} aria-pressed={kind === key} key={key} onClick={() => safeTransition(()=>{ setKind(key); setPage(1); setForm({}); setEditing(null); setMessage(''); })} className={`min-h-11 rounded-lg border px-4 ${kind === key ? 'bg-emerald-700 text-white' : ''}`}>{value.title}</button>)}</div>
     {error && <p role="alert" className="text-red-700">{error}</p>}{message && <p role="status">{message}</p>}
     {schema && <><h2 className="text-xl font-semibold">{schema.title}</h2><p className="text-sm">{guidance[kind]}</p><button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload records</button>
       <div className="grid gap-5 xl:grid-cols-2"><section className="space-y-3" aria-label="Saved records">

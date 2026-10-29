@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import FilterBar from "../../components/ui/FilterBar";
 import React, { useState, useMemo, useEffect } from "react";
@@ -76,10 +77,7 @@ const DeadStockAlerts = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm"><Zap className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Smart Inventory Alerts</h1><p className="text-sm text-slate-500 dark:text-slate-400">Fast movers, dead stock, and overstock detection</p></div>
-      </div>
+      <PageHeader icon={Zap} title={<>Smart Inventory Alerts</>} description={<>Fast movers, dead stock, and overstock detection</>}  />
 
       {loading ? (
         <LoadingState label="Loading" />
@@ -110,7 +108,7 @@ const DeadStockAlerts = () => {
                 const vc = velocityConfig[item.velocity];
                 const VIcon = vc.icon;
                 return (
-                  <div key={item._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg hover:-translate-y-0.5 transition-all">
+                  <div key={item._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg hover:-translate-y-0.5 transition-all">
                     <div className="flex items-start justify-between mb-3">
                       <div><p className="font-bold text-slate-900 dark:text-white text-sm">{item.name}</p><p className="text-xs text-slate-400 mt-0.5">{item.category}</p></div>
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${vc.color}`}><VIcon className="w-3 h-3" />{vc.label}</span>

@@ -1,3 +1,4 @@
+import PageHeader from "../components/ui/PageHeader";
 import DataTable from "../components/ui/DataTable";
 import { useEffect, useRef, useState } from 'react';
 import API from '../api/axios';
@@ -41,7 +42,7 @@ export default function BusinessAssistant() {
     finally { if (stamp === generation.current) setBusy(false); }
   };
   return <div className="space-y-6">
-    <header className="workspace-hero"><p className="workspace-eyebrow">Company intelligence</p><h1>Business assistant</h1><p>Explore permitted shop records. Stock, payments, prices and accounts stay unchanged. {ai ? 'AI planning is enabled: your question is sent to the configured provider.' : 'Guided mode is active. Suggested questions work without an AI provider.'}</p></header>
+    <PageHeader title={<>Business assistant</>} description={<>Explore permitted shop records. Stock, payments, prices and accounts stay unchanged. {ai ? 'AI planning is enabled: your question is sent to the configured provider.' : 'Guided mode is active. Suggested questions work without an AI provider.'}</>}><p className="workspace-eyebrow">Company intelligence</p></PageHeader>
     {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900 dark:bg-red-950 dark:text-red-100">{error}</p>}
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
       <section className="min-w-0 space-y-4" aria-label="Assistant conversation">

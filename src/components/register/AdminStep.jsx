@@ -1,3 +1,4 @@
+import SharedButton from "../ui/Button";
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { InputField } from "../auth/InputField";
 
@@ -51,12 +52,12 @@ export const AdminStep = ({ form, onChange, showPassword, togglePassword, onNext
           placeholder="Repeat password"
           required
         />
-        <button
+        <SharedButton
           onClick={onNext}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors mt-2"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-colors mt-2"
         >
           Continue <ArrowRight className="w-5 h-5" />
-        </button>
+        </SharedButton>
       </div>
     </>
   );

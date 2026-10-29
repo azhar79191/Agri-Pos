@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { getCreditSalesReport } from "../api/reportsApi";
 import { updateInvoicePayment } from "../api/invoicesApi";
@@ -10,6 +10,7 @@ export function useCreditSales() {
   const { actions }                         = useApp();
   const [rows, setRows]                     = useState([]);
   const [totalOutstanding, setTotalOutstanding] = useState(0);
+  const [error, setError] = useState('');
   const [loading, setLoading]               = useState(true);
   const [paymentModal, setPaymentModal]     = useState(null);
   const [paymentAmount, setPaymentAmount]   = useState("");
@@ -17,15 +18,17 @@ export function useCreditSales() {
   const [paymentNotes, setPaymentNotes]     = useState("");
   const [processing, setProcessing]         = useState(false);
 
+  const loadVersion=useRef(0);
   const loadData = useCallback(() => {
-    setLoading(true);
-    getCreditSalesReport()
-      .then((res) => { setRows(res.data.data.rows); setTotalOutstanding(res.data.data.totalOutstanding); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const version=++loadVersion.current;
+    setLoading(true); setError('');
+    return getCreditSalesReport()
+      .then(res=>{if(version!==loadVersion.current)return;const data=res.data.data;if(!Array.isArray(data?.rows)||!Number.isFinite(data?.totalOutstanding))throw new Error('The credit report response was incomplete. Please retry.');setRows(data.rows);setTotalOutstanding(data.totalOutstanding);})
+      .catch(error => { if(version!==loadVersion.current)return;setRows([]); setTotalOutstanding(0); setError(error.response?.data?.message || error.message || 'Credit report unavailable'); })
+      .finally(() => {if(version===loadVersion.current)setLoading(false);});
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadData(); return()=>{loadVersion.current++;}; }, [loadData]);
 
   const openPaymentModal = useCallback((sale) => {
     setPaymentModal(sale);
@@ -56,7 +59,7 @@ export function useCreditSales() {
   }, [paymentModal, paymentAmount, paymentMethod, paymentNotes, actions, loadData]);
 
   return {
-    rows, totalOutstanding, loading,
+    rows, totalOutstanding, loading, error, retry:loadData,
     paymentModal, setPaymentModal,
     paymentAmount, setPaymentAmount,
     paymentMethod, setPaymentMethod,

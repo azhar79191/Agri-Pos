@@ -1,3 +1,4 @@
+import SharedButton from "./ui/Button";
 import { MENU_GROUPS } from "../constants/menuGroups";
 import React, { useState, useEffect, useRef } from "react";
 import {
@@ -193,12 +194,12 @@ const MobileNav = () => {
             <div className="flex items-center gap-2">
               {/* PWA install */}
               {!isInstalled && (
-                <button
+                <SharedButton
                   onClick={() => { canInstall ? install() : null; setShowMore(false); }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold"
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold"
                 >
                   <Download className="w-3 h-3" /> Install
-                </button>
+                </SharedButton>
               )}
               <button
                 onClick={() => { go("/profile"); }}

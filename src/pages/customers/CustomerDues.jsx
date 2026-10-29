@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import Modal from "../../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
@@ -28,13 +31,7 @@ const CustomerDues = () => {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-sm flex-shrink-0"><Wallet className="w-5 h-5 text-white" /></div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Customer Dues</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{total} customers with outstanding balances · Total: {formatCurrency(totalDue, settings.currency)}</p>
-        </div>
-      </div>
+      <PageHeader icon={Wallet} title={<>Customer Dues</>} description={<>{total} customers with outstanding balances · Total: {formatCurrency(totalDue, settings.currency)}</>}  />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {STATS.map(({ label, value, color, bg, icon: Icon }) => (
@@ -49,7 +46,7 @@ const CustomerDues = () => {
 
       <div className="relative">
         <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name or phone..."
-          className="w-full px-4 py-2.5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition-all" />
+          className="w-full px-4 py-2.5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition-all"  aria-label="Search by name or phone..."/>
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
@@ -61,7 +58,7 @@ const CustomerDues = () => {
       ) : dues.length === 0 ? (
         <EmptyState icon={Wallet} title="No customer dues" description="All customers have cleared their balances" />
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {dues.map((d) => {
               const due    = d.creditBalance || 0;
@@ -95,32 +92,32 @@ const CustomerDues = () => {
 
       {/* Deposit modal */}
       {depositModal && (
-        <Modal
+        <Modal busy={depositing}
           isOpen
           onClose={() => setDepositModal(null)}
           title={<>Collect Payment</>}
           size="xs"
           footer={<div className="flex gap-3">
-              <button onClick={() => setDepositModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-              <button onClick={handleDeposit} disabled={depositing} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-emerald-500 hover:bg-emerald-600 transition-colors">
+              <button onClick={() => setDepositModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
+              <SharedButton onClick={handleDeposit} disabled={depositing} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors">
                 {depositing ? <LoadingIndicator /> : <DollarSign className="w-4 h-4" />}
                 Collect
-              </button>
+              </SharedButton>
             </div>}><div className="space-y-4">
 
             <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <p className="text-sm font-semibold text-red-800 dark:text-red-300">{depositModal.name}</p>
               <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">Outstanding: <strong>{formatCurrency(depositModal.creditBalance, settings.currency)}</strong></p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Amount Received ({settings.currency})</label>
+            <FormField label={<>Amount Received ({settings.currency})</>}>
+
               <input type="number" min="1" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} placeholder="Enter amount"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                 onKeyDown={(e) => e.key === "Enter" && handleDeposit()} />
               {depositAmount && parseFloat(depositAmount) >= (depositModal.creditBalance || 0) && (
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">✓ Full balance will be cleared</p>
               )}
-            </div>
+            </FormField>
 
           </div></Modal>
       )}

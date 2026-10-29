@@ -1,3 +1,5 @@
+import PageHeader from "../../components/ui/PageHeader";
+import FormField from "../../components/ui/FormField";
 import Modal from "../../components/ui/Modal";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
@@ -87,24 +89,13 @@ const SalesReps = () => {
   return (
     <div className="space-y-5 animate-fade-up">
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-sm flex-shrink-0">
-            <UserCheck className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Sales Representatives</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+      <PageHeader title={<>Sales Representatives</>} description={<>
               {total} reps · {activeCount} active · Commission earned: {formatCurrency(totalEarned, settings.currency)}
-            </p>
-          </div>
-        </div>
-        {isAdmin && (
+            </>} icon={UserCheck} actions={<>{isAdmin && (
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold shadow-sm transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
             <Plus className="w-4 h-4" />Add Rep
           </button>
-        )}
-      </div>
+        )}</>}></PageHeader>
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -142,7 +133,7 @@ const SalesReps = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {reps.map(r => (
-            <div key={r._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium hover:shadow-premium-lg transition-all group overflow-hidden">
+            <div key={r._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium hover:shadow-premium-lg transition-all group overflow-hidden">
               <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-blue-600" />
               <div className="p-5 space-y-4">
                 {/* Rep info */}
@@ -196,20 +187,20 @@ const SalesReps = () => {
       )}
 
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
           <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <Modal
+        <Modal busy={saving}
           isOpen
           onClose={() => setShowModal(false)}
           title={<>{editing ? "Edit Sales Rep" : "Add Sales Rep"}</>}
           size="sm"
           footer={<div className="flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
               <button onClick={handleSave} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition-all" style={{ background: "var(--pos-primary)" }}>
                 {saving ? <LoadingIndicator /> : <UserCheck className="w-4 h-4" />}
                 {editing ? "Update" : "Add Rep"}
@@ -218,20 +209,20 @@ const SalesReps = () => {
 
             <div className="space-y-4">
               {[{ l: "Full Name *", k: "name", t: "text" }, { l: "Phone", k: "phone", t: "tel" }, { l: "Territory / Area", k: "territory", t: "text" }, { l: "Commission Rate (%)", k: "commission", t: "number" }].map(({ l, k, t }) => (
-                <div key={k}>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label>
+                <FormField key={k} label={<>{l}</>}>
+
                   <input type={t} value={form[k]} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
-                </div>
+                </FormField>
               ))}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Status</label>
+              <FormField label={<>Status</>}>
+
                 <SearchableSelect value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
                   className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </SearchableSelect>
-              </div>
+              </FormField>
             </div>
 
           </div></Modal>

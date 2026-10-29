@@ -1,3 +1,4 @@
+import FormField from "./ui/FormField";
 import SearchableSelect from "./ui/Select";
 import React, { useState, useEffect } from "react";
 import { Search, Filter, X, Calendar, Package, Users, Receipt } from "lucide-react";
@@ -24,52 +25,52 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
 
   const performSearch = () => {
     let results = [];
-    
+
     switch (searchType) {
       case "products":
         results = state.products.filter(product => {
-          const matchesSearch = !searchTerm || 
+          const matchesSearch = !searchTerm ||
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             product.barcode.includes(searchTerm) ||
             product.brand.toLowerCase().includes(searchTerm.toLowerCase());
-          
+
           const matchesCategory = !filters.category || product.category === filters.category;
           const matchesBrand = !filters.brand || product.brand === filters.brand;
           const matchesPrice = (!filters.priceRange.min || product.price >= parseFloat(filters.priceRange.min)) &&
                               (!filters.priceRange.max || product.price <= parseFloat(filters.priceRange.max));
-          
+
           let matchesStock = true;
           if (filters.stockLevel === "low") matchesStock = product.stock <= state.settings.lowStockThreshold;
           else if (filters.stockLevel === "out") matchesStock = product.stock === 0;
           else if (filters.stockLevel === "available") matchesStock = product.stock > 0;
-          
+
           return matchesSearch && matchesCategory && matchesBrand && matchesPrice && matchesStock;
         });
         break;
-        
+
       case "customers":
         results = state.customers.filter(customer => {
-          return !searchTerm || 
+          return !searchTerm ||
             customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.phone.includes(searchTerm);
         });
         break;
-        
+
       case "transactions":
         results = state.transactions.filter(transaction => {
-          const matchesSearch = !searchTerm || 
+          const matchesSearch = !searchTerm ||
             transaction.id.toString().includes(searchTerm) ||
             transaction.customerName?.toLowerCase().includes(searchTerm.toLowerCase());
-          
+
           const matchesDateRange = (!filters.dateRange.start || new Date(transaction.date) >= new Date(filters.dateRange.start)) &&
                                   (!filters.dateRange.end || new Date(transaction.date) <= new Date(filters.dateRange.end));
-          
+
           return matchesSearch && matchesDateRange;
         });
         break;
     }
-    
+
     onResults?.(results, searchType);
   };
 
@@ -103,26 +104,26 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={placeholder}
             className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-          />
+           aria-label={placeholder}/>
         </div>
-        
+
         {/* Search Type Selector */}
         <SearchableSelect
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
           className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium shadow-sm hover:shadow-md cursor-pointer"
-        >
+         aria-label="Search">
           {searchTypes.map(type => (
             <option key={type.id} value={type.id}>{type.label}</option>
           ))}
         </SearchableSelect>
-        
+
         {/* Filter Toggle */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`p-2.5 rounded-lg border transition-all ${
-            showFilters 
-              ? "bg-blue-600 text-white border-blue-600" 
+            showFilters
+              ? "bg-blue-600 text-white border-blue-600"
               : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           }`}
         >
@@ -132,7 +133,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+        <div className="workspace-panel absolute top-full left-0 right-0 mt-2 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-gray-900 dark:text-white">Filters</h3>
             <div className="flex items-center gap-2">
@@ -153,8 +154,8 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
 
           {searchType === "products" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Category</label>
+              <FormField label={<>Category</>}>
+
                 <SearchableSelect
                   value={filters.category}
                   onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
@@ -165,10 +166,10 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </SearchableSelect>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Brand</label>
+              </FormField>
+
+              <FormField label={<>Brand</>}>
+
                 <SearchableSelect
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
@@ -179,10 +180,10 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                     <option key={brand} value={brand}>{brand}</option>
                   ))}
                 </SearchableSelect>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Stock Level</label>
+              </FormField>
+
+              <FormField label={<>Stock Level</>}>
+
                 <SearchableSelect
                   value={filters.stockLevel}
                   onChange={(e) => setFilters(prev => ({ ...prev, stockLevel: e.target.value }))}
@@ -193,8 +194,8 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                   <option value="low">Low Stock</option>
                   <option value="out">Out of Stock</option>
                 </SearchableSelect>
-              </div>
-              
+              </FormField>
+
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Price Range</label>
                 <div className="flex gap-2">
@@ -202,22 +203,22 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                     type="number"
                     placeholder="Min"
                     value={filters.priceRange.min}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
                       priceRange: { ...prev.priceRange, min: e.target.value }
                     }))}
                     className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md"
-                  />
+                   aria-label="Min"/>
                   <input
                     type="number"
                     placeholder="Max"
                     value={filters.priceRange.max}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setFilters(prev => ({
+                      ...prev,
                       priceRange: { ...prev.priceRange, max: e.target.value }
                     }))}
                     className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
-                  />
+                   aria-label="Max"/>
                 </div>
               </div>
             </div>
@@ -225,30 +226,30 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
 
           {searchType === "transactions" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Start Date</label>
+              <FormField label={<>Start Date</>}>
+
                 <input
                   type="date"
                   value={filters.dateRange.start}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
                     dateRange: { ...prev.dateRange, start: e.target.value }
                   }))}
                   className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">End Date</label>
+              </FormField>
+              <FormField label={<>End Date</>}>
+
                 <input
                   type="date"
                   value={filters.dateRange.end}
-                  onChange={(e) => setFilters(prev => ({ 
-                    ...prev, 
+                  onChange={(e) => setFilters(prev => ({
+                    ...prev,
                     dateRange: { ...prev.dateRange, end: e.target.value }
                   }))}
                   className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
                 />
-              </div>
+              </FormField>
             </div>
           )}
         </div>

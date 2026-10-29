@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
@@ -48,17 +51,11 @@ const Suppliers = () => {
       {isAdmin && <SupplierClaims suppliers={suppliers} currency={settings.currency} onRecorded={refresh} />}
       {paymentSupplier && <SupplierPaymentModal key={paymentSupplier._id} supplier={paymentSupplier} currency={settings.currency} onClose={() => setPaymentSupplier(null)} onRecorded={refresh} />}
       {ledgerSupplier && <SupplierLedgerModal key={ledgerSupplier._id} supplier={ledgerSupplier} currency={settings.currency} onClose={() => setLedgerSupplier(null)} />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm flex-shrink-0"><Building2 className="w-5 h-5 text-white" /></div>
-          <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Suppliers</h1><p className="text-sm text-slate-500 dark:text-slate-400">{total} suppliers · Outstanding: {formatCurrency(totalOutstanding, settings.currency)}</p></div>
-        </div>
-        {isAdmin && (
+      <PageHeader title={<>Suppliers</>} description={<>{total} suppliers · Outstanding: {formatCurrency(totalOutstanding, settings.currency)}</>} icon={Building2} actions={<>{isAdmin && (
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-semibold shadow-sm transition-all hover:opacity-90" style={{ background: "var(--pos-primary)" }}>
             <Plus className="w-4 h-4" />Add Supplier
           </button>
-        )}
-      </div>
+        )}</>}></PageHeader>
 
       <FilterBar filters={[{ type: "search", key: "search", placeholder: "Search by name or contact..." }]} values={filters} onChange={setFilter} onClear={() => setFilters({ search: "" })} total={total} />
 
@@ -70,7 +67,7 @@ const Suppliers = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {suppliers.map((s) => (
-            <div key={s._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg transition-all group">
+            <div key={s._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5 hover:shadow-premium-lg transition-all group">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
@@ -95,7 +92,7 @@ const Suppliers = () => {
                 {s.address && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.address}</span>}
               </div>
               {(s.creditBalance || 0) > (s.outstanding || 0) && <p className="mb-3 rounded-lg bg-emerald-50 p-2 text-sm font-semibold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">Supplier credit: {formatCurrency(Math.max(0, (s.creditBalance || 0) - (s.outstanding || 0)), settings.currency)}</p>}
-              {isAdmin && (s.outstanding || 0) > (s.creditBalance || 0) && <button type="button" onClick={() => setPaymentSupplier(s)} className="mb-3 mr-4 min-h-11 rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white">Record payment</button>}
+              {isAdmin && (s.outstanding || 0) > (s.creditBalance || 0) && <SharedButton type="button" onClick={() => setPaymentSupplier(s)} className="mb-3 mr-4 min-h-11 rounded-lg px-3 text-sm font-semibold">Record payment</SharedButton>}
               <button type="button" onClick={() => setLedgerSupplier(s)} className="mb-3 min-h-11 text-sm font-semibold text-blue-600 underline">View balance movements</button>
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
@@ -115,15 +112,15 @@ const Suppliers = () => {
       )}
 
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
+        <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50">
           <Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} />
         </div>
       )}
 
-      <ModernModal isOpen={showModal} onClose={() => setShowModal(false)} title={editing ? "Edit Supplier" : "Add Supplier"}
+      <ModernModal busy={saving} isOpen={showModal} onClose={() => setShowModal(false)} title={editing ? "Edit Supplier" : "Add Supplier"}
         footer={
           <div className="flex gap-3 justify-end">
-            <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+            <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50" style={{ background: "var(--pos-primary)" }}>
               {saving ? <LoadingIndicator /> : <Building2 className="w-4 h-4" />}
               {editing ? "Update" : "Add Supplier"}
@@ -133,17 +130,17 @@ const Suppliers = () => {
       >
         <div className="space-y-4">
           {FIELDS.map(({ l, k, type }) => (
-            <div key={k}>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{l}</label>
+            <FormField key={k} label={<>{l}</>}>
+
               <input type={type} value={form[k]} onChange={(e) => setForm((p) => ({ ...p, [k]: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
-            </div>
+            </FormField>
           ))}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Payment Terms</label>
+          <FormField label={<>Payment Terms</>}>
+
             <SearchableSelect value={form.paymentTerms} onChange={(e) => setForm((p) => ({ ...p, paymentTerms: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
               {["COD", "Net 7", "Net 15", "Net 30", "Net 60"].map((t) => <option key={t} value={t}>{t}</option>)}
             </SearchableSelect>
-          </div>
+          </FormField>
         </div>
       </ModernModal>
     </div>

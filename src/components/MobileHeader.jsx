@@ -59,9 +59,9 @@ const MobileHeader = () => {
                   {breadcrumb[0]}
                 </p>
               )}
-              <h1 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">
+              <p className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">
                 {title}
-              </h1>
+              </p>
             </div>
           </>
         )}

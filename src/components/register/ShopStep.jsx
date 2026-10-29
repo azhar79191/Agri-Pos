@@ -1,3 +1,5 @@
+import SharedButton from "../ui/Button";
+import FormField from "../ui/FormField";
 import SearchableSelect from "../ui/Select";
 import { Building2, Phone, Mail, Camera, ArrowLeft, ArrowRight } from "lucide-react";
 import { InputField } from "../auth/InputField";
@@ -48,8 +50,8 @@ export const ShopStep = ({ form, onChange, logoPreview, onLogoChange, onBack, on
           />
         ))}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tax Rate (%)</label>
+          <FormField label={<>Tax Rate (%)</>}>
+
             <input
               type="number"
               min="0"
@@ -58,9 +60,9 @@ export const ShopStep = ({ form, onChange, logoPreview, onLogoChange, onBack, on
               onChange={(e) => onChange("taxRate", e.target.value)}
               className="w-full px-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 text-sm"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Currency</label>
+          </FormField>
+          <FormField label={<>Currency</>}>
+
             <SearchableSelect
               value={form.currency}
               onChange={(e) => onChange("currency", e.target.value)}
@@ -68,7 +70,7 @@ export const ShopStep = ({ form, onChange, logoPreview, onLogoChange, onBack, on
             >
               {["Rs.", "₹", "$", "€", "£"].map((c) => <option key={c} value={c}>{c}</option>)}
             </SearchableSelect>
-          </div>
+          </FormField>
         </div>
         <div className="flex gap-3 pt-2">
           {!isLoggedIn && (
@@ -79,12 +81,12 @@ export const ShopStep = ({ form, onChange, logoPreview, onLogoChange, onBack, on
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
           )}
-          <button
+          <SharedButton
             onClick={onNext}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm transition-colors"
           >
             Continue <ArrowRight className="w-5 h-5" />
-          </button>
+          </SharedButton>
         </div>
       </div>
     </>

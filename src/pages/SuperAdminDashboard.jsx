@@ -1,3 +1,7 @@
+import { notifyUser, confirmAction } from "../utils/feedback";
+import PageHeader from "../components/ui/PageHeader";
+import SharedButton from "../components/ui/Button";
+import FormField from "../components/ui/FormField";
 import Modal from "../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
@@ -69,7 +73,7 @@ const Field = ({ icon: Icon, label, value, mono = false, copy = false }) => (
     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
       {Icon && <Icon className="w-3 h-3" />}{label}
     </p>
-    <div className="flex items-center gap-1 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 min-h-[36px]">
+    <div className="workspace-panel flex items-center gap-1 p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 min-h-[36px]">
       <span className={`text-sm flex-1 truncate text-slate-800 dark:text-slate-200 ${mono ? "font-mono" : "font-medium"}`}>{value || "—"}</span>
       {copy && value && value !== "—" && <CopyBtn value={value} />}
     </div>
@@ -107,7 +111,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
           icon={Users}
           footer={<div className="flex items-center justify-between">
           <p className="text-xs text-slate-400">{filtered.length} of {users.length} users{search && ` · filtered by "${search}"`}</p>
-          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Close</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors" data-modal-dismiss>Close</button>
         </div>}><div className="space-y-4">
 
         {/* Search */}
@@ -115,7 +119,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, phone, role…"
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"  aria-label="Search name, email, phone, role…"/>
           </div>
         </div>
 
@@ -272,7 +276,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
 
 /* ── Stat card ── */
 const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
+  <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5">
     <div className="flex items-center gap-3">
       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}><Icon className="w-5 h-5" /></div>
       <div>
@@ -295,23 +299,23 @@ const PlanModal = ({ shop, onClose, onSave }) => {
       if (!shop.isApproved) await approveShop(shop._id, { plan, durationDays: days });
       else await grantPlan(shop._id, { plan, durationDays: days });
       onSave(); onClose();
-    } catch (err) { alert(err.response?.data?.message || "Failed"); }
+    } catch (err) { notifyUser(err.response?.data?.message || "Failed"); }
     finally { setSaving(false); }
   };
 
   return (
-    <Modal
+    <Modal busy={saving}
           isOpen
           onClose={onClose}
           title={<>{shop?.isApproved ? "Change Plan" : "Approve Shop"} — {shop?.name}</>}
           size="sm"
           footer={<div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
+          <SharedButton onClick={handleSave} disabled={saving}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 transition-colors">
             {saving ? <LoadingIndicator /> : <CheckCircle className="w-4 h-4" />}
             {shop?.isApproved ? "Update Plan" : "Approve & Activate"}
-          </button>
+          </SharedButton>
         </div>}><div className="space-y-4">
 
         <div className="space-y-4">
@@ -336,7 +340,7 @@ const PlanModal = ({ shop, onClose, onSave }) => {
             <div className="flex gap-2">
               {[30, 90, 180, 365].map(d => (
                 <button key={d} onClick={() => setDays(d)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${days === d ? "bg-blue-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${days === d ? "bg-blue-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"}`} data-dirty-change>
                   {d}d
                 </button>
               ))}
@@ -356,19 +360,19 @@ const SuspendModal = ({ shop, onClose, onSave }) => {
   const handleSave = async () => {
     setSaving(true);
     try { await suspendShop(shop._id, { reason: reason || "Suspended by admin" }); onSave(); onClose(); }
-    catch (err) { alert(err.response?.data?.message || "Failed"); }
+    catch (err) { notifyUser(err.response?.data?.message || "Failed"); }
     finally { setSaving(false); }
   };
 
   return (
-    <Modal
+    <Modal busy={saving}
           isOpen
           onClose={onClose}
           title={<>Suspend — {shop?.name}</>}
           size="xs"
           iconColor={"red"}
           footer={<div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 transition-colors">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 transition-colors" data-modal-dismiss>Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors">
             {saving ? <LoadingIndicator /> : <XCircle className="w-4 h-4" />}
@@ -376,11 +380,11 @@ const SuspendModal = ({ shop, onClose, onSave }) => {
           </button>
         </div>}><div className="space-y-4">
 
-        <div className="">
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Reason (optional)</label>
+        <FormField className="" label={<>Reason (optional)</>}>
+
           <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3} placeholder="e.g. Payment overdue..."
             className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white resize-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all" />
-        </div>
+        </FormField>
 
       </div></Modal>
   );
@@ -420,13 +424,13 @@ const SuperAdminDashboard = () => {
   useEffect(() => { const timer = setTimeout(load, 250); return () => clearTimeout(timer); }, [load]);
 
   const handleUnsuspend = async (shop) => {
-    try { await unsuspendShop(shop._id); load(); } catch {}
+    try { await unsuspendShop(shop._id); load(); } catch(error) { notifyUser(error.response?.data?.message || 'The shop could not be reactivated. Please retry.'); }
   };
 
   const handleDelete = async (shop) => {
-    if (!window.confirm(`Delete "${shop.name}" and ALL its data? This cannot be undone.`)) return;
+    if (!(await confirmAction(`Delete "${shop.name}" and ALL its data? This cannot be undone.`))) return;
     setDeleting(shop._id);
-    try { await deleteSuperAdminShop(shop._id); load(); } catch {}
+    try { await deleteSuperAdminShop(shop._id); load(); } catch(error) { notifyUser(error.response?.data?.message || 'The shop could not be deleted. Please retry.'); }
     finally { setDeleting(null); }
   };
 
@@ -435,22 +439,12 @@ const SuperAdminDashboard = () => {
   return (
     <div className="platform-workspace workspace-shell min-h-screen p-4 sm:p-8 space-y-6">
 
-      <div className="workspace-hero flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Platform control center</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Shop approvals, subscriptions and access · AgriNest POS</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader title={<>Platform control center</>} description={<>Shop approvals, subscriptions and access · AgriNest POS</>} icon={Shield} actions={<><div className="flex items-center gap-2">
           <button onClick={load} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-semibold">
             {loading ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} />} Refresh
           </button>
-          <button onClick={() => {
-            if (window.confirm("Are you sure you want to logout?")) {
+          <button onClick={async () => {
+            if ((await confirmAction("Are you sure you want to logout?"))) {
               clearAuthToken();
               localStorage.removeItem("user");
               localStorage.removeItem("posUser");
@@ -463,8 +457,7 @@ const SuperAdminDashboard = () => {
           }} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors text-sm font-semibold">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
-        </div>
-      </div>
+        </div></>}></PageHeader>
 
       {/* Stats */}
       {stats && (
@@ -480,7 +473,7 @@ const SuperAdminDashboard = () => {
       {stats?.planBreakdown && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {PLANS.map(p => (
-            <div key={p.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
+            <div key={p.id} className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3">
               <p.icon className="w-5 h-5 text-slate-400 flex-shrink-0" />
               <div>
                 <p className="text-xs text-slate-500">{p.label}</p>
@@ -506,7 +499,7 @@ const SuperAdminDashboard = () => {
       </FilterBar>
 
       {/* Shops table */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {loadError ? <p role="alert" className="p-4 text-sm text-red-600">{loadError}<button onClick={load} className="ml-3 underline">Retry</button></p> : (
           <div className="overflow-x-auto">
             <DataTable loading={loading} loadingLabel="Loading shops" emptyTitle="No shops found" sort={sort} onSortChange={next => { setSort(next); setPage(1); }} className="w-full">

@@ -1,3 +1,4 @@
+import FormField from "./ui/FormField";
 import LoadingState, { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
@@ -161,7 +162,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
       });
 
       const barcodes = await barcodeDetector.detect(video);
-      
+
       if (barcodes.length > 0) {
         const barcode = barcodes[0];
         processBarcode(barcode.rawValue);
@@ -477,10 +478,10 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
         {/* ── Manual entry ── */}
         {mode === "manual" && !result && (
           <form onSubmit={handleManualSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <FormField label={<>
                 Enter Barcode
-              </label>
+              </>}>
+
               <input
                 ref={inputRef}
                 type="text"
@@ -490,7 +491,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-lg font-mono tracking-widest outline-none"
                 autoFocus
               />
-            </div>
+            </FormField>
             <ModernButton
               type="submit"
               variant="primary"

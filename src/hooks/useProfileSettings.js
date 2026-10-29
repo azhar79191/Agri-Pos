@@ -1,3 +1,4 @@
+import { usePageUnsaved } from '../context/UnsavedChangesContext';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -15,6 +16,7 @@ export function useProfileSettings() {
 
   const displayUser = user || currentUser;
 
+  const [baselineProfile,setBaselineProfile] = useState(null);
   const [profileForm, setProfileForm]   = useState({ name: "", phone: "", address: "", avatar: "" });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
@@ -26,6 +28,7 @@ export function useProfileSettings() {
   useEffect(() => {
     if (displayUser) {
       setProfileForm({ name: displayUser.name || "", phone: displayUser.phone || "", address: displayUser.address || "", avatar: displayUser.avatar || "" });
+      setBaselineProfile({ name: displayUser.name || "", phone: displayUser.phone || "", address: displayUser.address || "", avatar: displayUser.avatar || "" });
       setAvatarPreview(displayUser.avatar || "");
     }
     getMyShop().then((res) => setShop(res.data.data?.shop)).catch(() => {});
@@ -51,6 +54,7 @@ export function useProfileSettings() {
       const merged  = { ...displayUser, ...updated, shop: updated.shop ?? displayUser?.shop };
       localStorage.setItem("user", JSON.stringify(merged));
       window.dispatchEvent(new CustomEvent("user-updated", { detail: merged }));
+      setBaselineProfile({...profileForm});
       actions.showToast({ message: "Profile updated successfully", type: "success" });
     } catch (err) {
       actions.showToast({ message: err.response?.data?.message || "Update failed", type: "error" });
@@ -73,6 +77,8 @@ export function useProfileSettings() {
       actions.showToast({ message: err.response?.data?.message || "Password change failed", type: "error" });
     } finally { setSavingPassword(false); }
   }, [passwordForm, actions]);
+
+  usePageUnsaved({dirty:!!baselineProfile && JSON.stringify(profileForm)!==JSON.stringify(baselineProfile)||Object.values(passwordForm).some(Boolean),busy:saving||savingPassword,onDiscard:()=>{if(baselineProfile){setProfileForm(baselineProfile);setAvatarPreview(baselineProfile.avatar);}setPasswordForm({currentPassword:'',newPassword:'',confirmPassword:''});}});
 
   return {
     displayUser, fileInputRef,

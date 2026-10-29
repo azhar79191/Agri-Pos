@@ -1,3 +1,6 @@
+import PageHeader from "../../components/ui/PageHeader";
+import SharedButton from "../../components/ui/Button";
+import FormField from "../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState, useEffect } from "react";
 import { BarChart3, TrendingUp, DollarSign, Database, RefreshCw, AlertCircle, CheckCircle, XCircle, Activity } from "lucide-react";
@@ -56,26 +59,14 @@ const AIStatistics = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm flex-shrink-0">
-            <BarChart3 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">AI Usage Statistics</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Monitor AI service performance and costs</p>
-          </div>
-        </div>
-
-        <button
+      <PageHeader title={<>AI Usage Statistics</>} description={<>Monitor AI service performance and costs</>} icon={BarChart3} actions={<><button
           onClick={handleRefresh}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 disabled:opacity-50 transition-colors"
         >
           {loading ? <LoadingIndicator /> : <RefreshCw className={`w-4 h-4 `} />}
           Refresh
-        </button>
-      </div>
+        </button></>} />
 
       {stats?.cache?.available === false && <p className="text-sm text-slate-500">Usage is scoped to your shop. Per-shop cache metrics are not available yet; cost figures are estimates.</p>}
       {/* Admin Notice */}
@@ -92,33 +83,33 @@ const AIStatistics = () => {
       </div>
 
       {/* Date Range Filter */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
         <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Start Date</label>
+          <FormField className="flex-1" label={<>Start Date</>}>
+
             <input
               type="date"
               value={dateRange.startDate}
               onChange={(e) => handleDateRangeChange('startDate', e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">End Date</label>
+          </FormField>
+          <FormField className="flex-1" label={<>End Date</>}>
+
             <input
               type="date"
               value={dateRange.endDate}
               onChange={(e) => handleDateRangeChange('endDate', e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
-          </div>
-          <button
+          </FormField>
+          <SharedButton
             onClick={applyDateFilter}
             disabled={loading}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors"
           >
             Apply Filter
-          </button>
+          </SharedButton>
         </div>
       </div>
 
@@ -152,7 +143,7 @@ const AIStatistics = () => {
         <div className="space-y-5">
           {/* Request Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                   <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -164,7 +155,7 @@ const AIStatistics = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -176,7 +167,7 @@ const AIStatistics = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                   <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -188,7 +179,7 @@ const AIStatistics = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -220,7 +211,7 @@ const AIStatistics = () => {
           </div>
 
           {/* Cache Statistics */}
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                 <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />

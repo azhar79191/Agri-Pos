@@ -1,3 +1,4 @@
+import { useSafeTransition } from '../context/UnsavedChangesContext';
 import React, { useState, useEffect } from "react";
 import SettingsNav from "./settings/SettingsNav";
 import BrandingPanel from "./settings/BrandingPanel";
@@ -47,12 +48,13 @@ const PANELS = {
 const ALL_ITEMS = SETTINGS_NAV.flatMap(g => g.items);
 
 const Settings = () => {
+  const safeTransition=useSafeTransition();
   const [active, setActive] = useState("branding");
   const current = ALL_ITEMS.find(i => i.id === active);
 
   // "?" shortcut from anywhere opens this panel directly
   useEffect(() => {
-    const handler = () => setActive("shortcuts");
+    const handler = () => safeTransition(()=>setActive("shortcuts"));
     window.addEventListener("agrinest:open-shortcuts", handler);
     return () => window.removeEventListener("agrinest:open-shortcuts", handler);
   }, []);
@@ -68,7 +70,7 @@ const Settings = () => {
 
       <div className="flex flex-col lg:flex-row gap-5 items-start">
         {/* Left nav */}
-        <SettingsNav active={active} onChange={setActive} />
+        <SettingsNav active={active} onChange={value=>safeTransition(()=>setActive(value))} />
 
         {/* Content panel */}
         <div className="flex-1 min-w-0">

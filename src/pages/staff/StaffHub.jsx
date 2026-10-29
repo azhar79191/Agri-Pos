@@ -1,3 +1,4 @@
+import { useSafeTransition } from '../../context/UnsavedChangesContext';
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import StaffNav    from "./hub/StaffNav";
@@ -33,6 +34,7 @@ const PANELS = {
 };
 
 const StaffHub = () => {
+  const safeTransition=useSafeTransition();
   const location = useLocation();
   const { users } = useUsers();
 
@@ -60,7 +62,7 @@ const StaffHub = () => {
 
       <div className="flex flex-col lg:flex-row gap-5 items-start">
         {/* Left nav */}
-        <StaffNav active={active} onChange={setActive} userCount={users.length} />
+        <StaffNav active={active} onChange={value=>safeTransition(()=>setActive(value))} userCount={users.length} />
 
         {/* Content */}
         <div className="flex-1 min-w-0">

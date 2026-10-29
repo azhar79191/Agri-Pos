@@ -1,3 +1,4 @@
+import PageHeader from "../../components/ui/PageHeader";
 import React, { useState } from "react";
 import { Calendar, Sprout, Clock, CheckCircle2, AlertCircle, TrendingUp, Droplet, Sun, CloudRain } from "lucide-react";
 import { CROPS, CROP_CALENDAR } from "../../data/cropAdvisory";
@@ -20,15 +21,7 @@ const CropCalendarPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-sm">
-          <Calendar className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Crop Calendar & Growth Stages</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Plan your farming activities with seasonal guidance</p>
-        </div>
-      </div>
+      <PageHeader icon={Calendar} title={<>Crop Calendar & Growth Stages</>} description={<>Plan your farming activities with seasonal guidance</>}  />
 
       {/* Current Season Alert */}
       {isSowingMonth && (
@@ -48,7 +41,7 @@ const CropCalendarPage = () => {
       )}
 
       {/* Crop Selector */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-5">
         <h3 className="font-bold text-slate-900 dark:text-white mb-3">Select Crop</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {CROPS.filter(c => CROP_CALENDAR[c.id]).map(crop => (
@@ -70,7 +63,7 @@ const CropCalendarPage = () => {
         <>
           {/* Crop Overview */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Duration</p>
@@ -78,7 +71,7 @@ const CropCalendarPage = () => {
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{calendarData.duration} days</p>
               <p className="text-xs text-slate-500 mt-1">~{Math.round(calendarData.duration / 30)} months</p>
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-2 mb-2">
                 <Sprout className="w-4 h-4 text-emerald-500" />
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Growth Stages</p>
@@ -86,7 +79,7 @@ const CropCalendarPage = () => {
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{calendarData.stages.length}</p>
               <p className="text-xs text-slate-500 mt-1">Key phases</p>
             </div>
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5">
               <div className="flex items-center gap-2 mb-2">
                 <Sun className="w-4 h-4 text-amber-500" />
                 <p className="text-xs text-slate-500 uppercase tracking-wider">Sowing Months</p>
@@ -121,7 +114,7 @@ const CropCalendarPage = () => {
               Growth Stages & Activities
             </h3>
             {calendarData.stages.map((stage, index) => (
-              <div key={index} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5 relative">
+              <div key={index} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-5 relative">
                 {/* Stage Number Badge */}
                 <div className="absolute -left-3 top-5 w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shadow-lg">
                   {index + 1}

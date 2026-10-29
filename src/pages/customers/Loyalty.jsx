@@ -1,3 +1,5 @@
+import PageHeader from "../../components/ui/PageHeader";
+import FormField from "../../components/ui/FormField";
 import Modal from "../../components/ui/Modal";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
@@ -42,10 +44,7 @@ const Loyalty = () => {
   return (
     <div className="space-y-5 animate-fade-up">
       <PendingInventoryOperations pathPrefix="/loyalty" onRecovered={refresh} />
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-sm flex-shrink-0"><Award className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Loyalty Program</h1><p className="text-sm text-slate-500 dark:text-slate-400">Reward customers based on total purchases · 1 point per Rs. 100 spent</p></div>
-      </div>
+      <PageHeader icon={Award} title={<>Loyalty Program</>} description={<>Reward customers based on total purchases · 1 point per Rs. 100 spent</>}  />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {STAT_CARDS.map(({ l, v, c, bg, icon: I }) => (
@@ -54,7 +53,7 @@ const Loyalty = () => {
       </div>
 
       {/* Tier legend */}
-      <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
+      <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 p-4">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Tier Thresholds</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(TIER_THRESHOLDS).reverse().map(([tier, threshold]) => {
@@ -91,7 +90,7 @@ const Loyalty = () => {
             const remaining  = nextThresh ? nextThresh - (m.totalPurchases || 0) : 0;
 
             return (
-              <div key={m._id} className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden hover:shadow-premium-lg transition-all">
+              <div key={m._id} className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden hover:shadow-premium-lg transition-all">
                 <div className={`h-1.5 w-full bg-gradient-to-r ${tc.gradient}`} />
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-4">
@@ -126,17 +125,17 @@ const Loyalty = () => {
         </div>
       )}
 
-      {totalPages > 1 && <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50"><Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} /></div>}
+      {totalPages > 1 && <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50"><Pagination page={page} totalPages={totalPages} total={total} limit={LIMIT} onPageChange={setPage} /></div>}
 
       {/* Redeem modal */}
       {redeemModal && (
-        <Modal
+        <Modal busy={redeeming}
           isOpen
           onClose={() => setRedeemModal(null)}
           title={<>Redeem Points</>}
           size="xs"
           footer={<div className="flex gap-3">
-              <button onClick={() => setRedeemModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+              <button onClick={() => setRedeemModal(null)} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" data-modal-dismiss>Cancel</button>
               <button onClick={handleRedeem} disabled={redeeming} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-50 bg-amber-500 hover:bg-amber-600 transition-colors">
                 {redeeming ? <LoadingIndicator /> : <Gift className="w-4 h-4" />}Redeem
               </button>
@@ -146,12 +145,12 @@ const Loyalty = () => {
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">{redeemModal.name}</p>
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Available: <strong>{(redeemModal.points || 0).toLocaleString()} points</strong></p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Points to Redeem</label>
+            <FormField label={<>Points to Redeem</>}>
+
               <input type="number" min="1" max={redeemModal.points} value={redeemPts} onChange={(e) => setRedeemPts(e.target.value)} placeholder={`Max ${redeemModal.points}`}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all" />
               {redeemPts && <p className="text-xs text-slate-400 mt-1">Value: {formatCurrency(parseInt(redeemPts) * 0.5, settings.currency)}</p>}
-            </div>
+            </FormField>
 
           </div></Modal>
       )}

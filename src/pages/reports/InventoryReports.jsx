@@ -1,24 +1,21 @@
+import { reportSchemas } from '../../utils/reportSchemas';
+import ReportState from "../../components/ui/ReportState";
+import useReportResource from '../../hooks/useReportResource';
+import PageHeader from "../../components/ui/PageHeader";
 import LoadingState from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Package, DollarSign, TrendingDown, Archive } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency } from "../../utils/helpers";
 import { getInventoryReport } from "../../api/reportsApi";
 
-const useInventoryReport = () => {
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    getInventoryReport().then((res) => setData(res.data.data)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-  return { data, loading };
-};
+const useInventoryReport = () => useReportResource(getInventoryReport,{},reportSchemas.inventory);
 
 const InventoryReports = () => {
   const { state }    = useApp();
   const { settings } = state;
-  const { data, loading } = useInventoryReport();
+  const { data, loading, error, retry } = useInventoryReport();
 
   const summary         = data?.summary         || { totalProducts: 0, totalStockValue: 0, lowStockCount: 0, outOfStockCount: 0 };
   const categorySummary = data?.categorySummary  || {};
@@ -33,10 +30,8 @@ const InventoryReports = () => {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-sm"><Package className="w-5 h-5 text-white" /></div>
-        <div><h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Inventory Reports</h1><p className="text-sm text-slate-500 dark:text-slate-400">Stock valuation and turnover analysis</p></div>
-      </div>
+      <PageHeader icon={Package} title={<>Inventory Reports</>} description={<>Stock valuation and turnover analysis</>}  />
+<ReportState loading={loading} error={error} onRetry={retry}>
 
       {loading ? (
         <LoadingState variant="table" label="Loading inventory report" />
@@ -49,7 +44,7 @@ const InventoryReports = () => {
           </div>
 
           {Object.keys(categorySummary).length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
+            <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium p-6">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Category Breakdown</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Object.entries(categorySummary).map(([cat, d]) => (
@@ -65,7 +60,7 @@ const InventoryReports = () => {
             </div>
           )}
 
-          <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
+          <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 shadow-premium overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800"><p className="font-bold text-slate-900 dark:text-white text-sm">Product Stock Details</p></div>
             <div className="overflow-x-auto">
               <DataTable searchable className="w-full table-premium">
@@ -87,7 +82,8 @@ const InventoryReports = () => {
           </div>
         </>
       )}
-    </div>
+    </ReportState>
+</div>
   );
 };
 

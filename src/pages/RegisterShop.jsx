@@ -1,5 +1,6 @@
+import { usePageUnsaved } from '../context/UnsavedChangesContext';
 import { readAuthToken } from "../utils/authStorage";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sprout, Building2, User, CheckCircle } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -37,6 +38,8 @@ export default function RegisterShop() {
 
   const { saving, error, result, setError, handleSubmit } = useRegisterShop(isLoggedIn, currentUser, actions);
 
+  const initialDraft=useRef(JSON.stringify({adminForm,shopForm,members,logoData}));
+  usePageUnsaved({dirty:step!==4&&JSON.stringify({adminForm,shopForm,members,logoData})!==initialDraft.current,busy:saving});
   const setA = (k, v) => setAdminForm((p) => ({ ...p, [k]: v }));
   const setS = (k, v) => setShopForm((p) => ({ ...p, [k]: v }));
   const updateMember = (i, k, v) => setMembers((p) => p.map((m, idx) => (idx === i ? { ...m, [k]: v } : m)));

@@ -1,3 +1,4 @@
+import SharedButton from "../../../components/ui/Button";
 import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import DataTable from "../../../components/ui/DataTable";
 import React, { useState, useEffect } from "react";
@@ -52,7 +53,7 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
   const total = data?.total ?? data?.totalAmount ?? items.reduce((s, i) => s + (i.quantity * (i.unitPrice ?? i.price ?? 0)), 0);
 
   return (
-    <ModernModal
+    <ModernModal busy={sending}
       isOpen={isOpen} onClose={onClose}
       title={data?.poNumber ?? "Purchase Order"} size="lg"
       icon={FileText} iconColor="blue"
@@ -60,18 +61,18 @@ const PODetailModal = ({ po, isOpen, onClose, onSent, currency }) => {
       footer={
         data?.status === "Draft" ? (
           <div className="flex justify-end gap-3">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>
               Close
             </button>
-            <button onClick={handleSend} disabled={sending}
-              className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors">
+            <SharedButton onClick={handleSend} disabled={sending}
+              className="flex items-center gap-2 px-5 py-2 disabled:opacity-50 rounded-lg text-sm font-semibold transition-colors">
               {sending ? <LoadingIndicator /> : <Send className="w-4 h-4" />}
               {sending ? "Sending..." : "Send to Supplier"}
-            </button>
+            </SharedButton>
           </div>
         ) : (
           <div className="flex justify-end">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" data-modal-dismiss>
               Close
             </button>
           </div>

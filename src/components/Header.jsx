@@ -1,3 +1,4 @@
+import SharedButton from "./ui/Button";
 import Modal from "./ui/Modal";
 import { companyName } from "../utils/company";
 import React, { useState, useEffect, useRef } from "react";
@@ -76,9 +77,9 @@ const Header = () => {
               <span className="text-slate-600 dark:text-slate-300 font-medium">{breadcrumb[1]}</span>
             </div>
           )}
-          <h1 className="text-base font-semibold text-slate-800 dark:text-white tracking-tight leading-none">
+          <p className="text-base font-semibold text-slate-800 dark:text-white tracking-tight leading-none">
             {title}
-          </h1>
+          </p>
           {!breadcrumb && (
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 hidden sm:block">
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -213,15 +214,15 @@ const Header = () => {
             <button
               onClick={() => setShowInstallModal(false)}
               className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-            >
+             data-modal-dismiss>
               Maybe later
             </button>
-            <button
+            <SharedButton
               onClick={() => setShowInstallModal(false)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors"
-            >
+              className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+             data-modal-dismiss>
               Got it
-            </button>
+            </SharedButton>
           </div>}><div className="space-y-4">
 
           {/* Body */}

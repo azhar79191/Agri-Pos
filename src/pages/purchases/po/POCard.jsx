@@ -9,7 +9,7 @@ const POCard = ({ po, currency, onView, onSend }) => {
   const itemCount = Array.isArray(po.items) ? po.items.length : (po.itemCount ?? po.items ?? 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
+    <div className="workspace-panel bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col">
       <div className="h-1 w-full bg-gradient-to-r from-blue-500 to-indigo-600" />
       <div className="p-5 flex flex-col gap-3 flex-1">
 
