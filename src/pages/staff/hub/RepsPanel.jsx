@@ -1,3 +1,4 @@
+import SearchableSelect from "../../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../../components/ui/LoadingState";
 import React, { useState } from "react";
 import { UserCheck, Plus, Edit3, Trash2, MapPin, Phone, TrendingUp, DollarSign, Award } from "lucide-react";
@@ -229,10 +230,10 @@ const RepsPanel = () => {
             <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Territory</label><input value={form.territory} onChange={e => f("territory", e.target.value)} className={inp} placeholder="e.g. Multan Region" /></div>
             <div><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Commission (%)</label><input type="number" min="0" max="100" step="0.5" value={form.commission} onChange={e => f("commission", e.target.value)} className={inp} /></div>
             <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Status</label>
-              <select value={form.status} onChange={e => f("status", e.target.value)} className={inp}>
+              <SearchableSelect value={form.status} onChange={e => f("status", e.target.value)} className={inp}>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
-              </select>
+              </SearchableSelect>
             </div>
           </div>
         </div>

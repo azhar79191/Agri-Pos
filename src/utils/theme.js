@@ -41,3 +41,10 @@ export function applyTheme(color, root = document.documentElement) {
   for (const [shade, values] of Object.entries(palette.shades)) root.style.setProperty(`--brand-${shade}`, values.join(' '));
   return palette;
 }
+
+export function applySecondaryTheme(color, root = document.documentElement) {
+  const palette = themePalette(valid(color) ? color : '#eef2f7');
+  root.style.setProperty('--pos-secondary', palette.hex);
+  root.style.setProperty('--pos-secondary-foreground', palette.foreground);
+  return palette;
+}

@@ -1,3 +1,5 @@
+import API from "../../api/axios";
+import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import React, { useState, useEffect } from "react";
@@ -13,7 +15,7 @@ const ROLE_CFG = {
   cashier: { cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400", icon: ShoppingCart, label: "Cashier" },
 };
 
-const EMPTY = { name: "", email: "", phone: "", password: "", role: "cashier" };
+const EMPTY = { name: "", email: "", phone: "", password: "", role: "cashier", customRoleId: "" };
 
 const TeamPanel = ({ shopId }) => {
   const { actions } = useApp();
@@ -22,6 +24,8 @@ const TeamPanel = ({ shopId }) => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [showPass, setShowPass] = useState(false);
+  const [customRoles, setCustomRoles] = useState([]);
+  useEffect(() => { API.get('/roles').then(response => setCustomRoles(response.data.data.roles)).catch(() => {}); }, [shopId, showForm]);
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
@@ -82,7 +86,7 @@ const TeamPanel = ({ shopId }) => {
                     <p className="text-xs text-slate-400 truncate">{u.email}{u.phone ? ` · ${u.phone}` : ""}</p>
                   </div>
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${rc.cls}`}>
-                    <RIcon className="w-3 h-3" />{rc.label}
+                    <RIcon className="w-3 h-3" />{customRoles.find(role => role._id === u.customRoleId)?.name || rc.label}
                   </span>
                 </div>
               );
@@ -112,10 +116,10 @@ const TeamPanel = ({ shopId }) => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Role</label>
-                    <select value={form.role} onChange={e => f("role", e.target.value)} className={inp}>
+                    <SearchableSelect aria-label="Role" value={form.customRoleId ? `custom:${form.customRoleId}` : form.role} onChange={e => { const value = e.target.value; setForm(current => ({ ...current, role: value.startsWith("custom:") ? "cashier" : value, customRoleId: value.startsWith("custom:") ? value.slice(7) : "" })); }} className={inp}>
                       <option value="manager">Manager</option>
-                      <option value="cashier">Cashier</option>
-                    </select>
+                      <option value="cashier">Cashier</option>{customRoles.map(role => <option key={role._id} value={`custom:${role._id}`}>{role.name}</option>)}
+                    </SearchableSelect>
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password *</label>

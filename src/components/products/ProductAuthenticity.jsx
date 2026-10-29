@@ -1,3 +1,4 @@
+import SearchableSelect from "../ui/Select";
 import { useEffect, useState } from 'react';
 import API from '../../api/axios';
 import { financialCommand } from '../../api/financialCommand';
@@ -30,14 +31,14 @@ export default function ProductAuthenticity({ products, canEdit }) {
   };
   return <details className="rounded-xl border p-4 text-slate-900 dark:text-white"><summary className="min-h-11 cursor-pointer font-semibold">Manufacturer authenticity checks</summary>
     <p className="my-3 text-sm">Use the manufacturers added in company brands. Scan or enter the package code, contact the manufacturer, and record their response. Automatic manufacturer verification is not connected.</p>
-    <label className="block text-sm">Product from current search page<select disabled={busy} className={input} value={productId} onChange={e => setProductId(e.target.value)}><option value="">Select a product</option>{products.map(product => <option key={product._id} value={product._id}>{product.name} · {product.manufacturer || 'No manufacturer'}</option>)}</select></label>
+    <label className="block text-sm">Product from current search page<SearchableSelect disabled={busy} className={input} value={productId} onChange={e => setProductId(e.target.value)}><option value="">Select a product</option>{products.map(product => <option key={product._id} value={product._id}>{product.name} · {product.manufacturer || 'No manufacturer'}</option>)}</SearchableSelect></label>
     {error && <p role="alert" className="my-3 text-red-700">{error}</p>}{saved && <p role="status">Check recorded.</p>}
     {productId && <button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload checks</button>}
     {data && <><p className="my-3 text-sm">Manufacturer: {data.manufacturer || 'Not set'} · {data.registered ? 'Registered in company brands' : 'Add this manufacturer in company brands to record checks'}</p>
       {canEdit && data.registered && <form onSubmit={save}><fieldset disabled={busy} className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">Package verification code<input required maxLength={200} className={input} value={form.code} onChange={e => set('code', e.target.value)} /></label>
         <label className="text-sm">Batch number (optional)<input maxLength={100} className={input} value={form.batchNo} onChange={e => set('batchNo', e.target.value)} /></label>
-        <label className="text-sm">Recorded outcome<select className={input} value={form.outcome} onChange={e => set('outcome', e.target.value)}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+        <label className="text-sm">Recorded outcome<SearchableSelect className={input} value={form.outcome} onChange={e => set('outcome', e.target.value)}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</SearchableSelect></label>
         <label className="text-sm">Evidence or manufacturer response<textarea required={form.outcome !== 'unverified'} minLength={form.outcome !== 'unverified' ? 8 : undefined} maxLength={1000} className={input} value={form.evidence} onChange={e => set('evidence', e.target.value)} /></label>
         <button className="min-h-11 rounded-lg bg-emerald-700 px-4 text-white">{busy ? 'Recording…' : 'Record manual check'}</button>
       </fieldset></form>}

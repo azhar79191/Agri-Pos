@@ -1,3 +1,4 @@
+import SearchableSelect from "../components/ui/Select";
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Building2, Users, CheckCircle, ArrowRight, ArrowLeft, Plus, Trash2, Eye, EyeOff, Sprout, Camera } from "lucide-react";
@@ -201,10 +202,10 @@ const SetupWizard = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
-                    <select value={shopForm.currency} onChange={e => setShopForm(p => ({ ...p, currency: e.target.value }))}
+                    <SearchableSelect value={shopForm.currency} onChange={e => setShopForm(p => ({ ...p, currency: e.target.value }))}
                       className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                       {["Rs.", "₹", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    </SearchableSelect>
                   </div>
                 </div>
               </div>
@@ -249,11 +250,11 @@ const SetupWizard = () => {
                           {showPasswords[i] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
-                      <select value={u.role} onChange={e => updateUser(i, "role", e.target.value)}
+                      <SearchableSelect value={u.role} onChange={e => updateUser(i, "role", e.target.value)}
                         className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm">
                         <option value="manager">Manager</option>
                         <option value="cashier">Cashier</option>
-                      </select>
+                      </SearchableSelect>
                     </div>
                   </div>
                 ))}

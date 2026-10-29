@@ -10,6 +10,7 @@ import { useInvoices } from "../hooks/useInvoices";
 import { useInvoiceActions } from "../hooks/useInvoiceActions";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import Invoice from "../components/Invoice";
+import EmailInvoiceModal from "../components/invoices/EmailInvoiceModal";
 import InvoiceCard from "../components/invoices/InvoiceCard";
 import { downloadInvoicePDF } from "../utils/pdfGenerator";
 import { exportInvoices } from "../utils/excelExport";
@@ -40,6 +41,8 @@ const InvoiceManagement = () => {
   const [page, setPage]                 = useState(1);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showModal, setShowModal]       = useState(false);
+
+  const [emailInvoice, setEmailInvoice] = useState(null);
 
   // Lock body scroll when invoice modal is open
   useBodyScrollLock(showModal);
@@ -174,6 +177,7 @@ const InvoiceManagement = () => {
         </div>
       )}
 
+      {emailInvoice && <EmailInvoiceModal invoice={emailInvoice} onClose={() => setEmailInvoice(null)} />}
       {/* Invoice view modal */}
       {showModal && selectedInvoice && (
         <div className="fixed top-0 inset-0 z-[9999] flex justify-center p-2 sm:p-4 print:hidden" onClick={() => setShowModal(false)}>
@@ -210,7 +214,7 @@ const InvoiceManagement = () => {
                 settings={settings}
                 onPrint={() => window.print()}
                 onDownload={() => downloadInvoicePDF(selectedInvoice, settings)}
-                onEmail={() => {}}
+                onEmail={() => { setShowModal(false); setEmailInvoice(selectedInvoice); }}
               />
             </div>
           </div>

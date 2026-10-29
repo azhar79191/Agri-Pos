@@ -1,3 +1,4 @@
+import SearchableSelect from "../ui/Select";
 import { LoadingIndicator } from "../ui/LoadingState";
 import { Plus, Trash2, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -47,14 +48,14 @@ export const TeamStep = ({ members, onUpdate, onAdd, onRemove, showPasswords, to
                 {showPasswords[i] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
             </div>
-            <select
+            <SearchableSelect
               value={m.role}
               onChange={(e) => onUpdate(i, "role", e.target.value)}
               className="px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
             >
               <option value="manager">Manager</option>
               <option value="cashier">Cashier</option>
-            </select>
+            </SearchableSelect>
           </div>
         </div>
       ))}

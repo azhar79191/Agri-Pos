@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
 import SupplierPaymentModal from "../../components/purchases/SupplierPaymentModal";
@@ -140,9 +141,9 @@ const Suppliers = () => {
           ))}
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Payment Terms</label>
-            <select value={form.paymentTerms} onChange={(e) => setForm((p) => ({ ...p, paymentTerms: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
+            <SearchableSelect value={form.paymentTerms} onChange={(e) => setForm((p) => ({ ...p, paymentTerms: e.target.value }))} className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
               {["COD", "Net 7", "Net 15", "Net 30", "Net 60"].map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
+            </SearchableSelect>
           </div>
         </div>
       </ModernModal>

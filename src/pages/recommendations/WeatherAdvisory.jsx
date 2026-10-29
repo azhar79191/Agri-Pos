@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React, { useState } from "react";
 import { Cloud, MapPin, Thermometer, Droplets, Wind, Sun, CloudRain, AlertTriangle, RefreshCw, Calendar, TrendingUp, Sprout, CheckCircle, XCircle } from "lucide-react";
@@ -125,7 +126,7 @@ const WeatherAdvisory = () => {
               <Sprout className="w-4 h-4 text-green-500" />
               Crop (Optional)
             </label>
-            <select
+            <SearchableSelect
               value={selectedCrop}
               onChange={(e) => setSelectedCrop(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
@@ -134,7 +135,7 @@ const WeatherAdvisory = () => {
               {CROPS.map(crop => (
                 <option key={crop.id} value={crop.name}>{crop.name}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
         </div>
 

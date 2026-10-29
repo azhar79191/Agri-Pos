@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
 import React, { useState, useMemo } from "react";
@@ -71,11 +72,11 @@ const BatchExpiry = () => {
           <input aria-label="Search by product or batch #" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by product or batch #..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="relative">
-          <select aria-label="All Batches" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer">
+          <SearchableSelect aria-label="All Batches" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm cursor-pointer">
             <option value="all">All Batches</option>
             <option value="expiring">Expiring Soon</option>
             <option value="expired">Expired</option>
-          </select>
+          </SearchableSelect>
           <ChevronDown className="absolute right-60 sm:right-3  top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>

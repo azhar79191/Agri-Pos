@@ -1,3 +1,4 @@
+import SearchableSelect from "../ui/Select";
 import { useState } from 'react';
 import ModernModal from '../ui/ModernModal';
 import { recordSupplierPayment } from '../../api/suppliersApi';
@@ -28,9 +29,9 @@ export default function SupplierPaymentModal({ supplier, currency, onClose, onRe
         <input type="number" min="0.01" max={payable} step="0.01" required value={amount} onChange={event => setAmount(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border bg-transparent px-3" />
       </label>
       <label className="block text-sm font-medium">Payment method
-        <select value={method} onChange={event => setMethod(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border bg-white px-3 dark:bg-slate-900">
+        <SearchableSelect value={method} onChange={event => setMethod(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border bg-white px-3 dark:bg-slate-900">
           {['Cash', 'Bank Transfer', 'Cheque', 'Other'].map(value => <option key={value}>{value}</option>)}
-        </select>
+        </SearchableSelect>
       </label>
       <label className="block text-sm font-medium">Reference or notes
         <textarea maxLength={1000} value={notes} onChange={event => setNotes(event.target.value)} className="mt-1 min-h-20 w-full rounded-lg border bg-transparent p-3" />

@@ -1,3 +1,4 @@
+import SearchableSelect from "../../../components/ui/Select";
 import React, { useState, useEffect } from "react";
 import { ShoppingBag } from "lucide-react";
 import ModernModal from "../../../components/ui/ModernModal";
@@ -68,11 +69,11 @@ const CreatePOModal = ({ isOpen, onClose, onCreated }) => {
         {/* Supplier */}
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Supplier *</label>
-          <select value={form.supplierId} onChange={e => f("supplierId", e.target.value)}
+          <SearchableSelect value={form.supplierId} onChange={e => f("supplierId", e.target.value)}
             className="w-full px-3.5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white">
             <option value="">Select Supplier</option>
             {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-          </select>
+          </SearchableSelect>
         </div>
 
         {/* Expected date */}

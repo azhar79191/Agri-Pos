@@ -22,6 +22,22 @@
   --pos-secondary-foreground: #d5dce8;
 }
 body { font-family: Inter, system-ui, sans-serif; background: var(--workspace-bg); color: var(--workspace-text); }
+.workspace-main, .platform-workspace, .dark .workspace-main, .dark .platform-workspace { background: var(--workspace-bg); }
+.workspace-shell { color: var(--workspace-text); }
+.workspace-shell .card-base, .dark .workspace-shell .card-base { background: var(--workspace-surface); border-color: var(--workspace-line); box-shadow: none; border-radius: var(--workspace-radius); }
+.workspace-shell .font-black, .workspace-shell .font-extrabold { font-weight: 600; }
+.workspace-shell h1 { font-size: 24px; font-weight: 600; }
+.workspace-shell :is(h2,h3) { letter-spacing: -.015em; }
+.workspace-shell [class*="hover:-translate-y"]:hover { transform: none; }
+.workspace-shell button[class*="bg-gradient-to"] { background-image: none; background-color: var(--pos-primary); color: var(--pos-primary-foreground); box-shadow: none; }
+.workspace-shell div[class*="bg-gradient-to"]:has(> svg:only-child) { background-image: none; background-color: var(--pos-secondary); box-shadow: none; }
+.workspace-shell div[class*="bg-gradient-to"]:has(> svg:only-child) > svg { color: var(--pos-secondary-foreground); }
+.workspace-shell .animate-ping { animation: none; }
+.receipt-paper[data-receipt-template="compact"] { max-width: 560px; margin: auto; padding: 20px; font-size: 12px; }
+@media print {
+  .receipt-paper { height: auto !important; max-height: none !important; overflow: visible !important; }
+  .receipt-paper table tr { break-inside: avoid; }
+}
 .app-sidebar__surface, .app-topbar, .app-mobile-header { background: var(--workspace-surface); border-color: var(--workspace-line); box-shadow: none; }
 .dark .app-sidebar__surface, .dark .app-topbar, .dark .app-mobile-header { background: var(--workspace-surface); border-color: var(--workspace-line); }
 .app-sidebar__section-label { font-size: 10px; font-weight: 500; letter-spacing: .06em; padding-top: 16px; }
@@ -55,6 +71,9 @@ button .loading-indicator > i { display: none; }
 .table-loading-cell .loading-table { border: 0; }
 .table-loading-cell .loading-table__head { background: transparent; }
 .pos-cart { height: auto; max-height: none; align-self: start; }
+.auth-brand { background: #f1f5fb; color: #172033; }
+.auth-shell button[type="submit"] { background-image: none; background-color: var(--pos-primary); color: var(--pos-primary-foreground); box-shadow: none; }
+.auth-shell input { border-radius: 8px; font-size: 14px; }
 @media (min-width: 1024px) {
   .pos-cart { max-height: calc(100vh - 18rem); }
   .pos-cart > div:first-child { min-height: 0; overflow-y: auto; }

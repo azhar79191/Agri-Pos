@@ -1,3 +1,4 @@
+import SearchableSelect from "../ui/Select";
 import LoadingState from "../ui/LoadingState";
 import { useEffect, useState } from 'react';
 import API from '../../api/axios';
@@ -42,11 +43,11 @@ export default function SupplierClaims({ suppliers, currency, onRecorded }) {
   };
   return <details className="rounded-xl border p-4 text-slate-900 dark:text-white"><summary className="min-h-11 cursor-pointer font-semibold">Supplier claims and schemes</summary>
     <p className="my-3 text-sm">Track damage, expiry, rebates and promotional schemes. Posting a credit requires a supplier response or credit-note reference and updates the supplier ledger. Claims do not move stock. Use stock adjustments for write-offs. For goods sent back with a credit, use Purchase Returns instead; approving both would credit the supplier twice.</p>
-    <label className="block text-sm">Supplier from current search page<select disabled={busy} className={input} value={supplierId} onChange={e => { setSupplierId(e.target.value); setPage(1); setForm(empty); setResponses({}); setMessage(''); }}><option value="">Select supplier</option>{suppliers.map(supplier => <option key={supplier._id} value={supplier._id}>{supplier.name}</option>)}</select></label>
+    <label className="block text-sm">Supplier from current search page<SearchableSelect disabled={busy} className={input} value={supplierId} onChange={e => { setSupplierId(e.target.value); setPage(1); setForm(empty); setResponses({}); setMessage(''); }}><option value="">Select supplier</option>{suppliers.map(supplier => <option key={supplier._id} value={supplier._id}>{supplier.name}</option>)}</SearchableSelect></label>
     {error && <p role="alert" className="my-3 text-red-700">{error}</p>}{message && <p role="status">{message}</p>}
     {supplierId && <><button type="button" disabled={busy} className="min-h-11 underline" onClick={() => setReload(value => value + 1)}>Reload claims</button>
       <form onSubmit={save}><fieldset disabled={busy} className="grid gap-3 sm:grid-cols-2">
-        <label className="text-sm">Claim type<select className={input} value={form.kind} onChange={e => set('kind', e.target.value)}>{['damage', 'expiry', 'rebate', 'scheme'].map(kind => <option key={kind}>{kind}</option>)}</select></label>
+        <label className="text-sm">Claim type<SearchableSelect className={input} value={form.kind} onChange={e => set('kind', e.target.value)}>{['damage', 'expiry', 'rebate', 'scheme'].map(kind => <option key={kind}>{kind}</option>)}</SearchableSelect></label>
         <label className="text-sm">Claim title<input required maxLength={150} className={input} value={form.title} onChange={e => set('title', e.target.value)} /></label>
         <label className="text-sm">Expected credit ({currency})<input required min="0.01" max="100000000" step="0.01" type="number" className={input} value={form.amount} onChange={e => set('amount', e.target.value)} /></label>
         <label className="text-sm">Claim details<textarea maxLength={1000} className={input} value={form.notes} onChange={e => set('notes', e.target.value)} /></label>

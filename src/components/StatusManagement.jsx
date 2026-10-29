@@ -1,3 +1,4 @@
+import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
 import { Edit3, Check, X, AlertCircle, Clock, CheckCircle } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -50,7 +51,7 @@ const StatusManagement = ({ item, type = "invoice", onClose }) => {
 
   return (
     <div className="flex items-center gap-2">
-      <select
+      <SearchableSelect
         value={selectedStatus}
         onChange={(e) => setSelectedStatus(e.target.value)}
         className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -60,7 +61,7 @@ const StatusManagement = ({ item, type = "invoice", onClose }) => {
             {option.label}
           </option>
         ))}
-      </select>
+      </SearchableSelect>
       <button
         onClick={handleStatusUpdate}
         className="p-1 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded transition-colors text-emerald-600"

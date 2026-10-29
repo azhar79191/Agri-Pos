@@ -84,7 +84,7 @@ export default function RegisterShop() {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+    <div className="auth-shell min-h-screen flex bg-slate-50 dark:bg-slate-950">
       <BrandingPanel steps={STEPS} currentStep={step} mode="register" />
 
       <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-slate-50 dark:bg-slate-950 overflow-y-auto">

@@ -11,81 +11,11 @@ import LoginForm from "../components/auth/LoginForm";
 import SetupForm from "../components/auth/SetupForm";
 import ForgotPasswordModal from "../components/auth/ForgotPasswordModal";
 
-const FEATURES = [
-  { icon: Package, title: "Smart Inventory", desc: "Real-time stock tracking & alerts" },
-  { icon: BarChart3, title: "Deep Analytics", desc: "Insights that drive decisions" },
-  { icon: Shield, title: "Role-Based Access", desc: "Secure multi-user management" },
-  { icon: Zap, title: "Lightning Fast POS", desc: "Quick checkout & billing" },
-  { icon: TrendingUp, title: "Sales Growth", desc: "Track performance & trends" },
-];
-
-/** Enhanced Branding Panel with modern gradient design */
-const BrandingPanel = ({ mode }) => (
-  <div className="hidden lg:flex lg:w-[40%] xl:w-[42%] relative overflow-hidden flex-col justify-between p-12 bg-slate-950">
-    {/* Animated background elements */}
-    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full translate-x-1/3 -translate-y-1/3 blur-3xl animate-pulse" />
-    <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full -translate-x-1/4 translate-y-1/4 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-    <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-cyan-500/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
-
-    <div className="relative z-10">
-      {/* Logo */}
-      <div className="flex items-center gap-3 mb-16">
-        <div className="w-11 h-11 bg-emerald-700 rounded-xl flex items-center justify-center">
-          <Sprout className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-white text-xl tracking-tight leading-none">{PLATFORM_BRAND.name}</p>
-          <p className="text-[10px] text-slate-400 mt-1 tracking-widest uppercase font-medium">{PLATFORM_BRAND.tagline}</p>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-5">
-          <Sparkles className="w-4 h-4 text-emerald-300" />
-          <span className="text-xs font-medium text-slate-300">Agricultural retail workspace</span>
-        </div>
-        
-        <h1 className="text-4xl xl:text-5xl font-semibold text-white leading-tight tracking-tight mb-5">
-          {mode === "setup" ? "Welcome.\nLet's begin." : "Grow your\nbusiness."}
-        </h1>
-        
-        <p className="text-slate-300 text-base leading-relaxed max-w-md">
-          {mode === "setup"
-            ? `Create your admin account and set up ${PLATFORM_BRAND.name} for your agricultural business.`
-            : "Complete point-of-sale solution designed specifically for modern pesticide and agricultural retail shops."}
-        </p>
-      </div>
-
-      {/* Features grid */}
-      <div className="grid grid-cols-1 gap-3">
-        {FEATURES.slice(0, 3).map(({ icon: Icon, title, desc }) => (
-          <div 
-            key={title} 
-            className="group flex items-center gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-5 h-5 text-emerald-300" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white mb-0.5">{title}</p>
-              <p className="text-xs text-slate-400">{desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Footer */}
-    <div className="relative z-10 flex items-center justify-between">
-      <p className="text-xs text-slate-500">© {new Date().getFullYear()} {PLATFORM_BRAND.name}</p>
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <span className="text-xs text-slate-400">All systems operational</span>
-      </div>
-    </div>
-  </div>
-);
+const BrandingPanel = () => <aside className="auth-brand hidden lg:flex flex-col justify-between p-12 w-[42%] border-r border-slate-200">
+  <div className="flex items-center gap-3"><Sprout className="h-7 w-7 text-blue-600" /><span className="text-lg font-semibold">{PLATFORM_BRAND.name}</span></div>
+  <div className="max-w-sm"><p className="text-xs font-medium uppercase tracking-widest text-slate-500 mb-4">Your shop, organized</p><h1 className="text-4xl font-semibold tracking-tight leading-tight">A simpler day at the counter.</h1><p className="mt-5 text-sm leading-6 text-slate-500">Sales, stock and customers in one workspace.</p><div className="mt-8 space-y-3">{[{icon: Package, text: 'Know what is in stock'}, {icon: BarChart3, text: 'Keep track of every sale'}, {icon: Shield, text: 'Give your team the right access'}].map(({icon: Icon, text}) => <div key={text} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm"><Icon className="h-4 w-4 text-slate-500" />{text}</div>)}</div></div>
+  <p className="text-xs text-slate-400">© {new Date().getFullYear()} {PLATFORM_BRAND.name}</p>
+</aside>;
 
 const Login = () => {
   const { login, loading } = useAuth();
@@ -154,7 +84,7 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+      <div className="auth-shell min-h-screen flex bg-slate-50 dark:bg-slate-950">
         <BrandingPanel mode={mode} />
 
         <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-slate-50 dark:bg-slate-950">
@@ -172,7 +102,7 @@ const Login = () => {
 
             {/* Header */}
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight mb-2">
                 {mode === "setup" ? "Create admin account" : "Welcome back"}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 text-sm">

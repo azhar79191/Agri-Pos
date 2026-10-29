@@ -1,3 +1,4 @@
+import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { DollarSign, Wallet, CreditCard, X, ArrowRight } from "lucide-react";
@@ -120,7 +121,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
           {/* Customer */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Customer</label>
-            <select value={selectedCustomer} onChange={e => { setSelectedCustomer(e.target.value); setAmount(""); }}
+            <SearchableSelect value={selectedCustomer} onChange={e => { setSelectedCustomer(e.target.value); setAmount(""); }}
               className={inputCls + " appearance-none cursor-pointer"}>
               <option value="">Select customer...</option>
               {customers.map(c => {
@@ -129,7 +130,7 @@ const DepositCashModal = ({ isOpen, onClose }) => {
                 if (c.walletBalance > 0)  parts.push(`Wallet: ${formatCurrency(c.walletBalance, settings.currency)}`);
                 return <option key={c._id} value={c._id}>{c.name} ({c.phone}){parts.length ? ` | ${parts.join(" · ")}` : ""}</option>;
               })}
-            </select>
+            </SearchableSelect>
           </div>
 
           {/* Current balances from backend */}

@@ -1,3 +1,4 @@
+import SearchableSelect from "../components/ui/Select";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
 import DataTable from "../components/ui/DataTable";
@@ -91,21 +92,21 @@ const StatusManagementPage = () => {
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
         </div>
         <div className="relative">
-          <select aria-label="All Status" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
+          <SearchableSelect aria-label="All Status" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={selectCls}>
             <option value="all">All Status</option>
             <option value="Pending">Pending</option>
             <option value="Processing">Processing</option>
             <option value="Completed">Completed</option>
             <option value="Cancelled">Cancelled</option>
-          </select>
+          </SearchableSelect>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
         <div className="relative">
-          <select aria-label="All Types" value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
+          <SearchableSelect aria-label="All Types" value={filterType} onChange={e => setFilterType(e.target.value)} className={selectCls}>
             <option value="all">All Types</option>
             <option value="invoice">Invoices</option>
             <option value="transaction">Transactions</option>
-          </select>
+          </SearchableSelect>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>

@@ -1,3 +1,4 @@
+import SearchableSelect from "./ui/Select";
 import React, { useState, useEffect } from "react";
 import { Search, Filter, X, Calendar, Package, Users, Receipt } from "lucide-react";
 import { useApp } from "../context/AppContext";
@@ -106,7 +107,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
         </div>
         
         {/* Search Type Selector */}
-        <select
+        <SearchableSelect
           value={searchType}
           onChange={(e) => setSearchType(e.target.value)}
           className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-700 dark:text-gray-300 font-medium shadow-sm hover:shadow-md cursor-pointer"
@@ -114,7 +115,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
           {searchTypes.map(type => (
             <option key={type.id} value={type.id}>{type.label}</option>
           ))}
-        </select>
+        </SearchableSelect>
         
         {/* Filter Toggle */}
         <button
@@ -154,7 +155,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Category</label>
-                <select
+                <SearchableSelect
                   value={filters.category}
                   onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
@@ -163,12 +164,12 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                   {getUniqueValues(state.products, "category").map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
-                </select>
+                </SearchableSelect>
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Brand</label>
-                <select
+                <SearchableSelect
                   value={filters.brand}
                   onChange={(e) => setFilters(prev => ({ ...prev, brand: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
@@ -177,12 +178,12 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                   {getUniqueValues(state.products, "brand").map(brand => (
                     <option key={brand} value={brand}>{brand}</option>
                   ))}
-                </select>
+                </SearchableSelect>
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Stock Level</label>
-                <select
+                <SearchableSelect
                   value={filters.stockLevel}
                   onChange={(e) => setFilters(prev => ({ ...prev, stockLevel: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
@@ -191,7 +192,7 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
                   <option value="available">In Stock</option>
                   <option value="low">Low Stock</option>
                   <option value="out">Out of Stock</option>
-                </select>
+                </SearchableSelect>
               </div>
               
               <div>

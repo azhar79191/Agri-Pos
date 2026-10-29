@@ -1,7 +1,7 @@
 import API from "./axios";
 
 export const getSuperAdminStats  = ()         => API.get("/superadmin/stats");
-export const getAllShops          = ()         => API.get("/superadmin/shops");
+export const getAllShops          = (params = {}) => API.get("/superadmin/shops", { params });
 export const getShopDetail        = (id)       => API.get(`/superadmin/shops/${id}`);
 export const getShopUsers         = (id)       => API.get(`/superadmin/shops/${id}/users`);
 export const approveShop          = (id, data) => API.post(`/superadmin/shops/${id}/approve`, data);

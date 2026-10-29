@@ -1,3 +1,4 @@
+import SearchableSelect from "../components/ui/Select";
 import EmptyState from "../components/ui/EmptyState";
 import FilterBar from "../components/ui/FilterBar";
 import DataTable from "../components/ui/DataTable";
@@ -101,11 +102,11 @@ const Reports = () => {
           ))}
         </div>
         <div className="relative ml-auto">
-          <select aria-label="Report period" value={dateRange} onChange={(e) => setDateRange(e.target.value)} className={selectCls}>
+          <SearchableSelect aria-label="Report period" value={dateRange} onChange={(e) => setDateRange(e.target.value)} className={selectCls}>
             <option value="7">Last 7 Days</option>
             <option value="30">Last 30 Days</option>
             <option value="90">Last 90 Days</option>
-          </select>
+          </SearchableSelect>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>

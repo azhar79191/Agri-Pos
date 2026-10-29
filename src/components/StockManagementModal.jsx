@@ -1,3 +1,4 @@
+import SearchableSelect from "./ui/Select";
 import React, { useState } from "react";
 import { Package, Plus, Minus, AlertTriangle, History, RotateCcw } from "lucide-react";
 import ModernModal from "./ui/ModernModal";
@@ -197,7 +198,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Reason
             </label>
-            <select
+            <SearchableSelect
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
@@ -206,7 +207,7 @@ const StockManagementModal = ({ isOpen, onClose, product, stockHistory, onAddSto
               {reasonOptions[operation].map((r) => (
                 <option key={r} value={r}>{r}</option>
               ))}
-            </select>
+            </SearchableSelect>
           </div>
 
           {/* Preview */}

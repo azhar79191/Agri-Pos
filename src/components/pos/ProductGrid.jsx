@@ -1,3 +1,4 @@
+import SearchableSelect from "../ui/Select";
 import LoadingState from "../ui/LoadingState";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -274,11 +275,11 @@ const ProductGrid = ({
             <div className="flex gap-2">
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <select value={selectedCategory} onChange={onCategoryChange}
+                <SearchableSelect value={selectedCategory} onChange={onCategoryChange}
                   className="appearance-none pl-8 pr-8 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all cursor-pointer outline-none">
                   <option value="">All Categories</option>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                </SearchableSelect>
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
               </div>
               <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">

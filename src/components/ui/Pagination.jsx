@@ -2,9 +2,9 @@ import React from "react";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 const Pagination = ({ page, totalPages, total, limit, onPageChange }) => {
-  if (totalPages <= 1) return null;
+  totalPages = Math.max(1, Number(totalPages) || 1);
 
-  const from = (page - 1) * limit + 1;
+  const from = total ? (page - 1) * limit + 1 : 0;
   const to = Math.min(page * limit, total);
 
   // Build page window: always show first, last, current ±1

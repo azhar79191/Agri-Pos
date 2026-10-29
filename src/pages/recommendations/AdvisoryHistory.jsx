@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import LoadingState from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import FilterBar from "../../components/ui/FilterBar";
@@ -160,7 +161,7 @@ const AdvisoryHistory = () => {
           </div>
 
           {/* Crop Filter */}
-          <select aria-label="All Crops"
+          <SearchableSelect aria-label="All Crops"
             value={filters.crop}
             onChange={(e) => setFilters({ ...filters, crop: e.target.value })}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
@@ -170,10 +171,10 @@ const AdvisoryHistory = () => {
             <option value="wheat">Wheat</option>
             <option value="rice">Rice</option>
             <option value="maize">Maize</option>
-          </select>
+          </SearchableSelect>
 
           {/* Severity Filter */}
-          <select aria-label="All Severities"
+          <SearchableSelect aria-label="All Severities"
             value={filters.severity}
             onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
@@ -183,7 +184,7 @@ const AdvisoryHistory = () => {
             <option value="Medium">Medium</option>
             <option value="High">High</option>
             <option value="Critical">Critical</option>
-          </select>
+          </SearchableSelect>
 
           {/* Date Range */}
           <div className="flex gap-2">

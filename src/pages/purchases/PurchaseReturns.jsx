@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
 import PendingInventoryOperations from "../../components/PendingInventoryOperations";
@@ -304,11 +305,11 @@ const PurchaseReturns = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Supplier <span className="text-red-500">*</span></label>
-              <select value={form.supplierId} onChange={e => setForm(p => ({ ...p, supplierId: e.target.value }))}
+              <SearchableSelect value={form.supplierId} onChange={e => setForm(p => ({ ...p, supplierId: e.target.value }))}
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
                 <option value="">Select Supplier</option>
                 {suppliers.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-              </select>
+              </SearchableSelect>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Reason <span className="text-red-500">*</span></label>
@@ -329,11 +330,11 @@ const PurchaseReturns = () => {
             <div className="space-y-2">
               {form.items.map((item, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                  <select value={item.product} onChange={e => updateItem(i, 'product', e.target.value)}
+                  <SearchableSelect value={item.product} onChange={e => updateItem(i, 'product', e.target.value)}
                     className="col-span-12 sm:col-span-5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all">
                     <option value="">Select Product</option>
                     {supplierProducts.map(p => <option key={p._id} value={p._id}>{p.name} (Stock: {p.stock})</option>)}
-                  </select>
+                  </SearchableSelect>
                   <input type="number" min="1" value={item.quantity} onChange={e => updateItem(i, 'quantity', e.target.value)}
                     placeholder="Qty" className="col-span-5 sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white text-center focus:ring-2 focus:ring-[var(--pos-primary)]/20 focus:border-[var(--pos-primary)] transition-all" />
                   <input type="number" min="0" step="0.01" value={item.unitCost} onChange={e => updateItem(i, 'unitCost', e.target.value)}

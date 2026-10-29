@@ -1,9 +1,9 @@
-import { forwardRef, useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import { Children, isValidElement, forwardRef, useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, ChevronDown } from 'lucide-react';
 
 const CustomSelect = forwardRef(function CustomSelect({
-  label, error, helperText, options = [], value = '', onChange, placeholder = 'Select an option',
+  label, error, helperText, options, children, onSearchChange, loading = false, value = '', onChange, placeholder = 'Select an option',
   disabled = false, required = false, name, id, className = '', containerClassName = '', labelClassName = '',
   'aria-label': ariaLabel, onBlur, onFocus,
 }, ref) {
@@ -12,11 +12,13 @@ const CustomSelect = forwardRef(function CustomSelect({
   const trigger = useRef(null), panel = useRef(null), typeahead = useRef({ value: '', time: 0 });
   const [open, setOpen] = useState(false), [active, setActive] = useState(-1), [position, setPosition] = useState(null), [invalid, setInvalid] = useState(false), [search, setSearch] = useState('');
   useImperativeHandle(ref, () => trigger.current);
-  const normalized = options.map(option => ({ ...option, value: String(option.value) }));
-  const visibleOptions = normalized.map((option, index) => ({ option, index })).filter(({ option }) => option.label.toLowerCase().includes(search.toLowerCase()));
+  const text = node => Children.toArray(node).map(child => isValidElement(child) ? text(child.props.children) : String(child)).join('');
+  const fromChildren = nodes => Children.toArray(nodes).flatMap(child => !isValidElement(child) ? [] : child.type === 'option' ? [{ value: child.props.value ?? text(child.props.children), label: text(child.props.children), disabled: child.props.disabled }] : fromChildren(child.props.children));
+  const normalized = (options || fromChildren(children)).map(option => ({ ...option, value: String(option.value) }));
+  const visibleOptions = normalized.map((option, index) => ({ option, index })).filter(({ option }) => String(option.label).toLowerCase().includes(search.toLowerCase()));
   const selected = normalized.find(option => option.value === String(value ?? ''));
   const unavailable = () => disabled || trigger.current?.matches(':disabled');
-  const enabled = normalized.map((option, index) => option.disabled ? -1 : index).filter(index => index >= 0);
+  const enabled = visibleOptions.filter(({ option }) => !option.disabled).map(({ index }) => index);
   const close = (focus = false) => { setOpen(false); setSearch(''); if (focus) trigger.current?.focus(); };
   const show = (last = false) => {
     if (unavailable()) return;
@@ -81,9 +83,10 @@ const CustomSelect = forwardRef(function CustomSelect({
     {(error || helperText || invalid) && <p id={helpId} className={`mt-1.5 text-xs ${error || invalid ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>{error || (invalid ? 'Choose an option.' : helperText)}</p>}
     {open && position && createPortal(<div ref={panel} className="custom-select-menu overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl dark:border-slate-600 dark:bg-slate-900" style={{ ...position, zIndex: 12000 }}>
       <label className="sr-only" htmlFor={`${fieldId}-search`}>Search options</label>
-      <input id={`${fieldId}-search`} type="search" value={search} onChange={event => { setSearch(event.target.value); setActive(-1); }} placeholder="Search options..." className="mb-1.5 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-[var(--pos-primary)] dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+      <input id={`${fieldId}-search`} type="search" value={search} onChange={event => { setSearch(event.target.value); onSearchChange?.(event.target.value); setActive(-1); }} onKeyDown={event => { if (["ArrowDown", "ArrowUp", "Enter", "Escape", "Tab"].includes(event.key)) keyDown(event); }} placeholder="Search options..." className="mb-1.5 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-[var(--pos-primary)] dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
       <div id={listId} role="listbox" aria-label={ariaLabel || label || placeholder} className="max-h-[240px] overflow-y-auto overscroll-contain">
-      {visibleOptions.length === 0 && <p className="p-3 text-slate-500 dark:text-slate-400">{normalized.length === 0 ? 'No options available' : 'No matching options'}</p>}
+      {loading && <p role="status" className="p-3 text-slate-500">Searching…</p>}
+      {!loading && visibleOptions.length === 0 && <p className="p-3 text-slate-500 dark:text-slate-400">{normalized.length === 0 ? 'No options available' : 'No matching options'}</p>}
       {visibleOptions.map(({ option, index }) => <div key={option.value} id={`${listId}-${index}`} role="option" data-value={option.value} aria-selected={option.value === String(value ?? '')} aria-disabled={!!option.disabled} data-active={index === active} onPointerMove={() => !option.disabled && setActive(index)} onPointerDown={event => event.preventDefault()} onClick={() => choose(index)}
         className={`custom-select-option flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2 ${option.disabled ? 'cursor-not-allowed opacity-40' : ''}`}>
         <span className="min-w-0 break-words">{option.label}</span>{option.value === String(value ?? '') && <Check aria-hidden="true" className="h-4 w-4 shrink-0" />}

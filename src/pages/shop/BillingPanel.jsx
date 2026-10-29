@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import { LoadingIndicator } from "../../components/ui/LoadingState";
 import React from "react";
 import { DollarSign, Receipt, Percent, Save, CheckCircle } from "lucide-react";
@@ -40,9 +41,9 @@ const BillingPanel = ({ form, setForm, saving, saved, onSave, shopName }) => {
               <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Currency
               </label>
-              <select value={form.currency} onChange={e => f("currency", e.target.value)} className={inp}>
+              <SearchableSelect value={form.currency} onChange={e => f("currency", e.target.value)} className={inp}>
                 {CURRENCIES.map(c => <option key={c.symbol} value={c.symbol}>{c.label}</option>)}
-              </select>
+              </SearchableSelect>
             </div>
           </div>
 

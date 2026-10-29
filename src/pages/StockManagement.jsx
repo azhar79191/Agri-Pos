@@ -1,3 +1,4 @@
+import SearchableSelect from "../components/ui/Select";
 import LoadingState from "../components/ui/LoadingState";
 import EmptyState from "../components/ui/EmptyState";
 import DataTable from "../components/ui/DataTable";
@@ -119,10 +120,10 @@ const StockManagement = () => {
             <div className="space-y-4">
               <div>
                 <label htmlFor="stock-product" className="block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300">Product</label>
-                <select id="stock-product" value={selectedProduct || ""} onChange={(e) => setSelectedProduct(e.target.value)} className={inputCls}>
+                <SearchableSelect id="stock-product" value={selectedProduct || ""} onChange={(e) => setSelectedProduct(e.target.value)} className={inputCls}>
                   <option value="">Select Product</option>
                   {displayLevels.map((p) => <option key={p._id} value={p._id}>{p.name} (Current: {p.stock})</option>)}
-                </select>
+                </SearchableSelect>
               </div>
 
               <div>

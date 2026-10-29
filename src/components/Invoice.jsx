@@ -63,6 +63,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
             </button>
             <button
               onClick={onEmail}
+              disabled={!onEmail}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all backdrop-blur-sm text-sm font-semibold"
             >
               <Mail className="w-4 h-4" />
@@ -73,7 +74,7 @@ const Invoice = forwardRef(({ invoice, settings = {}, onPrint, onDownload, onEma
       </div>
 
       {/* Invoice Content */}
-      <div ref={ref} className="p-4 sm:p-8 print:p-6">
+      <div ref={ref} className="receipt receipt-paper p-4 sm:p-8 print:p-6" data-receipt-template={settings.receiptTemplate || "standard"}>
         {/* Company Header */}
         <div className="border-b-2 border-blue-600 dark:border-blue-500 pb-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-4">

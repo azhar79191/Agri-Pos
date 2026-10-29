@@ -1,3 +1,4 @@
+import SearchableSelect from "./Select";
 import React from "react";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 
@@ -42,7 +43,7 @@ const FilterBar = ({ filters = [], values = {}, onChange, onClear, total, childr
 
         if (f.type === 'select') return (
           <div key={f.key} className="relative flex-shrink-0">
-            <select
+            <SearchableSelect
               aria-label={f.label || f.placeholder || "Filter records"}
               value={values[f.key] ?? f.defaultValue ?? ''}
               onChange={e => onChange(f.key, e.target.value)}
@@ -52,7 +53,7 @@ const FilterBar = ({ filters = [], values = {}, onChange, onClear, total, childr
               {(f.options || []).map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
-            </select>
+            </SearchableSelect>
             <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </div>
         );

@@ -1,3 +1,4 @@
+import SearchableSelect from "../../../components/ui/Select";
 import LoadingState from "../../../components/ui/LoadingState";
 import FilterBar from "../../../components/ui/FilterBar";
 import React from "react";
@@ -37,11 +38,11 @@ const AuditPanel = () => {
           <input aria-label="Search logs" onChange={e => setFilter("search", e.target.value)} placeholder="Search logs..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/30 transition-all" />
         </div>
-        <select aria-label="All Actions" onChange={e => setFilter("action", e.target.value)}
+        <SearchableSelect aria-label="All Actions" onChange={e => setFilter("action", e.target.value)}
           className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-violet-500/30">
           <option value="">All Actions</option>
           {Object.entries(ACTION_CFG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
+        </SearchableSelect>
         <button onClick={refresh} className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
           <RefreshCw className="w-4 h-4" />
         </button>

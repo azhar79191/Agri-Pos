@@ -1,3 +1,4 @@
+import SearchableSelect from "../../components/ui/Select";
 import LoadingState from "../../components/ui/LoadingState";
 import DataTable from "../../components/ui/DataTable";
 import FilterBar from "../../components/ui/FilterBar";
@@ -107,12 +108,12 @@ const GoodsReceiving = () => {
           <input aria-label="Search by PO # or supplier" onChange={(e) => setFilter("search", e.target.value)} placeholder="Search by PO # or supplier..." className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/30" />
         </div>
         <div className="relative">
-          <select aria-label="All Status" value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/30">
+          <SearchableSelect aria-label="All Status" value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)} className="appearance-none pl-3.5 pr-9 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-700 dark:text-slate-300 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/30">
             <option value="all">All Status</option>
             <option value="Sent">Awaiting Receipt</option>
             <option value="Partially Received">Partially Received</option>
             <option value="Completed">Completed</option>
-          </select>
+          </SearchableSelect>
           <ChevronDown className="absolute right-[200px] sm:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
       </FilterBar>
