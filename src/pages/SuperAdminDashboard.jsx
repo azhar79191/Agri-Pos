@@ -126,7 +126,7 @@ const ShopUsersModal = ({ shop, onClose }) => {
         <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search name, email, phone, role…"
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, phone, role…"
               className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
           </div>
         </div>
