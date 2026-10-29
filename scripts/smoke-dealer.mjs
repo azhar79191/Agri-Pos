@@ -4,6 +4,13 @@ import { mkdir } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 const schemas = JSON.parse(readFileSync(new URL('./fixtures/dealer-schemas.json', import.meta.url), 'utf8'));
+async function selectValue(page, label, value) {
+  const field = page.getByRole('combobox', { name: label, exact: true });
+  await field.click();
+  const listId = await field.getAttribute('aria-controls');
+  await page.locator('[id=' + JSON.stringify(listId) + ']').locator('[role="option"][data-value=' + JSON.stringify(String(value)) + ']').click();
+}
+
 const origin = 'http://127.0.0.1:5181';
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5181', '--strictPort'], { windowsHide: true, stdio: 'ignore', env: { ...process.env, VITE_API_BASE_URL: `${origin}/api` } });
 let browser, page;
@@ -61,8 +68,8 @@ try {
     await page.getByRole('button', { name: schema.title, exact: true }).click();
     for (const [key, field] of Object.entries(schema.fields)) {
       if (!field.required) continue;
-      if (field.type === 'reference') { const source = { Product: product, Customer: farmer, Supplier: supplier, User: user }[field.model]; await page.getByLabel(field.label, { exact: true }).selectOption(source._id); }
-      else if (field.type === 'select') await page.getByLabel(field.label, { exact: true }).selectOption(field.options[0]);
+      if (field.type === 'reference') { const source = { Product: product, Customer: farmer, Supplier: supplier, User: user }[field.model]; await selectValue(page, field.label, source._id); }
+      else if (field.type === 'select') await selectValue(page, field.label, field.options[0]);
       else await page.getByLabel(field.label, { exact: true }).fill(field.type === 'date' ? '2099-12-31' : ['number', 'integer'].includes(field.type) ? key === 'ph' ? '7.2' : key === 'discount' || key === 'bonus' || key === 'taxRate' ? '0' : '10' : `${kind} ${key} fixture`);
     }
     await page.getByRole('button', { name: 'Save record', exact: true }).click();
@@ -70,7 +77,7 @@ try {
     assert(records.some(record => record.kind === kind));
   }
   await page.getByText('Packs and loose-unit checkout', { exact: true }).click();
-  await page.getByLabel('Pack product', { exact: true }).selectOption(product._id);
+  await selectValue(page, 'Pack product', product._id);
   await page.locator('details').filter({ has: page.locator('summary', { hasText: 'Packs and loose-unit checkout' }) }).getByLabel('Base units per pack', { exact: true }).fill('12');
   await page.getByRole('button', { name: 'Save pack configuration', exact: true }).click();
   await page.getByLabel('Number of cartons (12 packet each)').waitFor();
@@ -81,8 +88,8 @@ try {
   await page.getByText('Packs and loose-unit checkout', { exact: true }).click();
   await page.getByText('Customer quotes, reservations and delivery', { exact: true }).click();
   await page.getByLabel('Quote title').fill('Wheat season quote');
-  await page.getByLabel('Order customer', { exact: true }).selectOption(farmer._id);
-  await page.getByLabel('Reserved product', { exact: true }).selectOption(product._id);
+  await selectValue(page, 'Order customer', farmer._id);
+  await selectValue(page, 'Reserved product', product._id);
   await page.getByLabel('Quote valid through (UTC)').fill('2099-12-31');
   await page.getByRole('button', { name: 'Create quote', exact: true }).click();
   await page.getByRole('button', { name: 'Reserve stock', exact: true }).click();
@@ -94,7 +101,7 @@ try {
   await page.getByText('Customer quotes, reservations and delivery', { exact: true }).click();
   await page.getByText('Dealer stock-transfer network', { exact: true }).click();
   await page.getByRole('button', { name: 'Request this stock', exact: true }).click();
-  await page.getByLabel('Matching local receiving product', { exact: true }).selectOption(product._id);
+  await selectValue(page, 'Matching local receiving product', product._id);
   await page.getByRole('button', { name: 'Submit stock request', exact: true }).click();
   await page.getByText('Network action recorded.', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Transfer history', exact: true }).click();
