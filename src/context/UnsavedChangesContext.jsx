@@ -25,6 +25,9 @@ export function UnsavedChangesProvider({children}){
 }
 export function usePageUnsaved(options){
   const context=useContext(Context),id=useId(),latest=useRef(options);latest.current=options;
-  useLayoutEffect(()=>context?.register(id,()=>latest.current),[context,id]);
+  useLayoutEffect(() => {
+    if (!context) return undefined;
+    return context.register(id, () => latest.current);
+  }, [context, id]);
 }
 export function useSafeTransition(){const context=useContext(Context);return context?.requestTransition|| (async work=>work());}

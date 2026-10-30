@@ -64,17 +64,12 @@ const Sidebar = () => {
           <p className="app-sidebar__tagline text-[11px] mt-0.5 truncate">{settings?.brandTagline || "Your everyday workspace"}</p>
         </div>
       </div>
-      <div className="app-sidebar__tools">
-        <label className="app-sidebar__search">
-          <Search size={16} aria-hidden="true" />
-          <input aria-label="Search navigation" placeholder="Find a page…" value={query} onChange={event => setQuery(event.target.value)} />
-          {query && <button type="button" aria-label="Clear navigation search" onClick={() => setQuery("")}><X size={14} /></button>}
-        </label>
-        {currentUser && actions.hasPermission("pos") && <button className="app-sidebar__create" onClick={() => { setQuery(""); go("pos"); }}>
-          <Plus size={18} aria-hidden="true" /><span>New sale</span><ArrowUpRight size={16} aria-hidden="true" />
-        </button>}
-      </div>
       <nav className="app-sidebar__nav flex-1 overflow-y-auto px-3 py-3" ref={navRef} aria-label="Main navigation">
+        <div className="app-sidebar__search">
+          <Search size={16} aria-hidden="true" />
+          <input type="text" aria-label="Search navigation" placeholder="Search pages..." value={query} onChange={event => setQuery(event.target.value)} />
+          {query && <button type="button" aria-label="Clear navigation search" onClick={() => setQuery("")}><X size={15} aria-hidden="true" /></button>}
+        </div>
         {visible.map(group => {
           const G = group.icon;
           const ga = isGroupActive(group);

@@ -70,7 +70,10 @@ const Settings = () => {
 
       <div className="flex flex-col lg:flex-row gap-5 items-start">
         {/* Left nav */}
-        <SettingsNav active={active} onChange={value=>safeTransition(()=>setActive(value))} />
+        <SettingsNav active={active} onChange={value => {
+        if (value === active) return;
+        safeTransition(() => setActive(value));
+      }} />
 
         {/* Content panel */}
         <div className="flex-1 min-w-0">

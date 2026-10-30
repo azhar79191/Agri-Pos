@@ -31,7 +31,10 @@ const SettingsNav = ({ active, onChange }) => (
               return (
                 <button
                   key={item.id}
-                  onClick={() => onChange(item.id)}
+                  onClick={() => {
+                    if (isActive) return;
+                    onChange(item.id);
+                  }}
                   className={[
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group mb-0.5",
                     isActive

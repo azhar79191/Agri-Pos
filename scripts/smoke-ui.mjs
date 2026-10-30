@@ -318,6 +318,7 @@ try {
   await pickOption(page.getByLabel('Company appearance', { exact: true }), 'dark');
   await page.getByRole('button', { name: 'Save brand settings', exact: true }).click();
   await page.getByText('Company settings are up to date', { exact: true }).waitFor();
+  await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--pos-primary') === '#f43f5e');
   assert.equal(await page.evaluate(() => document.documentElement.style.getPropertyValue('--pos-primary')), '#f43f5e');
   assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true);
   await page.reload();
@@ -429,9 +430,9 @@ try {
   await page.getByRole('heading',{name:'Brand studio',exact:true}).waitFor();
   await page.getByRole('button',{name:'Check email configuration',exact:true}).click();
   await page.getByText('API configuration is present. Verify the sender before sending.',{exact:true}).waitFor();
-  await pickOption(page.getByLabel('Email template',{exact:true}),'letterhead');
-  await page.getByRole('button',{name:'Preview saved email identity',exact:true}).click();
-  await page.frameLocator('iframe[title="Email template preview"]').getByRole('heading',{name:'Company email preview'}).waitFor();
+  await pickOption(page.getByLabel('Email design',{exact:true}),'letterhead');
+  await page.getByRole('button',{name:'Email',exact:true}).click();
+  await page.frameLocator('iframe[title="Complete email preview"]').getByRole('heading',{name:'Company email preview'}).waitFor();
   await pickOption(page.getByLabel('Global font',{exact:true}),'serif');
   await pickOption(page.getByLabel('Text size',{exact:true}),'large');
   await pickOption(page.getByLabel('Logo shape',{exact:true}),'circle');
