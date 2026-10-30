@@ -1,3 +1,4 @@
+import { documentSettings } from '../utils/documentSettings';
 import { appearanceSettings } from '../utils/appearance';
 import { applyTheme, applySecondaryTheme } from "../utils/theme";
 import { scopedStorageKey } from "../utils/browserScope";
@@ -33,7 +34,7 @@ const initialState = {
   toast: null,
   modal: null,
   sidebarCollapsed: false,
-  settings: { ...appearanceSettings(_savedShop || {}),
+  settings: { ...appearanceSettings(_savedShop || {}), ...documentSettings(_savedShop || {}),
     shopName:          _savedShop?.name          || "",
     taxRate:           _savedShop?.taxRate        ?? 5,
     currency:          _savedShop?.currency       || "Rs.",
@@ -73,7 +74,7 @@ function appReducer(state, action) {
         currentUser: null,
         isAuthenticated: false,
         cart: [],
-        settings: { ...initialState.settings, ...appearanceSettings({}), shopName: "", brandName: "", brandTagline: "", brandLogo: "", shopLogo: "", secondaryColor: "", brandColor: "", theme: "light" },
+        settings: { ...initialState.settings, ...appearanceSettings({}), ...documentSettings({}), shopName: "", brandName: "", brandTagline: "", brandLogo: "", shopLogo: "", secondaryColor: "", brandColor: "", theme: "light" },
         darkMode: false,
         themeColor: "#047857",
       };
@@ -157,7 +158,7 @@ export function AppProvider({ children }) {
       if (incoming) {
         dispatch({ type: A.UPDATE_USER, payload: incoming });
         const shop = incoming.shop && typeof incoming.shop === 'object' ? incoming.shop : {};
-        dispatch({ type: A.UPDATE_SETTINGS, payload: { shopName: shop.name || '', shopLogo: shop.logo || '', ...appearanceSettings(shop), brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || '', theme: shop.theme || 'light', address: shop.address || '', phone: shop.phone || '', email: shop.email || '' } });
+        dispatch({ type: A.UPDATE_SETTINGS, payload: { ...documentSettings(shop),shopName: shop.name || '', shopLogo: shop.logo || '', ...appearanceSettings(shop), brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || '', theme: shop.theme || 'light', address: shop.address || '', phone: shop.phone || '', email: shop.email || '' } });
       }
     };
     window.addEventListener("user-updated", handleUserUpdate);
@@ -174,24 +175,19 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const token = readAuthToken();
     if (!token || !state.isAuthenticated) return;
+    const requestedUserId=state.currentUser?._id;
     getProfile()
       .then(res => {
         const fresh = res.data?.data?.user ?? res.data?.user;
-        if (!fresh) return;
+        if (!fresh || readAuthToken()!==token || stateRef.current.currentUser?._id!==requestedUserId) return;
         const shop = fresh.shop;
         if (shop && typeof shop === 'object') dispatch({ type: A.UPDATE_SETTINGS, payload: {
-          shopName: shop.name || '', shopLogo: shop.logo || '', address: shop.address || '', phone: shop.phone || '', email: shop.email || '', receiptFooter: shop.receiptFooter || '',
+          ...documentSettings(shop), ...appearanceSettings(shop), shopName: shop.name || '', shopLogo: shop.logo || '', address: shop.address || '', phone: shop.phone || '', email: shop.email || '', receiptFooter: shop.receiptFooter || '',
           theme: shop.theme || "light", brandName: shop.brandName || '', brandTagline: shop.brandTagline || '', brandLogo: shop.brandLogo || '', secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || '',
         } });
-        // Only update if permissions actually changed
         const current = stateRef.current.currentUser;
-        const freshPerms = JSON.stringify(fresh.permissions || []);
-        const currentPerms = JSON.stringify(current?.permissions || []);
-        localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
-        if (freshPerms !== currentPerms || fresh.isActive !== current?.isActive || fresh.role !== current?.role || fresh.permissionsCustomized !== current?.permissionsCustomized) {
-          dispatch({ type: A.UPDATE_USER, payload: fresh });
-          localStorage.setItem("user", JSON.stringify({ ...current, ...fresh }));
-        }
+        dispatch({ type: A.UPDATE_USER, payload: fresh });
+        localStorage.setItem('user', JSON.stringify({ ...current, ...fresh }));
       })
       .catch(() => {}); // silent â€” don't break app if backend is down
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -210,13 +206,13 @@ export function AppProvider({ children }) {
       dispatch({ type: A.SET_DARK_MODE, payload: shop?.theme === "dark" });
       dispatch({
         type: A.UPDATE_SETTINGS,
-        payload: shop && typeof shop === "object" ? {
+        payload: shop && typeof shop === "object" ? { ...documentSettings(shop), ...appearanceSettings(shop),
           theme: shop.theme || "light", brandName: shop.brandName || "", brandTagline: shop.brandTagline || "", brandLogo: shop.brandLogo || "", secondaryColor: shop.secondaryColor, brandColor: shop.brandColor || "",
           shopName: shop.name || "", taxRate: shop.taxRate ?? 5,
           currency: shop.currency || "Rs.", address: shop.address || "",
           phone: shop.phone || "", email: shop.email || "",
-          shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter || "Thank you for your purchase!",
-        } : { ...appearanceSettings({}), theme: "light", brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
+          shopLogo: shop.logo || "", receiptFooter: shop.receiptFooter ?? "Thank you for your purchase!",
+        } : { ...appearanceSettings({}), ...documentSettings({}), theme: "light", brandName: "", brandTagline: "", brandLogo: "", brandColor: "", shopName: "", address: "", phone: "", email: "", shopLogo: "" },
       });
       // Welcome toast
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -284,7 +280,7 @@ export function AppProvider({ children }) {
       const normalized = { ...settings, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail };
       dispatch({ type: A.UPDATE_SETTINGS, payload: normalized });
       if (current?.shop && typeof current.shop === 'object') {
-        const updated = { ...current, shop: { ...current.shop, name: settings.shopName, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail,
+        const updated = { ...current, shop: { ...current.shop, ...documentSettings({...current.shop,...settings}), name: settings.shopName, address: settings.shopAddress, phone: settings.shopPhone, email: settings.shopEmail,
           ...appearanceSettings(settings), logo: settings.shopLogo || "", brandName: settings.brandName, brandTagline: settings.brandTagline, brandLogo: settings.brandLogo, secondaryColor: settings.secondaryColor, brandColor: settings.brandColor, theme: settings.theme, receiptFooter: settings.receiptFooter } };
         dispatch({ type: A.UPDATE_USER, payload: updated });
         localStorage.setItem('user', JSON.stringify(updated));

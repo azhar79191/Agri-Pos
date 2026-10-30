@@ -1,3 +1,4 @@
+import { retireLegacyPWA } from './utils/retireLegacyPWA';
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -37,15 +38,8 @@ if (import.meta.env.PROD) {
 window.addEventListener("error", (e) => console.error("[Global Error]", e.error));
 window.addEventListener("unhandledrejection", (e) => console.error("[Unhandled Promise]", e.reason));
 
-// Register Service Worker for PWA
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then(() => {})
-      .catch(() => {});
-  });
-}
+// Retire the previous offline worker for returning visitors.
+void retireLegacyPWA();
 
 const tree = (
   <UnsavedChangesProvider>

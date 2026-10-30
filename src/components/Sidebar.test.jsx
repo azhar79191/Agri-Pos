@@ -5,6 +5,21 @@ import { MemoryRouter } from 'react-router-dom';
 import Sidebar from './Sidebar';
 vi.mock('../context/AppContext',()=>({useApp:()=>({state:{currentUser:{role:'admin'},settings:{shopName:'Test shop'}},actions:{hasPermission:()=>true,showToast:vi.fn()}})}));
 afterEach(cleanup);
+it('finds nested pages and restores navigation when search is cleared', () => {
+ render(<MemoryRouter initialEntries={['/products']}><Sidebar /></MemoryRouter>);
+ fireEvent.change(screen.getByRole('textbox', { name: 'Search navigation' }), { target: { value: 'Forecasting' } });
+ expect(screen.getByRole('button', { name: 'Forecasting' })).toBeTruthy();
+ expect(screen.queryByRole('button', { name: 'Sales' })).toBeNull();
+ fireEvent.click(screen.getByRole('button', { name: 'Clear navigation search' }));
+ expect(screen.getByRole('button', { name: 'Sales' })).toBeTruthy();
+});
+it('offers a recovery action when no navigation pages match', () => {
+ render(<MemoryRouter><Sidebar /></MemoryRouter>);
+ fireEvent.change(screen.getByRole('textbox', { name: 'Search navigation' }), { target: { value: 'no-such-page' } });
+ expect(screen.getByRole('status').textContent).toContain('No pages found');
+ fireEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+ expect(screen.getByRole('button', { name: 'Dashboard' })).toBeTruthy();
+});
 it('opens only one section and prevents access to collapsed links', () => {
  render(<MemoryRouter initialEntries={['/dashboard/analytics']}><Sidebar /></MemoryRouter>);
  const dashboard=screen.getByRole('button',{name:'Dashboard'}), sales=screen.getByRole('button',{name:'Sales'});

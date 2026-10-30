@@ -9,7 +9,7 @@ The shell owns the backdrop, portal, width, responsive height, header, small tin
 | Area | Dialogs |
 | --- | --- |
 | Authentication | Reset password; original three-step progress preserved |
-| Header | Install app instructions; global search with existing keyboard shortcuts |
+| Header | Global search with existing keyboard shortcuts |
 | Customer payments | Deposit cash / wallet top-up; collect payment; redeem loyalty points |
 | POS | Quick-add customer; held sales; receipt with email, print, PDF and WhatsApp actions |
 | Products | Barcode / price-label printer |

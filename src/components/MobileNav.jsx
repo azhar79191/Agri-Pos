@@ -1,4 +1,3 @@
-import SharedButton from "./ui/Button";
 import { MENU_GROUPS } from "../constants/menuGroups";
 import React, { useState, useEffect, useRef } from "react";
 import {
@@ -7,13 +6,12 @@ import {
   ShoppingBag, Bug, Shield, Building2, Layers, CreditCard,
   Wallet, Award, DollarSign, PieChart, Clock, Calendar,
   PackagePlus, Zap, ClipboardCheck, RotateCcw, Beaker,
-  Printer, History, TrendingUp, LogOut, User, Download, Cloud,
+  Printer, History, TrendingUp, LogOut, User, Cloud,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import UserAvatar from "./ui/UserAvatar";
 import ShopLogo from "./ui/ShopLogo";
-import usePWAInstall from "../hooks/usePWAInstall";
 
 /* ─── Bottom tab definitions (max 5 including More) ─── */
 const BOTTOM_TABS = [
@@ -50,7 +48,6 @@ const MobileNav = () => {
   const location  = useLocation();
   const [showMore, setShowMore] = useState(false);
   const sheetRef  = useRef(null);
-  const { canInstall, isInstalled, install } = usePWAInstall();
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const currentPath = location.pathname;
@@ -192,15 +189,6 @@ const MobileNav = () => {
               <p className="text-xs text-slate-400 truncate">{currentUser?.email}</p>
             </div>
             <div className="flex items-center gap-2">
-              {/* PWA install */}
-              {!isInstalled && (
-                <SharedButton
-                  onClick={() => { canInstall ? install() : null; setShowMore(false); }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold"
-                >
-                  <Download className="w-3 h-3" /> Install
-                </SharedButton>
-              )}
               <button
                 onClick={() => { go("/profile"); }}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"

@@ -328,7 +328,7 @@ const AppContent = () => {
 };
 
 function App() {
-  // Splash screen disabled - using PWA native splash screen instead
+  // Render the application without a separate splash screen.
   return (
     <AppProvider>
       <DocumentBranding />

@@ -1,16 +1,13 @@
 import { companyName } from "../utils/company";
 import React, { useState, useEffect } from "react";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, Search, X, Plus, ArrowUpRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { MENU_GROUPS } from "../constants/menuGroups";
 import ShopLogo from "./ui/ShopLogo";
-
-const SECTION_LABELS = {
-  sales:"Shop operations",purchases:"Supply",
-  "customers-group":"Farmer relationships",recommendations:"Crop support",
-  "reports-group":"Insights",staff:"Team", "settings-group":"Shop setup",
-};
+import UserAvatar from "./ui/UserAvatar";
+import { getRoleName } from "../utils/roleUtils";
+import "./sidebar.css";
 
 const matchRoute = pathname => MENU_GROUPS.flatMap(group => group.children.map(child => ({ group, child })))
   .filter(({ child }) => pathname === `/${child.id}` || pathname.startsWith(`/${child.id}/`))
@@ -24,10 +21,16 @@ const Sidebar = () => {
   const location = useLocation();
   const navRef = React.useRef(null);
 
+  const [query, setQuery] = useState("");
   const [openGroup, setOpenGroup] = useState(() => routeGroup(location.pathname));
   useEffect(() => { setOpenGroup(routeGroup(location.pathname)); }, [location.pathname]);
 
-  const visible = currentUser ? MENU_GROUPS.filter(g => actions.hasPermission(g.permission)) : [];
+  const search = query.trim().toLowerCase();
+  const permitted = currentUser ? MENU_GROUPS.filter(g => actions.hasPermission(g.permission)) : [];
+  const visible = permitted.map(group => ({ ...group, children: group.children.filter(child =>
+    (child.id !== "staff/roles" || getRoleName(currentUser) === "admin") &&
+    (!search || group.label.toLowerCase().includes(search) || child.label.toLowerCase().includes(search))
+  ) })).filter(group => group.children.length);
 
   const go = id => {
     // Store current scroll position before navigation
@@ -54,25 +57,39 @@ const Sidebar = () => {
 
   const nav = (
     <div className="app-sidebar__surface flex flex-col h-full">
-      <div role="group" aria-label="Company identity" className="app-sidebar__brand h-16 flex items-center gap-3 px-4 flex-shrink-0">
+      <div role="group" aria-label="Company identity" className="app-sidebar__brand h-20 flex items-center gap-3 px-4 flex-shrink-0">
         <ShopLogo logo={settings?.brandLogo || settings?.shopLogo} name={settings?.brandName || settings?.shopName} size="w-8 h-8" />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-slate-900 dark:text-white text-sm truncate leading-tight">{companyName(settings)}</p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{settings?.brandTagline || "Shop workspace"}</p>
+          <p className="app-sidebar__brand-name font-semibold text-sm truncate leading-tight">{companyName(settings)}</p>
+          <p className="app-sidebar__tagline text-[11px] mt-0.5 truncate">{settings?.brandTagline || "Your everyday workspace"}</p>
         </div>
+      </div>
+      <div className="app-sidebar__tools">
+        <label className="app-sidebar__search">
+          <Search size={16} aria-hidden="true" />
+          <input aria-label="Search navigation" placeholder="Find a page…" value={query} onChange={event => setQuery(event.target.value)} />
+          {query && <button type="button" aria-label="Clear navigation search" onClick={() => setQuery("")}><X size={14} /></button>}
+        </label>
+        {currentUser && actions.hasPermission("pos") && <button className="app-sidebar__create" onClick={() => { setQuery(""); go("pos"); }}>
+          <Plus size={18} aria-hidden="true" /><span>New sale</span><ArrowUpRight size={16} aria-hidden="true" />
+        </button>}
       </div>
       <nav className="app-sidebar__nav flex-1 overflow-y-auto px-3 py-3" ref={navRef} aria-label="Main navigation">
         {visible.map(group => {
           const G = group.icon;
           const ga = isGroupActive(group);
-          const open = openGroup === group.id;
-          const sl = SECTION_LABELS[group.id];
+          const open = Boolean(search) || openGroup === group.id;
+          const section = group.id === "dealer-workspace" || group.id === "dashboard" ? "Workspace" : ["assistant", "staff", "settings-group"].includes(group.id) ? "Management" : "Business";
+          const index = visible.indexOf(group);
+          const previous = visible[index - 1];
+          const previousSection = previous && (previous.id === "dealer-workspace" || previous.id === "dashboard" ? "Workspace" : ["assistant", "staff", "settings-group"].includes(previous.id) ? "Management" : "Business");
+          const sl = section !== previousSection ? section : null;
           return (
             <div key={group.id}>
               {sl && <p className="app-sidebar__section-label px-3 pt-5 pb-2">{sl}</p>}
               {group.single ? (() => {
                 const cid = group.children[0].id;
-                const a = isActive(cid) || location.pathname.startsWith(`/${cid}`);
+                const a = isActive(cid);
                 return (
                   <button key={group.id} aria-current={a ? "page" : undefined} onClick={() => { setOpenGroup(null); go(cid); }}
                     className={`app-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${a ? "is-active" : ""}`}>
@@ -92,7 +109,7 @@ const Sidebar = () => {
                   <div id={`nav-group-${group.id}`} inert={!open} aria-hidden={!open} className={`app-nav-collapse ${open ? "is-open" : ""}`}>
                     <div className="min-h-0 overflow-hidden">
                     <div className="app-sidebar__subnav ml-5 pl-3 space-y-0.5 py-1">
-                      {group.children.filter(child => child.id !== "staff/roles" || currentUser?.role === "admin").map(child => {
+                      {group.children.map(child => {
                         const CI = child.icon;
                         const a = isActive(child.id);
                         return (
@@ -113,23 +130,20 @@ const Sidebar = () => {
             </div>
           );
         })}
-        <div className="app-sidebar__logout mt-4 pt-3">
-          <button onClick={handleLogout}
-            className="app-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
-            <LogOut className="app-nav-item__icon w-[18px] h-[18px] flex-shrink-0" />
-            Sign Out
-          </button>
-        </div>
+        {search && !visible.length && <div className="app-sidebar__empty" role="status"><Search size={22} aria-hidden="true" /><p>No pages found</p><span>Try sales, stock, or customers.</span><button onClick={() => setQuery("")}>Clear search</button></div>}
       </nav>
-      <div className="app-sidebar__footer px-4 py-3 flex-shrink-0 flex items-center gap-2">
-        <span className="app-sidebar__footer-mark" aria-hidden="true" />
-        <p className="text-[11px] truncate">{companyName(settings)}</p>
+      <div className="app-sidebar__account">
+        <button className="app-sidebar__profile" onClick={() => go("profile")} aria-label="Open your profile">
+          <UserAvatar user={currentUser} size="w-9 h-9" shape="rounded-xl" />
+          <span className="app-sidebar__account-copy"><strong>{currentUser?.name || "Your account"}</strong><span>{getRoleName(currentUser) || "Team member"}</span></span>
+        </button>
+        <button className="app-sidebar__signout" onClick={handleLogout} aria-label="Sign Out" title="Sign Out"><LogOut size={17} aria-hidden="true" /></button>
       </div>
     </div>
   );
 
   return (
-    <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:flex-shrink-0 h-screen sticky top-0">
+    <aside aria-label="Workspace sidebar" className="workspace-sidebar hidden lg:flex lg:flex-col lg:flex-shrink-0 h-screen sticky top-0">
       {nav}
     </aside>
   );

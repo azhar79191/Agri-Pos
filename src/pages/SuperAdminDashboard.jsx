@@ -1,3 +1,4 @@
+import PlatformEmailSettings from '../components/PlatformEmailSettings';
 import { notifyUser, confirmAction } from "../utils/feedback";
 import PageHeader from "../components/ui/PageHeader";
 import SharedButton from "../components/ui/Button";
@@ -459,6 +460,7 @@ const SuperAdminDashboard = () => {
           </button>
         </div></>}></PageHeader>
 
+      <PlatformEmailSettings />
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -7,7 +7,6 @@ vi.mock('../context/AppContext',()=>({useApp:()=>({state:{cart:[],currentUser:{n
 vi.mock('./NotificationCenter',()=>({default:()=>null}));
 vi.mock('./GlobalSearch',()=>({default:()=>null}));
 vi.mock('./ui/UserAvatar',()=>({default:()=>null}));
-vi.mock('../hooks/usePWAInstall',()=>({default:()=>({isInstalled:true})}));
 afterEach(cleanup);
 it('shows the page title without repeating company branding',()=>{
  render(<MemoryRouter initialEntries={['/products']}><Header /><main><h1>Products</h1></main></MemoryRouter>);

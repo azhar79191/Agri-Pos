@@ -1,8 +1,5 @@
-import SharedButton from "./ui/Button";
-import Modal from "./ui/Modal";
-import { companyName } from "../utils/company";
 import React, { useState, useEffect, useRef } from "react";
-import { LogOut, ChevronDown, Shield, User, Store, Download, Share } from "lucide-react";
+import { LogOut, ChevronDown, Shield, User, Store } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { roles } from "../data/users";
@@ -10,7 +7,6 @@ import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
 import UserAvatar from "./ui/UserAvatar";
 import NotificationCenter from "./NotificationCenter";
 import GlobalSearch from "./GlobalSearch";
-import usePWAInstall from "../hooks/usePWAInstall";
 
 /** Maps role color key → Tailwind badge classes */
 const getRoleColorClass = (color) => {
@@ -20,17 +16,11 @@ const getRoleColorClass = (color) => {
 
 const Header = () => {
   const { state, actions } = useApp();
-  const { cart, currentUser, settings } = state;
+  const { cart, currentUser } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
-  const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
-  const [showInstallModal, setShowInstallModal] = useState(false);
-
-  // Show install button whenever app is NOT running as installed PWA
-  const showInstallBtn = !isInstalled;
-
   // Close dropdown on outside click
   useEffect(() => {
     if (!showMenu) return;
@@ -96,19 +86,6 @@ const Header = () => {
       {/* Right — actions */}
       <div className="flex items-center gap-1">
 
-        {/* PWA install icon — visible when app is not yet installed */}
-        {showInstallBtn && (
-          <button
-            onClick={() => canInstall ? install() : setShowInstallModal(true)}
-            className="p-2 rounded-lg text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-150"
-            title={`Install ${companyName(settings)} App`}
-          >
-            <Download className="w-[18px] h-[18px]" />
-          </button>
-        )}
-
-
-
         <NotificationCenter />
 
         {/* Cart badge — only visible on POS page */}
@@ -172,20 +149,6 @@ const Header = () => {
                   <span className="font-medium">Profile Settings</span>
                 </button>
 
-                {/* PWA Install button — shown when not installed */}
-                {showInstallBtn && (
-                  <button
-                    onClick={() => { canInstall ? install() : setShowInstallModal(true); setShowMenu(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-colors group"
-                  >
-                    <div className="w-7 h-7 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Download className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-                    </div>
-                    <span className="font-medium">Install App</span>
-                    <span className="ml-auto text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">FREE</span>
-                  </button>
-                )}
-
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group"
@@ -202,78 +165,6 @@ const Header = () => {
       </div>
     </header>
 
-    {/* Install instructions modal — for iOS / non-Chrome browsers */}
-    {showInstallModal && (
-      <Modal
-          isOpen
-          onClose={() => setShowInstallModal(false)}
-          title="Install app"
-          size="xs"
-          subtitle={<>Add to your device</>}
-          footer={<div className="flex gap-2">
-            <button
-              onClick={() => setShowInstallModal(false)}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-             data-modal-dismiss>
-              Maybe later
-            </button>
-            <SharedButton
-              onClick={() => setShowInstallModal(false)}
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-             data-modal-dismiss>
-              Got it
-            </SharedButton>
-          </div>}><div className="space-y-4">
-
-          {/* Body */}
-          <div className="">
-            {isIOS ? (
-              <div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                  Follow these steps in Safari:
-                </p>
-                <ol className="space-y-3">
-                  {[
-                    <>Tap the <Share className="inline w-4 h-4 text-blue-500 mx-0.5 -mt-0.5" /> <strong>Share</strong> button at the bottom of Safari</>,
-                    <>Scroll down and tap <strong>"Add to Home Screen"</strong></>,
-                    <>Tap <strong>"Add"</strong> in the top-right corner</>,
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
-                      <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ) : (
-              <div>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                  Install from your browser:
-                </p>
-                <ol className="space-y-3">
-                  {[
-                    <>Look for the <strong>⊕ install icon</strong> in the browser address bar</>,
-                    <>Or open the browser menu (⋮) and select <strong>"Install {companyName(settings)}"</strong></>,
-                    <>Click <strong>"Install"</strong> to confirm</>,
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
-                      <span className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-          </div>
-
-
-
-        </div></Modal>
-    )}
     </>
   );
 };
