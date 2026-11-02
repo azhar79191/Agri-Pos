@@ -5,15 +5,21 @@ import LoadingState from "../../components/ui/LoadingState";
 import EmptyState from "../../components/ui/EmptyState";
 import FilterBar from "../../components/ui/FilterBar";
 import DataTable from "../../components/ui/DataTable";
-import React, { useState, useEffect } from "react";
+import Modal from "../../components/ui/Modal";
+import { exportAdvisoryPage } from "../../utils/advisoryExport";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { History, Search, Filter, Calendar, Eye, Trash2, Download, Share2, AlertCircle } from "lucide-react";
-import { getAllAdvisories, deleteAdvisory, exportAdvisories } from "../../api/cropAdvisoryApi";
+import { getAllAdvisories, deleteAdvisory } from "../../api/cropAdvisoryApi";
 import { useApp } from "../../context/AppContext";
 
 const AdvisoryHistory = () => {
   const { actions } = useApp();
   const [advisories, setAdvisories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedAdvisory, setSelectedAdvisory] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [reload, setReload] = useState(0);
   const [page, setPage] = useState(1);
   const [limit] = useState(20); // Match backend default
   const [totalPages, setTotalPages] = useState(1);
@@ -26,21 +32,11 @@ const AdvisoryHistory = () => {
     endDate: "",
   });
 
-  useEffect(() => {
-    fetchAdvisories();
-  }, [page]);
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    if (page !== 1) {
-      setPage(1);
-    } else {
-      fetchAdvisories();
-    }
-  }, [filters]);
-
-  const fetchAdvisories = async () => {
+  const requestVersion = useRef(0);
+  const fetchAdvisories = useCallback(async () => {
+    const version = ++requestVersion.current;
     setLoading(true);
+    setError('');
     try {
       const params = {
         page,
@@ -49,21 +45,38 @@ const AdvisoryHistory = () => {
       };
 
       const response = await getAllAdvisories(params);
-      console.log('Advisories Response:', response);
+      if (version !== requestVersion.current) return;
 
       // Handle nested response structure
       const data = response.data?.advisories || response.advisories || [];
+      if (!Array.isArray(data)) throw new Error('Advisory response was incomplete. Please retry.');
       const pagination = response.data?.pagination || response.pagination || {};
 
       setAdvisories(data);
       setTotalPages(pagination.pages || pagination.totalPages || 1);
       setTotalItems(pagination.total || pagination.totalItems || data.length);
     } catch (error) {
+      if (version !== requestVersion.current) return;
+      setAdvisories([]);
+      setTotalItems(0);
+      setTotalPages(1);
+      setError(error.response?.data?.message || error.message || 'Failed to load advisory history');
       console.error('Failed to fetch advisories:', error);
-      actions.showToast(error.response?.data?.message || 'Failed to load advisory history', 'error');
+      actions.showToast({ message: error.response?.data?.message || 'Failed to load advisory history', type: 'error' });
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
+  }, [page, limit, filters, actions]);
+
+  useEffect(() => {
+    const versionRef = requestVersion;
+    fetchAdvisories();
+    return () => { versionRef.current++; };
+  }, [fetchAdvisories, reload]);
+
+  const changeFilter = (key, value) => {
+    setPage(1);
+    setFilters(previous => ({ ...previous, [key]: value }));
   };
 
   const handleDelete = async (id) => {
@@ -71,34 +84,35 @@ const AdvisoryHistory = () => {
 
     try {
       await deleteAdvisory(id);
-      actions.showToast('Advisory deleted successfully', 'success');
-      fetchAdvisories();
+      actions.showToast({ message: 'Advisory deleted successfully', type: 'success' });
+      setReload(value => value + 1);
     } catch (error) {
       console.error('Failed to delete advisory:', error);
-      actions.showToast('Failed to delete advisory', 'error');
+      actions.showToast({ message: 'Failed to delete advisory', type: 'error' });
     }
   };
 
   const handleExport = async (format) => {
+    if (loading || exporting || !advisories.length || error) return;
+    setExporting(true);
     try {
-      const blob = await exportAdvisories({
-        format,
-        ...filters,
-      });
+      const blob = await exportAdvisoryPage(advisories, format);
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `advisories-${new Date().toISOString().split('T')[0]}.${format}`;
+      a.download = `advisories-page-${page}-${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => window.URL.revokeObjectURL(url), 5000);
       document.body.removeChild(a);
 
-      actions.showToast(`Exported as ${format.toUpperCase()}`, 'success');
+      actions.showToast({ message: `Exported as ${format.toUpperCase()}`, type: 'success' });
     } catch (error) {
       console.error('Failed to export:', error);
-      actions.showToast('Failed to export advisories', 'error');
+      actions.showToast({ message: 'Failed to export advisories', type: 'error' });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -117,18 +131,20 @@ const AdvisoryHistory = () => {
       {/* Header */}
       <PageHeader title={<>Advisory History</>} description={<>View and manage past AI advisories</>} icon={History} actions={<><div className="flex gap-2">
           <button
+            disabled={loading || exporting || !!error || !advisories.length}
             onClick={() => handleExport('excel')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
           >
             <Download className="w-4 h-4" />
-            Excel
+            Excel (this page)
           </button>
           <button
+            disabled={loading || exporting || !!error || !advisories.length}
             onClick={() => handleExport('pdf')}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
           >
             <Download className="w-4 h-4" />
-            PDF
+            PDF (this page)
           </button>
         </div></>} />
 
@@ -143,7 +159,7 @@ const AdvisoryHistory = () => {
                 type="text"
                 placeholder="Search advisories..."
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={(e) => changeFilter('search', e.target.value)}
                 className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
               />
             </div>
@@ -152,7 +168,7 @@ const AdvisoryHistory = () => {
           {/* Crop Filter */}
           <SearchableSelect aria-label="All Crops"
             value={filters.crop}
-            onChange={(e) => setFilters({ ...filters, crop: e.target.value })}
+            onChange={(e) => changeFilter('crop', e.target.value)}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
           >
             <option value="">All Crops</option>
@@ -165,7 +181,7 @@ const AdvisoryHistory = () => {
           {/* Severity Filter */}
           <SearchableSelect aria-label="All Severities"
             value={filters.severity}
-            onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
+            onChange={(e) => changeFilter('severity', e.target.value)}
             className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
           >
             <option value="">All Severities</option>
@@ -177,16 +193,19 @@ const AdvisoryHistory = () => {
 
           {/* Date Range */}
           <div className="flex gap-2">
-            <input aria-label="Filter date"
+            <input aria-label="Start date"
               type="date"
               value={filters.startDate}
-              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+              onChange={(e) => changeFilter('startDate', e.target.value)}
               className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
             />
+            <input aria-label="End date" type="date" value={filters.endDate} onChange={e => changeFilter('endDate', e.target.value)} className="min-w-0 flex-1 input-premium" />
           </div>
         </FilterBar>
       </div>
 
+      {error && <div role="alert" className="rounded-lg border border-red-200 p-4 text-sm text-red-600">{error} <button type="button" onClick={fetchAdvisories} className="underline">Retry</button></div>}
+      {selectedAdvisory && <Modal isOpen title="Advisory details" onClose={() => setSelectedAdvisory(null)}><div className="space-y-4 break-words"><p className="text-sm text-amber-700">Draft AI advice. Expert review and product-label verification are required before use.</p><h2>{selectedAdvisory.crop} — {selectedAdvisory.issue}</h2><p>Severity: {selectedAdvisory.severity}</p><p className="whitespace-pre-wrap">{selectedAdvisory.diagnosis}</p>{selectedAdvisory.symptoms && <p>Symptoms: {selectedAdvisory.symptoms}</p>}</div></Modal>}
       {/* Advisories List */}
       <div className="workspace-panel bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-hidden">
 
@@ -225,7 +244,7 @@ const AdvisoryHistory = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => window.open(`/recommendations/print?id=${advisory._id}`, '_blank')}
+                          onClick={() => setSelectedAdvisory(advisory)}
                           className="p-1.5 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           title="View"
                         >
@@ -248,7 +267,7 @@ const AdvisoryHistory = () => {
 
         {/* Pagination */}
         {!loading && advisories.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}

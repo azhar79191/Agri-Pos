@@ -2,7 +2,7 @@ import PageHeader from "../../components/ui/PageHeader";
 import SharedButton from "../../components/ui/Button";
 import FormField from "../../components/ui/FormField";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart3, TrendingUp, DollarSign, Database, RefreshCw, AlertCircle, CheckCircle, XCircle, Activity } from "lucide-react";
 import { getAIStats } from "../../api/cropAdvisoryApi";
 
@@ -15,20 +15,19 @@ const AIStatistics = () => {
     endDate: "",
   });
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+  const [appliedRange, setAppliedRange] = useState({ startDate: '', endDate: '' });
+  const requestVersion = useRef(0);
+  const fetchStats = useCallback(async () => {
+    const version = ++requestVersion.current;
     setLoading(true);
     setError(null);
     try {
       const params = {};
-      if (dateRange.startDate) params.startDate = dateRange.startDate;
-      if (dateRange.endDate) params.endDate = dateRange.endDate;
+      if (appliedRange.startDate) params.startDate = appliedRange.startDate;
+      if (appliedRange.endDate) params.endDate = appliedRange.endDate;
 
       const response = await getAIStats(params);
-      console.log('AI Stats Response:', response);
+      if (version !== requestVersion.current) return;
 
       if (response.success === false) {
         throw new Error(response.message || 'Failed to fetch AI statistics');
@@ -37,12 +36,20 @@ const AIStatistics = () => {
       const data = response.data || response;
       setStats(data);
     } catch (err) {
+      if (version !== requestVersion.current) return;
+      setStats(null);
       console.error('Failed to fetch AI stats:', err);
       setError(err.response?.data?.message || err.message || 'Failed to load AI statistics');
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
-  };
+  }, [appliedRange]);
+
+  useEffect(() => {
+    const versionRef = requestVersion;
+    fetchStats();
+    return () => { versionRef.current++; };
+  }, [fetchStats]);
 
   const handleRefresh = () => {
     fetchStats();
@@ -53,7 +60,11 @@ const AIStatistics = () => {
   };
 
   const applyDateFilter = () => {
-    fetchStats();
+    if (dateRange.startDate && dateRange.endDate && dateRange.startDate > dateRange.endDate) {
+      setError('Start date must be on or before end date.');
+      return;
+    }
+    setAppliedRange({ ...dateRange });
   };
 
   return (
@@ -199,14 +210,14 @@ const AIStatistics = () => {
                 <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">Total AI Service Cost</p>
+                <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">Estimated cost of priced requests</p>
                 <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-300">
-                  {stats.cost?.currency || 'PKR'} {(stats.cost?.total || 0).toFixed(2)}
+                  {stats.cost?.available && Number.isFinite(stats.cost.total) ? `${stats.cost.currency} ${stats.cost.total.toFixed(4)}` : 'Unavailable'}
                 </p>
               </div>
             </div>
             <p className="text-xs text-emerald-600 dark:text-emerald-400">
-              This includes all AI API calls for crop advisory, pest detection, weather advisory, and dosage calculations.
+              Estimates use configured model-specific input/output rates. Unpriced and historical requests are excluded; provider billing remains authoritative. {stats.cost?.unknownRequests || 0} request(s) have no comparable price. No exchange-rate conversion is applied.
             </p>
           </div>
 

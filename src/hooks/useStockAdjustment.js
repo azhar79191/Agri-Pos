@@ -7,7 +7,7 @@ import { useStock } from "./useStock";
  * useStockAdjustment — manages stock adjustment form state and submission.
  */
 export function useStockAdjustment(fetchLevels, setStockLevels, stockLevels = []) {
-  const { actions, state } = useApp();
+  const { actions } = useApp();
   const { fetchLogs, fetchAlerts, adjust } = useStock();
   const isAdmin = actions.hasPermission('stock:manage');
 

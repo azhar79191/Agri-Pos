@@ -1,5 +1,5 @@
 import { MENU_GROUPS } from "../constants/menuGroups";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LayoutDashboard, ShoppingCart, Package, Users, BarChart3,
   MoreHorizontal, X, ChevronRight, Settings, FileText,
@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import useDialogAccessibility from "../hooks/useDialogAccessibility";
+import useBodyScrollLock from "../hooks/useBodyScrollLock";
 import UserAvatar from "./ui/UserAvatar";
 import ShopLogo from "./ui/ShopLogo";
 
@@ -47,7 +49,17 @@ const MobileNav = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const [showMore, setShowMore] = useState(false);
-  const sheetRef  = useRef(null);
+  const { dialogRef: sheetRef } = useDialogAccessibility(showMore);
+  useBodyScrollLock(showMore);
+  useEffect(() => {
+    if (!showMore) return;
+    const close = event => { if (event.key === "Escape") setShowMore(false); };
+    const viewport = window.matchMedia("(min-width: 1024px)");
+    const resize = event => { if (event.matches) setShowMore(false); };
+    document.addEventListener("keydown", close);
+    viewport.addEventListener("change", resize);
+    return () => { document.removeEventListener("keydown", close); viewport.removeEventListener("change", resize); };
+  }, [showMore]);
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const currentPath = location.pathname;
@@ -67,7 +79,7 @@ const MobileNav = () => {
       document.removeEventListener("mousedown", handler);
       document.removeEventListener("touchstart", handler);
     };
-  }, [showMore]);
+  }, [showMore, sheetRef]);
 
   const go = (path) => { navigate(path); setShowMore(false); };
 
@@ -99,7 +111,7 @@ const MobileNav = () => {
   return (
     <>
       {/* ── Bottom Tab Bar ── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-700/60"
+      <nav aria-label="Mobile navigation" className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-700/60"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div className="flex items-stretch h-[58px]">
           {BOTTOM_TABS.map((tab) => {
@@ -110,6 +122,9 @@ const MobileNav = () => {
             return (
               <button
                 key={tab.id}
+                aria-current={tab.path && active ? "page" : undefined}
+                aria-expanded={tab.id === "more" ? showMore : undefined}
+                aria-controls={tab.id === "more" ? "mobile-more-menu" : undefined}
                 onClick={() => tab.id === "more" ? setShowMore(v => !v) : go(tab.path)}
                 className="flex-1 flex flex-col items-center justify-center gap-0.5 relative transition-all duration-150 active:scale-95"
               >
@@ -162,17 +177,25 @@ const MobileNav = () => {
 
       {/* ── More Sheet ── */}
       <div
+        id="mobile-more-menu"
+        role="dialog"
+        aria-modal={showMore ? "true" : undefined}
+        aria-label="All pages"
+        aria-hidden={!showMore}
+        inert={!showMore}
+        tabIndex={-1}
         ref={sheetRef}
         className={`lg:hidden fixed left-0 right-0 bottom-0 z-50 bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
           showMore ? "translate-y-0" : "translate-y-full"
         }`}
         style={{
-          maxHeight: "82vh",
+          maxHeight: "82dvh",
           paddingBottom: "calc(env(safe-area-inset-bottom) + 70px)",
         }}
       >
         {/* Sticky Header Section */}
         <div className="flex-shrink-0 sticky top-0 bg-white dark:bg-slate-900 z-10 rounded-t-3xl">
+          <button type="button" aria-label="Close all pages" onClick={() => setShowMore(false)} className="absolute right-4 top-2 p-2 rounded-lg"><X size={20} /></button>
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1">
             <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
@@ -190,6 +213,7 @@ const MobileNav = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
+                aria-label="Open your profile"
                 onClick={() => { go("/profile"); }}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
               >

@@ -44,6 +44,7 @@ const UserManagement = () => {
   return (
     <div className="space-y-6 animate-fade-up">
 
+      {rolesError && <p role="alert" className="text-sm text-red-600">{rolesError}</p>}
       <PageHeader title={<>User Management</>} description={<>{users.length} users in system</>} icon={Users} actions={<><div className="flex gap-2">
           <button onClick={() => fetchUsers()} className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium transition-colors">
             <RefreshCw className="w-4 h-4" />Refresh

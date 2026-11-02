@@ -1,6 +1,6 @@
 import { companyName } from "../utils/company";
 import React, { useState, useEffect } from "react";
-import { ChevronDown, LogOut, Search, X, Plus, ArrowUpRight } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { MENU_GROUPS } from "../constants/menuGroups";
@@ -21,15 +21,12 @@ const Sidebar = () => {
   const location = useLocation();
   const navRef = React.useRef(null);
 
-  const [query, setQuery] = useState("");
   const [openGroup, setOpenGroup] = useState(() => routeGroup(location.pathname));
   useEffect(() => { setOpenGroup(routeGroup(location.pathname)); }, [location.pathname]);
 
-  const search = query.trim().toLowerCase();
   const permitted = currentUser ? MENU_GROUPS.filter(g => actions.hasPermission(g.permission)) : [];
   const visible = permitted.map(group => ({ ...group, children: group.children.filter(child =>
-    (child.id !== "staff/roles" || getRoleName(currentUser) === "admin") &&
-    (!search || group.label.toLowerCase().includes(search) || child.label.toLowerCase().includes(search))
+    (child.id !== "staff/roles" || getRoleName(currentUser) === "admin")
   ) })).filter(group => group.children.length);
 
   const go = id => {
@@ -65,15 +62,10 @@ const Sidebar = () => {
         </div>
       </div>
       <nav className="app-sidebar__nav flex-1 overflow-y-auto px-3 py-3" ref={navRef} aria-label="Main navigation">
-        <div className="app-sidebar__search">
-          <Search size={16} aria-hidden="true" />
-          <input type="text" aria-label="Search navigation" placeholder="Search pages..." value={query} onChange={event => setQuery(event.target.value)} />
-          {query && <button type="button" aria-label="Clear navigation search" onClick={() => setQuery("")}><X size={15} aria-hidden="true" /></button>}
-        </div>
         {visible.map(group => {
           const G = group.icon;
           const ga = isGroupActive(group);
-          const open = Boolean(search) || openGroup === group.id;
+          const open = openGroup === group.id;
           const section = group.id === "dealer-workspace" || group.id === "dashboard" ? "Workspace" : ["assistant", "staff", "settings-group"].includes(group.id) ? "Management" : "Business";
           const index = visible.indexOf(group);
           const previous = visible[index - 1];
@@ -125,7 +117,6 @@ const Sidebar = () => {
             </div>
           );
         })}
-        {search && !visible.length && <div className="app-sidebar__empty" role="status"><Search size={22} aria-hidden="true" /><p>No pages found</p><span>Try sales, stock, or customers.</span><button onClick={() => setQuery("")}>Clear search</button></div>}
       </nav>
       <div className="app-sidebar__account">
         <button className="app-sidebar__profile" onClick={() => go("profile")} aria-label="Open your profile">

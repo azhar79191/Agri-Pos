@@ -4,12 +4,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   addInvoice: vi.fn(), refreshCustomer: vi.fn(), addCustomer: vi.fn(),
+  holdSale: vi.fn(),
   actions: { showToast: vi.fn(), clearCart: vi.fn(), createTransaction: vi.fn(), createInvoice: vi.fn() },
 }));
 vi.mock('../context/AppContext', () => ({ useApp: () => ({ state: { currentUser: { _id: 'cashier', name: 'Cashier', shop: 'shop-a' } }, actions: mocks.actions }) }));
 vi.mock('./useInvoices', () => ({ useInvoices: () => ({ addInvoice: mocks.addInvoice }) }));
 vi.mock('../context/CustomersContext', () => ({ useCustomers: () => mocks }));
-vi.mock('../components/pos/HeldSalesModal', () => ({ getHeldSales: () => [], holdSale: vi.fn() }));
+vi.mock('../components/pos/HeldSalesModal', () => ({ getHeldSales: () => [], holdSale: mocks.holdSale }));
 import { usePOSCheckout } from './usePOSCheckout';
 
 const props = () => ({
@@ -25,6 +26,22 @@ beforeEach(() => { vi.clearAllMocks(); sessionStorage.clear(); vi.spyOn(navigato
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe('checkout outcomes', () => {
+  it('keeps the cart when holding a sale cannot persist it', () => {
+    mocks.holdSale.mockImplementationOnce(() => { throw new Error('Storage full'); });
+    const args = props();
+    const { result } = renderHook(() => usePOSCheckout(args));
+    act(() => result.current.handleHoldSale([]));
+    expect(args.resetCart).not.toHaveBeenCalled();
+    expect(mocks.actions.clearCart).not.toHaveBeenCalled();
+    expect(mocks.actions.showToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
+  });
+  it('renders with blocked storage and refuses checkout without a recovery identifier', async () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Blocked'); });
+    const { result } = renderHook(() => usePOSCheckout(props()));
+    await act(async () => result.current.handleCheckout());
+    expect(mocks.addInvoice).not.toHaveBeenCalled();
+    expect(mocks.actions.showToast).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('recovery identifier') }));
+  });
   it('preserves the cart and never shows a receipt for a rejected sale', async () => {
     mocks.addInvoice.mockRejectedValue({ response: { status: 409, data: { message: 'Insufficient stock' } } });
     const args = props();
@@ -57,6 +74,7 @@ describe('checkout outcomes', () => {
     expect(second.result.current.showReceipt).toBe(true);
     expect(second.result.current.hasPendingCheckout).toBe(false);
     expect(second.result.current.completedTransaction.invoiceNumber).toBe('INV-TEST');
+    expect(second.result.current.completedTransaction._id).toBe('invoice-a');
   });
   it('uses backend totals including authoritative zero values', async () => {
     mocks.addInvoice.mockResolvedValue({ ...invoice, total: 0, subtotal: 0 });

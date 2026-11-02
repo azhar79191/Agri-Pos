@@ -61,7 +61,7 @@ export default defineConfig({
   },
 
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom", "axios", "zustand", "lucide-react"],
-    exclude: ["jspdf", "exceljs"],
+    include: ["react", "react-dom", "react-router-dom", "axios", "zustand", "lucide-react", "exceljs"],
+    exclude: ["jspdf"],
   },
 })

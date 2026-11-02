@@ -29,7 +29,7 @@ const CartPanel = ({
   salesReps = [], selectedSalesRep, onSalesRepChange,
   discount, discountType, discountAmount, onDiscountChange, onDiscountTypeToggle,
   paymentMethod, onPaymentMethodChange,
-  cashReceived, onCashReceivedChange, cartCalculations, change,
+  cashReceived, onCashReceivedChange, cartCalculations,
   needsCashInput, isOnline, checkoutLoading,
   onRemoveItem, onUpdateQuantity, onClearCart,
   onHoldSale, onShowHeld, heldCount,

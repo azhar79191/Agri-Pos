@@ -6,17 +6,18 @@ import SettingsCard from "./SettingsCard";
 import { useApp } from "../../context/AppContext";
 import { getProducts } from "../../api/productApi";
 import { getCustomers } from "../../api/customersApi";
+import { collectDirectory } from "../../utils/directoryExport";
 
 const downloadJSON = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 };
 
 const ActionRow = ({ icon: Icon, iconBg, iconColor, title, desc, action }) => (
-  <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+  <div className="flex flex-wrap gap-3 items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
     <div className="flex items-center gap-3">
       <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconBg}`}>
         <Icon className={`w-4 h-4 ${iconColor}`} />
@@ -40,20 +41,16 @@ const DataPanel = () => {
     try {
       let data, filename;
       if (type === "products") {
-        const res = await getProducts({ limit: 1000 });
-        const d = res.data.data;
-        data = d.products ?? d.items ?? d.data ?? [];
+        data = await collectDirectory(getProducts, 'products');
         filename = `products_export_${new Date().toISOString().split("T")[0]}.json`;
       } else {
-        const res = await getCustomers({ limit: 1000 });
-        const d = res.data.data;
-        data = d.customers ?? d.items ?? d.data ?? [];
+        data = await collectDirectory(getCustomers, 'customers');
         filename = `customers_export_${new Date().toISOString().split("T")[0]}.json`;
       }
       downloadJSON(data, filename);
       actions.showToast({ message: `${type} exported successfully`, type: "success" });
-    } catch {
-      actions.showToast({ message: `Failed to export ${type}`, type: "error" });
+    } catch (error) {
+      actions.showToast({ message: error.message || `Failed to export ${type}`, type: "error" });
     } finally { setExporting(null); }
   };
 
@@ -69,7 +66,7 @@ const DataPanel = () => {
 
   return (
     <div className="space-y-6">
-      <SettingsCard title="Data Export" desc="Download your data as JSON for backup or migration">
+      <SettingsCard title="Data Export" desc="Export product or customer directories as JSON. These files do not include financial ledgers or replace a database backup. Export while directory records are not being edited.">
         <div className="space-y-3">
           <ActionRow
             icon={Download} iconBg="bg-blue-100 dark:bg-blue-900/30" iconColor="text-blue-600 dark:text-blue-400"

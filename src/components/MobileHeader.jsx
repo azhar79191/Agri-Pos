@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { PAGE_TITLES, BREADCRUMBS } from "../constants/navigation";
 import ShopLogo from "./ui/ShopLogo";
+import GlobalSearch from "./GlobalSearch";
 import NotificationCenter from "./NotificationCenter";
 
 /**
@@ -45,7 +46,7 @@ const MobileHeader = () => {
           /* Back button + page title on sub-pages */
           <>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => window.history.state?.idx > 0 ? navigate(-1) : navigate("/dashboard")}
               className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-90 transition-transform flex-shrink-0"
               aria-label="Go back"
             >
@@ -72,6 +73,7 @@ const MobileHeader = () => {
 
 
         {/* Notifications */}
+        <GlobalSearch mobile />
         <NotificationCenter />
       </div>
     </header>

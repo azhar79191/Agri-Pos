@@ -16,7 +16,10 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
 
   const attemptKey = `pos-checkout:${currentUser?.shop?._id || currentUser?.shop}:${currentUser?._id || currentUser?.id}`;
   const checkoutInFlight = useRef(false);
-  const [hasPendingCheckout, setHasPendingCheckout] = useState(() => !!sessionStorage.getItem(attemptKey));
+  const [hasPendingCheckout, setHasPendingCheckout] = useState(() => {
+    try { return !!sessionStorage.getItem(attemptKey); }
+    catch { return false; } // Checkout itself reports unavailable recovery storage.
+  });
   const [checkoutLoading, setCheckoutLoading]   = useState(false);
   const [completedTransaction, setCompletedTransaction] = useState(null);
   const [showReceipt, setShowReceipt]           = useState(false);
@@ -31,7 +34,11 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
   const handleHoldSale = useCallback((customers) => {
     if (cart.length === 0) { actions.showToast({ message: "Cart is empty", type: "error" }); return; }
     const cName = customers.find((c) => c._id === selectedCustomer)?.name || "";
-    holdSale(cart, cName, 0);
+    try { holdSale(cart, cName, 0); }
+    catch {
+      actions.showToast({ message: "Sale could not be held. Browser storage is unavailable; your cart has been kept.", type: "error" });
+      return;
+    }
     setHeldCount(getHeldSales().length);
     actions.clearCart();
     resetCart();
@@ -174,15 +181,15 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
       checkoutInFlight.current = false;
       setCheckoutLoading(false);
     }
-  }, [cart, cartCalculations, discountAmount, paymentMethod, cashReceived, selectedCustomer, customer, selectedSalesRep, currentUser, addInvoice, refreshCustomer, actions, resetCart, setCashReceived]);
+  }, [attemptKey, cart, cartCalculations, discountAmount, paymentMethod, cashReceived, selectedCustomer, customer, selectedSalesRep, currentUser, addInvoice, refreshCustomer, actions, resetCart, setCashReceived]);
 
   const handleRecoverCheckout = useCallback(async () => {
     if (checkoutInFlight.current || !navigator.onLine) return;
-    const raw = sessionStorage.getItem(attemptKey);
-    if (!raw) { setHasPendingCheckout(false); return; }
     checkoutInFlight.current = true;
     setCheckoutLoading(true);
     try {
+      const raw = sessionStorage.getItem(attemptKey);
+      if (!raw) { setHasPendingCheckout(false); return; }
       const pending = JSON.parse(raw);
       const payload = JSON.parse(pending.signature);
       const result = await addInvoice({ ...payload, clientSaleId: pending.id });
@@ -190,6 +197,8 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
       sessionStorage.removeItem(attemptKey);
       setHasPendingCheckout(false);
       setCompletedTransaction({
+        _id: invoice._id,
+        customerEmail: customer?.email || '',
         id: invoice.invoiceNumber, invoiceNumber: invoice.invoiceNumber,
         date: getTodayDate(), time: getCurrentTime(), customerName: invoice.customerName,
         items: invoice.items.map(item => ({ name: item.productName, quantity: item.quantity, price: item.unitPrice, total: item.total })),
@@ -204,7 +213,7 @@ export function usePOSCheckout({ cart, cartCalculations, discountAmount, payment
     } catch (error) {
       actions.showToast({ message: error.response?.data?.message || "Recovery could not be confirmed. The original checkout is retained.", type: "error" });
     } finally { checkoutInFlight.current = false; setCheckoutLoading(false); }
-  }, [attemptKey, addInvoice, cart, actions, resetCart, currentUser]);
+  }, [attemptKey, addInvoice, cart, actions, resetCart, currentUser, customer]);
 
   return {
     hasPendingCheckout, handleRecoverCheckout,

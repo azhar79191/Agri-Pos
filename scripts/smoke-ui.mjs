@@ -26,7 +26,7 @@ try {
     try { if ((await fetch(origin)).ok) break; } catch { /* Wait for local Vite startup. */ }
     await new Promise(resolve => setTimeout(resolve, 200));
   }
-  browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_PATH ? { executablePath: process.env.BROWSER_PATH } : {}) });
+  browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}), headless: true, ...(process.env.BROWSER_PATH ? { executablePath: process.env.BROWSER_PATH } : {}) });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
   const user = { _id: 'aaaaaaaaaaaaaaaaaaaaaaaa', name: 'Test Cashier', role: 'admin', permissions: [],
     shop: { _id: 'bbbbbbbbbbbbbbbbbbbbbbbb', name: 'Test Agri Shop', isApproved: true, isActive: true, planStatus: 'active', taxRate: 0, currency: 'Rs.' } };
@@ -36,6 +36,9 @@ try {
     localStorage.setItem('posUser', JSON.stringify(user));
     sessionStorage.setItem('token', 'isolated-browser-fixture');
   }, user);
+  let savedAdvisories = [{ _id: 'advisory-fixture', crop: 'wheat', issue: 'Review fixture', severity: 'Low', diagnosis: 'Saved draft diagnosis', createdAt: '2026-11-02' }];
+  const advisoryQueries = [];
+  const aiQuestions = []; let aiFailure = true;
   const apiRequests = [];
   const directorySearches = [];
   let directoryFailure = true;
@@ -90,6 +93,14 @@ try {
       if (route.request().method() === 'PUT') { Object.assign(brandSettings, route.request().postDataJSON()); Object.assign(user.shop, brandSettings); }
       data = { settings: brandSettings };
     }
+    else if (path === '/ai/crop-advisory' || path === '/ai/detect-pest') {
+      if (path === '/ai/crop-advisory') { aiQuestions.push(route.request().postDataJSON()); if (aiFailure) { aiFailure = false; return route.fulfill({ status: 503, json: { success: false, message: 'No AI provider configured - fixture' } }); } }
+      const result = { diagnosis: 'Fixture draft observation', detectedIssue: 'Leaf spots', severity: 'Low', products: [{ name: 'Review candidate', cost: 850, dosagePerAcre: 'invented' }], safetyInterval: '14-21 days', urgency: 'Apply as soon as possible', source: 'openai' };
+      data = { advisoryId: 'generated-advisory-fixture', [path.endsWith('detect-pest') ? 'detection' : 'advisory']: result };
+    }
+    else if (path === '/ai/advisory/generated-advisory-fixture/feedback') data = { advisory: { feedback: route.request().postDataJSON() } };
+    else if (path === '/ai/history') { advisoryQueries.push(Object.fromEntries(url.searchParams)); data = { advisories: savedAdvisories, pagination: { page: 1, pages: 1, total: savedAdvisories.length } }; }
+    else if (path === '/ai/history/advisory-fixture' && route.request().method() === 'DELETE') { savedAdvisories = []; data = {}; }
     else if (path === '/products') {
       apiRequests.push(url.searchParams.get('category'));
       directorySearches.push(url.searchParams.get('search'));
@@ -147,6 +158,7 @@ try {
   page.setDefaultTimeout(30000);
   page.on('pageerror', error => pageErrors.push(error.message));
   await mkdir('artifacts', { recursive: true });
+  if (!process.env.SMOKE_AI_ONLY) {
   await page.goto(`${origin}/assistant`);
   await page.getByRole('heading', { name: 'Business assistant', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Which items have low stock?' }).click();
@@ -449,6 +461,85 @@ try {
   await pickOption(page.getByLabel('Logo shape',{exact:true}),'rounded');
   await page.getByRole('button',{name:'Save brand settings',exact:true}).click();
   await page.getByText('Company settings are up to date',{exact:true}).waitFor();
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(origin + '/recommendations/diagnosis');
+  await page.getByRole('button', { name: /Wheat/ }).click();
+  await page.getByLabel('Response language', { exact: true }).selectOption('ur');
+  await page.getByPlaceholder('e.g. Brown spots on leaves, wilting plants...').fill('Leaf spots');
+  await page.getByRole('button', { name: 'Ask AI', exact: true }).click();
+  await page.getByText('No AI provider configured - fixture', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Try Again', exact: true }).click();
+  await page.getByText('Fixture draft observation', { exact: true }).waitFor();
+  assert.equal(aiQuestions.at(-1).language, 'ur', 'Selected language reaches the API');
+  await page.getByText('Not verified. Check the applicable product label.', { exact: true }).waitFor();
+  assert.equal(await page.getByText('14-21 days', { exact: true }).count(), 0);
+  assert.equal(await page.getByText('Apply as soon as possible', { exact: true }).count(), 0);
+  await page.getByRole('button', { name: 'Yes, Helpful', exact: true }).click();
+  await page.getByRole('button', { name: 'Rate 5 out of 5', exact: true }).click();
+  const feedbackRequest = page.waitForRequest(request => new URL(request.url()).pathname.endsWith('/ai/advisory/generated-advisory-fixture/feedback'));
+  await page.getByRole('button', { name: 'Submit Feedback', exact: true }).click();
+  await feedbackRequest;
+  await page.getByText('Thank you for your feedback!', { exact: true }).waitFor();
+  await page.goto(origin + '/recommendations/diagnosis');
+  await page.getByRole('button', { name: /Wheat/ }).click();
+  await page.locator('#image-upload').setInputFiles({ name: 'leaf.png', mimeType: 'image/png', buffer: Buffer.from(logoImage, 'base64') });
+  await page.getByRole('button', { name: 'Detect with AI', exact: true }).click();
+  await page.getByText('Fixture draft observation', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Submit Feedback', exact: true }).waitFor();
+  await page.setViewportSize({ width: 320, height: 900 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Diagnosis fits a small phone');
+  await page.screenshot({ path: 'artifacts/ai-diagnosis-mobile.png', fullPage: true, animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  if (!process.env.SMOKE_AI_ONLY) {
+  await page.goto(origin + '/recommendations/history');
+  await page.getByText('Review fixture', { exact: true }).waitFor();
+  await page.getByTitle('View', { exact: true }).click();
+  await page.getByRole('dialog', { name: 'Advisory details' }).waitFor();
+  await page.getByText('Saved draft diagnosis', { exact: true }).waitFor();
+  await page.keyboard.press('Escape');
+  for (const [name, extension] of [['Excel (this page)', '.xlsx'], ['PDF (this page)', '.pdf']]) {
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name, exact: true }).click();
+    assert((await download).suggestedFilename().endsWith(extension));
+  }
+  await page.getByLabel('Search advisories', { exact: true }).fill('Review');
+  await page.getByLabel('Start date', { exact: true }).fill('2026-11-01');
+  const datedRequest = page.waitForRequest(request => new URL(request.url()).searchParams.get('endDate') === '2026-11-02');
+  await page.getByLabel('End date', { exact: true }).fill('2026-11-02');
+  await datedRequest;
+  await page.setViewportSize({ width: 320, height: 900 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Advisory filters fit small mobile');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  // Shared navigation acceptance across phone, tablet and desktop widths.
+  for (const width of [320, 375, 640, 768, 1023, 1024, 1280, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ['/dashboard', '/products', '/customers', '/pos', '/purchases/orders', '/stock', '/staff', '/settings']) {
+      await page.goto(origin + path);
+      await page.locator('.workspace-shell').waitFor();
+      await page.getByRole('button', { name: 'Search workspace', exact: true }).click();
+      await page.getByRole('dialog', { name: 'Search workspace' }).waitFor();
+      assert.equal(await page.getByRole('dialog', { name: 'Search workspace' }).count(), 1);
+      await page.keyboard.press('Escape');
+      assert.equal(await page.getByRole('textbox', { name: 'Search navigation' }).count(), 0);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, path + ' fits width ' + width);
+      const bounds = await page.locator('.workspace-main').boundingBox();
+      assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width && bounds.y + bounds.height <= 901, 'Main content fits visible viewport');
+    }
+    if (width < 1024) {
+      await page.getByRole('button', { name: 'More', exact: true }).click();
+      const menu = page.getByRole('dialog', { name: 'All pages' });
+      await menu.waitFor();
+      assert.equal(await menu.evaluate(el => el.contains(document.activeElement)), true, 'More menu receives focus');
+      await page.keyboard.press('Escape');
+      assert.equal(await page.locator('#mobile-more-menu').getAttribute('inert'), '');
+    }
+    await page.keyboard.press('Control+k');
+    await page.getByRole('dialog', { name: 'Search workspace' }).waitFor();
+    assert.equal(await page.getByRole('dialog', { name: 'Search workspace' }).count(), 1);
+    await page.keyboard.press('Escape');
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
   const platformContext = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
   await platformContext.addInitScript(() => {
     if (window.top !== window) return;
@@ -475,8 +566,9 @@ try {
   assert.equal(await platformPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'Platform overview must fit mobile width');
   await platformPage.screenshot({ path: 'artifacts/platform-mobile.png', fullPage: true, animations: 'disabled' });
   await platformContext.close();
+  }
   assert.deepEqual(pageErrors, []);
-  console.log('Browser smoke passed: assistant retry/results/connections/mobile, label quantity worksheet and result invalidation, POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, branding settings, role creation/assignment, platform desktop/mobile, live theme/dark-mode persistence, directory search/retry/mobile controls, and company logo upload/header persistence.');
+  console.log(process.env.SMOKE_AI_ONLY ? 'AI browser smoke passed: error/retry, language, text/image diagnosis, safe placeholders, saved-ID feedback and mobile width.' : 'Browser smoke passed: assistant retry/results/connections/mobile, label quantity worksheet and result invalidation, POS desktop/mobile, offline guard, zero stock-count recovery, supplier payment, mobile supplier ledger, dialog keyboard focus, farmer seasons, and follow-up create/reschedule/complete, branding settings, role creation/assignment, platform desktop/mobile, live theme/dark-mode persistence, directory search/retry/mobile controls, and company logo upload/header persistence.');
 } catch (error) {
   if (page) {
     await mkdir('artifacts', { recursive: true });

@@ -79,7 +79,7 @@ const Header = () => {
       </div>
 
       {/* Center — Global Search */}
-      <div className="hidden xl:flex flex-1 min-w-0 justify-center px-4">
+      <div className="flex flex-1 min-w-0 justify-center px-4">
         <GlobalSearch />
       </div>
 

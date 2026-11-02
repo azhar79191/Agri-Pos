@@ -1,7 +1,7 @@
 import LoadingState from "./components/ui/LoadingState";
 import DocumentBranding from "./components/DocumentBranding";
 import React, { Suspense, lazy, Component, useState, useEffect, useCallback } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 import AccessBoundary from "./components/AccessBoundary";
 import Sidebar from "./components/Sidebar";
@@ -110,9 +110,10 @@ const AppLayout = () => {
   const { state, actions } = useApp();
   const { toast } = state;
   useKeyboardShortcuts();
+  const location = useLocation();
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 flex h-screen overflow-hidden">
+    <div className="app-layout bg-slate-50 dark:bg-slate-950 flex h-screen overflow-hidden">
       {/* Desktop sidebar — hidden on mobile */}
       <Sidebar />
 
@@ -128,7 +129,7 @@ const AppLayout = () => {
         {/* Main content */}
         <main className="workspace-main flex-1 overflow-y-auto p-4 lg:p-6 mt-14 lg:mt-0 pb-safe-nav lg:pb-6">
           <div className="workspace-shell max-w-screen-2xl mx-auto page-enter">
-            <ErrorBoundary>
+            <ErrorBoundary key={location.pathname}>
               <Suspense fallback={<PageLoader />}>
                 <AccessBoundary><Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />

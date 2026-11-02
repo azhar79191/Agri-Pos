@@ -1,6 +1,7 @@
+import { motion } from "framer-motion";
 import PageHeader from "../ui/PageHeader";
 import React from "react";
-import { motion } from "framer-motion";
+
 import { ShoppingCart, Receipt, Scan, Wifi, WifiOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

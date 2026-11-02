@@ -3,7 +3,7 @@ import FormField from "../../components/ui/FormField";
 import Modal from "../../components/ui/Modal";
 import SearchableSelect from "../../components/ui/Select";
 import LoadingState, { LoadingIndicator } from "../../components/ui/LoadingState";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { UserCheck, Plus, DollarSign, TrendingUp, Edit2, Trash2, BarChart3, Phone, MapPin, RefreshCw } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { formatCurrency, formatDate } from "../../utils/helpers";

@@ -5,7 +5,7 @@ import React, { useState, useMemo } from "react";
 import { ShoppingCart, Plus, Minus, Trash2, Receipt, X, Package, Zap } from "lucide-react";
 import { DEMO_PRODUCTS, DEMO_CUSTOMERS, DEMO_SETTINGS, disableDemoMode } from "../data/demoData";
 import { formatCurrency } from "../utils/helpers";
-import { normalizeInvoiceItems } from "../utils/normalizeInvoiceItems";
+
 import { useNavigate } from "react-router-dom";
 
 const DemoBanner = () => (

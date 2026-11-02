@@ -8,171 +8,27 @@ import React, { useState, useRef } from "react";
 import { Bug, Leaf, Sprout, ChevronRight, Sparkles, AlertTriangle, FlaskConical, Clock, RefreshCw, Send, Camera, Upload, X, Image as ImageIcon, MapPin, DollarSign, Printer } from "lucide-react";
 import EmptyState from "../../components/ui/EmptyState";
 import { getCropAdvisory, detectPestFromImage } from "../../api/cropAdvisoryApi";
-import { CROPS, PEST_DISEASE_DATABASE, PRODUCT_DATABASE, SAFETY_PRECAUTIONS } from "../../data/cropAdvisory";
+import { CROPS, PEST_DISEASE_DATABASE, SAFETY_PRECAUTIONS } from "../../data/cropAdvisory";
 import FeedbackForm from "../../components/FeedbackForm";
-import { readAuthToken } from "../../utils/authStorage";
+import { advisoryResult } from "../../utils/advisoryResult";
 
 const QUICK_ISSUES = {};
 Object.keys(PEST_DISEASE_DATABASE).forEach(crop => {
   QUICK_ISSUES[crop] = PEST_DISEASE_DATABASE[crop].map(p => p.name);
 });
 
-const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location) => {
-  try {
-    if (imageFile) {
-      // Image-based detection
-      const formData = new FormData();
-      formData.append('image', imageFile);
-      formData.append('crop', crop);
-      formData.append('symptoms', symptoms || '');
-      if (location) formData.append('location', location);
-
-      console.log('🔍 Sending image detection request:', {
-        crop,
-        hasImage: !!imageFile,
-        imageSize: imageFile?.size,
-        symptoms: symptoms || 'none',
-        location: location || 'none'
-      });
-
-      const response = await detectPestFromImage(formData);
-
-      // Safe logging - stringify to avoid circular reference errors
-      try {
-        console.log('✅ Image Detection Full Response:', JSON.stringify(response, null, 2));
-      } catch (logError) {
-        console.log('✅ Image Detection Response (could not stringify):', response);
-      }
-
-      // Check if API returned an error
-      if (response.success === false) {
-        throw new Error(response.message || 'AI service unavailable');
-      }
-
-      // Extract detection data - handle nested structure (data.detection for images)
-      const advisory = response.data?.detection || response.detection || response.data?.advisory || response.advisory || response.data || response;
-
-      console.log('📊 Image Detection Advisory:', advisory);
-
-      // Extract advisory ID for feedback form
-      const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
-
-      // Transform response
-      return {
-        advisoryId: advisoryId,
-        diagnosis: advisory.diagnosis || 'No diagnosis available',
-        severity: advisory.severity || 'Medium',
-        detectedIssue: advisory.detectedIssue || 'Detected Issue',
-        confidence: null,
-        products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
-        dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
-        applicationMethod: advisory.applicationMethod || 'Follow product instructions',
-        safetyInterval: advisory.safetyInterval || '14-21 days',
-        alternatives: advisory.alternatives || [],
-        preventionTips: advisory.preventionTips || [],
-        urgency: advisory.urgency || 'Apply as soon as possible',
-        bestTimeToApply: advisory.bestTimeToApply || '',
-        safetyPrecautions: advisory.safetyPrecautions || [],
-        imageAnalysis: advisory.imageAnalysis || '',
-        fullProducts: advisory.products || [],
-        cached: advisory.cached || false,
-        responseTime: advisory.responseTime || 0,
-        source: advisory.source || 'ai',
-      };
-    } else {
-      // Text-based advisory
-      const requestData = {
-        crop: crop.toLowerCase(),
-        issue: issue,
-        symptoms: symptoms || '',
-        fieldSize: Number(fieldSize) || 1,
-        location: location || '',
-        language: 'en'
-      };
-
-      console.log('🔍 Sending text advisory request:', requestData);
-      console.log('🔑 Token present:', !!readAuthToken());
-      console.log('🌐 API Base URL:', import.meta.env.VITE_API_BASE_URL);
-
-      const response = await getCropAdvisory(requestData);
-
-      // Safe logging - stringify to avoid circular reference errors
-      try {
-        console.log('✅ Text Advisory Full Response:', JSON.stringify(response, null, 2));
-      } catch (logError) {
-        console.log('✅ Text Advisory Response (could not stringify):', response);
-      }
-
-      // Check if API returned an error
-      if (response.success === false) {
-        throw new Error(response.message || 'AI service unavailable');
-      }
-
-      // Extract advisory data - handle nested structure
-      const advisory = response.data?.advisory || response.advisory || response.data || response;
-
-      console.log('📊 Text Advisory Advisory:', advisory);
-
-      // Extract advisory ID for feedback form
-      const advisoryId = response.data?.id || response.id || advisory.id || advisory._id;
-
-      return {
-        advisoryId: advisoryId,
-        diagnosis: advisory.diagnosis || 'No diagnosis available',
-        severity: advisory.severity || 'Medium',
-        detectedIssue: advisory.detectedIssue || issue,
-        confidence: null,
-        products: advisory.products?.map(p => typeof p === 'string' ? p : p.name) || [],
-        dosage: advisory.products?.[0]?.dosagePerAcre || advisory.products?.[0]?.dosage || 'Consult product label',
-        applicationMethod: advisory.applicationMethod || 'Follow product instructions',
-        safetyInterval: advisory.safetyInterval || '14-21 days',
-        alternatives: advisory.alternatives || [],
-        preventionTips: advisory.preventionTips || [],
-        urgency: advisory.urgency || 'Apply as soon as possible',
-        bestTimeToApply: advisory.bestTimeToApply || '',
-        safetyPrecautions: advisory.safetyPrecautions || [],
-        fullProducts: advisory.products || [],
-        cached: advisory.cached || false,
-        responseTime: advisory.responseTime || 0,
-        source: advisory.source || 'ai',
-      };
-    }
-  } catch (error) {
-    console.error('❌ AI Advisory Error:', error);
-    console.error('❌ Error Response Data:', error.response?.data);
-    console.error('❌ Error Response Status:', error.response?.status);
-    console.error('❌ Error Response Headers:', error.response?.headers);
-    console.error('❌ Full Error Object:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      response: error.response ? {
-        status: error.response.status,
-        statusText: error.response.statusText,
-        data: error.response.data
-      } : 'No response'
-    });
-
-    // Extract error message with better fallbacks
-    let errorMessage = 'Failed to get AI recommendation';
-
-    if (error.response?.data) {
-      const data = error.response.data;
-      errorMessage = data.message
-        || data.error?.message
-        || data.error
-        || errorMessage;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    // Add status code to error message if available
-    if (error.response?.status) {
-      errorMessage = `[${error.response.status}] ${errorMessage}`;
-    }
-
-    throw new Error(errorMessage);
+const askAI = async (crop, issue, symptoms, imageFile, fieldSize, location, language) => {
+  let response;
+  if (imageFile) {
+    const form = new FormData();
+    form.append('image', imageFile); form.append('crop', crop);
+    form.append('symptoms', symptoms || ''); form.append('language', language);
+    if (location) form.append('location', location);
+    response = await detectPestFromImage(form);
+  } else {
+    response = await getCropAdvisory({ crop: crop.toLowerCase(), issue, symptoms: symptoms || '', fieldSize: Number(fieldSize) || 1, location: location || '', language });
   }
+  return advisoryResult(response, issue);
 };
 
 const SeverityBadge = ({ severity }) => {
@@ -196,6 +52,7 @@ const EnhancedPestDiagnosis = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [fieldSize, setFieldSize] = useState(1);
+  const [language, setLanguage] = useState("en");
   const [location, setLocation] = useState("");
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
@@ -218,12 +75,11 @@ const EnhancedPestDiagnosis = () => {
     setResult(null);
     setError(null);
     try {
-      const data = await askAI(selectedCrop, issue, symptoms, uploadedImage, fieldSize, location);
+      const data = await askAI(selectedCrop, issue, symptoms, uploadedImage, fieldSize, location, language);
       setResult(data);
       setError(null);
     } catch (err) {
-      console.error('🔴 getRecommendation error:', err);
-      const errorMsg = err.message || err.response?.data?.message || 'Failed to get AI recommendation';
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to get AI recommendation';
       setError(errorMsg);
       setResult(null);
     } finally {
@@ -236,12 +92,11 @@ const EnhancedPestDiagnosis = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await askAI(selectedCrop, "Image-based detection", symptoms, uploadedImage, fieldSize, location);
+      const data = await askAI(selectedCrop, "Image-based detection", symptoms, uploadedImage, fieldSize, location, language);
       setSelectedIssue(data.detectedIssue || "Detected Issue");
       setResult(data);
       setStep(3);
     } catch (err) {
-      console.error('Image detection failed:', err);
       setError(err.response?.data?.message || err.message || 'Failed to detect from image');
       setSelectedIssue("Detection Failed");
       setResult(null);
@@ -559,6 +414,11 @@ const EnhancedPestDiagnosis = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        setError('Choose a JPG, PNG or WebP image up to 5MB.');
+        return;
+      }
+      setError(null);
       setUploadedImage(file);
       const reader = new FileReader();
       reader.onloadend = () => setImagePreview(reader.result);
@@ -612,6 +472,7 @@ const EnhancedPestDiagnosis = () => {
 
       {step === 2 && selectedCrop && (
         <div className="space-y-4">
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-5">
             <div className="flex items-center gap-2 mb-3">
               <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -622,11 +483,11 @@ const EnhancedPestDiagnosis = () => {
 
             {!imagePreview ? (
               <div className="relative">
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageUpload} className="hidden" id="image-upload" />
                 <label htmlFor="image-upload" className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors">
                   <Upload className="w-10 h-10 text-blue-500 mb-2" />
                   <p className="font-semibold text-slate-900 dark:text-white">Click to upload image</p>
-                  <p className="text-xs text-slate-500 mt-1">JPG, PNG up to 10MB</p>
+                  <p className="text-xs text-slate-500 mt-1">JPG, PNG or WebP up to 5MB</p>
                 </label>
               </div>
             ) : (
@@ -667,6 +528,7 @@ const EnhancedPestDiagnosis = () => {
               Describe symptoms (optional — improves AI accuracy)
             </>}>
 
+            <label className="block mb-3 text-sm">Response language<select aria-label="Response language" className="ml-3 rounded-lg border p-2 dark:bg-slate-900" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="ur">Urdu</option></select></label>
             <textarea value={symptoms} onChange={e => setSymptoms(e.target.value)} rows={2}
               placeholder="e.g. yellowing leaves, white powder on surface, holes in fruit..."
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" />
@@ -861,7 +723,7 @@ const EnhancedPestDiagnosis = () => {
                     </div>
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
                       <p className="text-xs text-slate-400 mb-1 flex items-center gap-1"><Clock className="w-3 h-3" />Safety Interval</p>
-                      <p className="font-bold text-slate-900 dark:text-white text-sm">{result.safetyInterval} days</p>
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">{result.safetyInterval}</p>
                     </div>
                   </div>
                   {result.applicationMethod && (
@@ -878,12 +740,7 @@ const EnhancedPestDiagnosis = () => {
                       <p className="text-xs text-purple-600 dark:text-purple-300">{result.bestTimeToApply}</p>
                     </div>
                   )}
-                  {fieldSize > 0 && result.fullProducts?.[0]?.dosagePerAcre && (
-                    <div className="mt-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1"><DollarSign className="w-3 h-3" />Estimated Cost</p>
-                      <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">PKR {(fieldSize * 850).toFixed(0)}</p>
-                    </div>
-                  )}
+
                 </div>
 
                 <div className="space-y-4">
@@ -949,7 +806,6 @@ const EnhancedPestDiagnosis = () => {
                 <FeedbackForm
                   advisoryId={result.advisoryId}
                   onSubmitSuccess={() => {
-                    console.log('Feedback submitted successfully');
                   }}
                 />
               )}

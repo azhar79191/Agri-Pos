@@ -14,7 +14,7 @@ export function useForecasting(dateRange) {
       .then((res) => setData(res.data.data))
       .catch(error => setError(error.response?.data?.message || "Forecast could not be loaded"))
       .finally(() => setLoading(false));
-  }, [dateRange?.start, dateRange?.end]); // eslint-disable-line
+  }, [dateRange?.start, dateRange?.end]);
 
   useEffect(() => { fetch(); }, [fetch]);
 

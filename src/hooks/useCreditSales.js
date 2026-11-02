@@ -28,7 +28,11 @@ export function useCreditSales() {
       .finally(() => {if(version===loadVersion.current)setLoading(false);});
   }, []);
 
-  useEffect(() => { loadData(); return()=>{loadVersion.current++;}; }, [loadData]);
+  useEffect(() => {
+    const versionRef = loadVersion;
+    loadData();
+    return () => { versionRef.current++; };
+  }, [loadData]);
 
   const openPaymentModal = useCallback((sale) => {
     setPaymentModal(sale);

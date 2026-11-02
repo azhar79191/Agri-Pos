@@ -283,7 +283,7 @@ export const PlanBadge = ({ className = "" }) => {
 /**
  * PlanUpgradePrompt component - Show upgrade prompt for locked features
  */
-export const PlanUpgradePrompt = ({ feature, featureName }) => {
+export const PlanUpgradePrompt = ({ feature: _feature, featureName }) => {
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-xl border-2 border-dashed border-blue-200 dark:border-blue-800">
       <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">

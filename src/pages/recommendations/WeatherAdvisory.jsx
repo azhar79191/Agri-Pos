@@ -29,6 +29,14 @@ const WeatherAdvisory = () => {
       setError("Please enter a location");
       return;
     }
+    if (!selectedCrop) {
+      setError('Select a crop for this advisory.');
+      return;
+    }
+    if (!Object.values(weatherData).some(value => String(value).trim())) {
+      setError('Enter current weather observations. Automatic weather fetching is not available in this workflow.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -53,7 +61,6 @@ const WeatherAdvisory = () => {
 
       const response = await getWeatherAdvisory(requestData);
 
-      console.log('Weather Advisory Response:', response);
 
       if (response.success === false) {
         throw new Error(response.message || 'Failed to get weather advisory');
@@ -68,9 +75,8 @@ const WeatherAdvisory = () => {
     } catch (err) {
       console.error('Weather Advisory Error:', err);
 
-      // Check if it's a 404 error (endpoint not implemented)
       if (err.response?.status === 404 || err.response?.data?.error?.statusCode === 404) {
-        setError('Weather Advisory API is not yet implemented on the backend. Please contact your system administrator to enable this feature.');
+        setError('The weather advisory service could not be found. Ask the administrator to check the API deployment.');
       } else {
         setError(err.message || err.response?.data?.message || 'Failed to get weather advisory');
       }
@@ -91,7 +97,7 @@ const WeatherAdvisory = () => {
           <div>
             <p className="font-semibold text-blue-900 dark:text-blue-300 text-sm">Weather-Based Farming Advisory</p>
             <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-              Get AI-powered farming recommendations based on current weather conditions. You can either provide weather data manually or let the system fetch it automatically.
+              Enter a crop and current weather observations for draft AI guidance. This workflow does not fetch live weather. An AI provider must be configured, and an expert should review the result before use.
             </p>
           </div>
         </div>
@@ -118,7 +124,7 @@ const WeatherAdvisory = () => {
           {/* Crop Selection */}
           <FormField label={<>
               <Sprout className="w-4 h-4 text-green-500" />
-              Crop (Optional)
+              Crop
             </>}>
 
             <SearchableSelect
@@ -126,7 +132,7 @@ const WeatherAdvisory = () => {
               onChange={(e) => setSelectedCrop(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             >
-              <option value="">All Crops</option>
+              <option value="">Select a crop</option>
               {CROPS.map(crop => (
                 <option key={crop.id} value={crop.name}>{crop.name}</option>
               ))}
@@ -136,7 +142,7 @@ const WeatherAdvisory = () => {
 
         {/* Weather Data (Optional) */}
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Weather Data (Optional - Leave empty for auto-fetch)</p>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Current weather observations (enter at least one)</p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <FormField label={<>Temperature (°C)</>}>
 

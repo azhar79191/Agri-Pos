@@ -16,7 +16,7 @@ const GROUPS = [...new Set(ALL_PERMISSIONS.map(p => p.group))];
 
 const PermsPanel = () => {
   const { actions } = useApp();
-  const { users, loading, fetchUsers, editPermissions, grantAll, revokeAll } = useUsers();
+  const { users, loading, fetchUsers, editPermissions, grantAll } = useUsers();
 
   useEffect(() => { fetchUsers(); }, []); // eslint-disable-line
 

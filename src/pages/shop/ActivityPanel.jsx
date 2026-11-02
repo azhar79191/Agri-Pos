@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Bell, ShoppingCart, Package, Users, Settings, RefreshCw } from "lucide-react";
 import ShopCard from "./ShopCard";
 import { formatDate } from "../../utils/helpers";
-import { useApp } from "../../context/AppContext";
 import { getAuditLogs } from "../../api/auditLogsApi";
 
 const ACTION_ICON = {
@@ -25,7 +24,7 @@ const getActionCfg = (action = "") => {
 };
 
 const ActivityPanel = () => {
-  const { actions } = useApp();
+
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+
 import { Clipboard, Settings, Rocket } from "lucide-react";
 
 const STEPS = [
@@ -9,7 +9,7 @@ const STEPS = [
 ];
 
 export default function HowItWorksSection() {
-  const navigate = useNavigate();
+
   return (
     <section id="how-it-works" className="max-w-7xl mx-auto px-6 py-28">
       <div className="text-center mb-16">

@@ -57,7 +57,7 @@ const Settings = () => {
     const handler = () => safeTransition(()=>setActive("shortcuts"));
     window.addEventListener("agrinest:open-shortcuts", handler);
     return () => window.removeEventListener("agrinest:open-shortcuts", handler);
-  }, []);
+  }, [safeTransition]);
 
   return (
     <div className="animate-fade-up space-y-0">

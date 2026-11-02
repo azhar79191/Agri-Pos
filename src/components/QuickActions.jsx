@@ -3,7 +3,7 @@ import { Plus, ShoppingCart, FileText, Zap, Package, Users, TrendingUp } from "l
 import { useApp } from "../context/AppContext";
 
 const QuickActions = () => {
-  const { state, actions } = useApp();
+  const { actions } = useApp();
   const [showActions, setShowActions] = useState(false);
 
   const quickActions = [

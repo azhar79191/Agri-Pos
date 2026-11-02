@@ -21,7 +21,7 @@ const CustomerDues = () => {
     settings,
   } = useCustomerDues();
 
-  const isAdmin = true; // permission check done in hook via state
+
 
   const STATS = [
     { label: "Total Outstanding",  value: formatCurrency(totalDue, settings.currency), color: "text-red-600 dark:text-red-400",    bg: "bg-red-100 dark:bg-red-900/30",    icon: DollarSign },

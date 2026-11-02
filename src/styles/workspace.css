@@ -199,3 +199,18 @@ body { font-family:var(--brand-font,Inter,system-ui,sans-serif); }
 .company-logo { border-radius:var(--brand-logo-radius,10px); }
 .app-modal__panel { border-radius:calc(var(--workspace-radius) + 4px); }
 @media print { .receipt { color:#111 !important; } }
+
+/* Keep the shell inside the visible viewport, including mobile browser chrome. */
+.app-layout { height:100dvh; }
+.workspace-main { min-height:0; overscroll-behavior-y:contain; }
+.workspace-shell { min-width:0; }
+.app-mobile-header { height:calc(3.5rem + env(safe-area-inset-top)); }
+:focus-visible { outline:2px solid var(--pos-primary); outline-offset:3px; }
+@media (max-width:1023px) {
+  .workspace-main { margin-top:calc(3.5rem + env(safe-area-inset-top)); }
+}
+@media (max-width:639px) {
+  .app-mobile-header :is(button,a) { min-height:44px; min-width:44px; }
+  .workspace-shell :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+  .app-modal :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) { font-size:16px; }
+}

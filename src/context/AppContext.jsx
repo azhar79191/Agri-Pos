@@ -190,7 +190,7 @@ export function AppProvider({ children }) {
         localStorage.setItem('user', JSON.stringify({ ...current, ...fresh }));
       })
       .catch(() => {}); // silent â€” don't break app if backend is down
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.isAuthenticated, state.currentUser?._id]);
 
   // â”€â”€ Memoized actions â€” stable reference, no re-renders on state change â”€â”€
   const actions = useMemo(() => ({
@@ -299,7 +299,7 @@ export function AppProvider({ children }) {
     showModal: (modal) => dispatch({ type: A.SHOW_MODAL, payload: modal }),
     hideModal: () => dispatch({ type: A.HIDE_MODAL }),
     syncOfflineData: () => {},
-  }), []); // eslint-disable-line react-hooks/exhaustive-deps
+  }), []);
 
   // Memoize context value â€” only re-renders consumers when state changes
   const value = useMemo(() => ({ state, actions }), [state, actions]);

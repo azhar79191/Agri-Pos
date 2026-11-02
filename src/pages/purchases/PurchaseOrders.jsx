@@ -28,11 +28,11 @@ const PurchaseOrders = () => {
   const [detailPO, setDetailPO] = useState(null);
 
   /* ── handlers ── */
-  const handleCreated = useCallback((order) => {
+  const handleCreated = useCallback(() => {
     refresh();
   }, [refresh]);
 
-  const handleSent = useCallback((updated) => {
+  const handleSent = useCallback(() => {
     refresh();
   }, [refresh]);
 

@@ -67,14 +67,14 @@ const getRecent = () => {
 
 const saveRecent = (item) => {
   const prev = getRecent().filter((r) => r.id !== item.id);
-  localStorage.setItem(recentKey(), JSON.stringify([item, ...prev].slice(0, MAX_RECENT)));
+  try { localStorage.setItem(recentKey(), JSON.stringify([item, ...prev].slice(0, MAX_RECENT))); } catch { /* Search navigation works when browser storage is unavailable. */ }
 };
 
 const removeRecent = (id) => {
-  localStorage.setItem(recentKey(), JSON.stringify(getRecent().filter((r) => r.id !== id)));
+  try { localStorage.setItem(recentKey(), JSON.stringify(getRecent().filter((r) => r.id !== id))); } catch { /* History is optional. */ }
 };
 
-const GlobalSearch = () => {
+const GlobalSearch = ({ mobile = false }) => {
   const {state,actions} = useApp();
   const allowed = useCallback(path => canAccessPath(path,actions.hasPermission,state.currentUser),[actions,state.currentUser]);
   const permittedPages = useMemo(() => ALL_PAGES.filter(page => allowed(page.path)),[allowed]);
@@ -88,14 +88,24 @@ const GlobalSearch = () => {
   const listRef                 = useRef(null);
   const navigate                = useNavigate();
 
+  // Close a hidden header's dialog when crossing the desktop breakpoint.
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const viewport = window.matchMedia('(max-width: 1023px)');
+    const changed = event => { if (event.matches !== mobile) setOpen(false); };
+    viewport.addEventListener?.('change', changed);
+    return () => viewport.removeEventListener?.('change', changed);
+  }, [mobile]);
+
   // Ctrl+K / Cmd+K
   useEffect(() => {
     const handler = (e) => {
+      if (window.matchMedia && window.matchMedia("(max-width: 1023px)").matches !== mobile) return;
       if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setOpen((v) => !v); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [mobile]);
 
   useEffect(() => {
     if (open) { setTimeout(() => inputRef.current?.focus(), 50); setRecent(getRecent()); }
@@ -172,8 +182,9 @@ const GlobalSearch = () => {
     <>
       {/* Trigger — desktop */}
       <button
+        aria-label="Search workspace"
         onClick={() => setOpen(true)}
-        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:border-violet-300 dark:hover:border-violet-600 hover:text-slate-600 dark:hover:text-slate-300 transition-all text-sm w-52"
+        className={`${mobile ? "hidden" : "hidden sm:flex"} items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:border-violet-300 dark:hover:border-violet-600 hover:text-slate-600 dark:hover:text-slate-300 transition-all text-sm w-52`}
       >
         <Search className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="flex-1 text-left text-xs">Quick search...</span>
@@ -184,8 +195,9 @@ const GlobalSearch = () => {
 
       {/* Trigger — mobile */}
       <button
+        aria-label="Search workspace"
         onClick={() => setOpen(true)}
-        className="sm:hidden p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        className={`${mobile ? "flex" : "sm:hidden"} p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}
       >
         <Search className="w-[18px] h-[18px]" />
       </button>
@@ -206,10 +218,11 @@ const GlobalSearch = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search pages, features, settings..."
-                className="flex-1 px-4 py-2 bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none"
+                className="min-w-0 flex-1 px-4 py-2 bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none"
                aria-label="Search pages, features, settings..."/>
               {query && (
                 <button
+                  aria-label="Clear search"
                   onClick={() => setQuery("")}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 >

@@ -7,7 +7,7 @@ import { FileText, Search, Download, CheckCircle, Clock, Wifi, WifiOff, RefreshC
 import { useApp } from "../context/AppContext";
 import { useInvoices } from "../hooks/useInvoices";
 import { useInvoiceActions } from "../hooks/useInvoiceActions";
-import { useOnlineStatus } from "../hooks/useOnlineStatus";
+
 import Invoice from "../components/Invoice";
 import EmailInvoiceModal from "../components/invoices/EmailInvoiceModal";
 import InvoiceCard from "../components/invoices/InvoiceCard";
@@ -24,7 +24,7 @@ const InvoiceManagement = () => {
   const { state, actions } = useApp();
   const { settings } = state;
   const { invoices, loading, error, pagination, fetchInvoices } = useInvoices();
-  const isOnline = useOnlineStatus();
+
   const isAdmin = actions.hasPermission("invoices:edit");
 
   const {

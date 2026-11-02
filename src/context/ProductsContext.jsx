@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import {
-  getProducts, getProduct, createProduct,
+  getProducts, createProduct,
   updateProduct, deleteProduct, getLowStockProducts,
 } from "../api/productApi";
 

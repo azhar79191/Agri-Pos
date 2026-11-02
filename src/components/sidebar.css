@@ -10,11 +10,6 @@ aside.workspace-sidebar .app-sidebar__surface {
 .workspace-sidebar .app-sidebar__brand-name { color: #f3faf6; font-size: 15px; letter-spacing: -.02em; }
 .workspace-sidebar .app-sidebar__tagline { color: #95b3a7; }
 .app-sidebar__tools { padding: 18px 18px 4px; flex-shrink: 0; }
-.app-sidebar__search { display: flex; align-items: center; gap: 9px; padding: 10px 11px; border: 1px solid #ffffff20; border-radius: 10px; color: #8faf9f; background: #091e1940; }
-.app-sidebar__search:focus-within { border-color: #a8d79e; box-shadow: 0 0 0 3px #a8d79e15; }
-.app-sidebar__search input { min-width: 0; width: 100%; outline: none; background: transparent; color: #f0f7f3; font-size: 12px; }
-.app-sidebar__search input::placeholder { color: #a2bbaf; }
-.app-sidebar__search button { display: flex; padding: 2px; border-radius: 3px; }
 .app-sidebar__create { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 12px; padding: 12px; border-radius: 10px; background: #d3edb7; color: #173a2d; font-size: 13px; font-weight: 700; box-shadow: 0 3px 8px #00000012; transition: background .16s; }
 .app-sidebar__create span { flex: 1; text-align: left; }
 .app-sidebar__create:hover { background: #e3f6ce; }
@@ -40,10 +35,6 @@ aside.workspace-sidebar .app-sidebar__surface {
 .app-sidebar__signout { padding: 10px; color: #9abaac; border-radius: 9px; }
 .app-sidebar__profile:hover { background: #ffffff09; }
 .app-sidebar__signout:hover { color: #ffd1c6; background: #ffffff0c; }
-.app-sidebar__empty { padding: 32px 8px; display: grid; justify-items: center; gap: 10px; text-align: center; }
-.app-sidebar__empty p { color: #e1eddf; font-size: 13px; font-weight: 600; }
-.app-sidebar__empty span { color: #a6c0b3; font-size: 11px; }
-.app-sidebar__empty button { color: #d3edb7; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
 .workspace-sidebar button:focus-visible { outline: 2px solid #c4e9a3; outline-offset: 2px; }
 @media (min-width: 1024px) and (max-width: 1279px) { .workspace-sidebar { width: 248px; } }
 @media (prefers-reduced-motion: reduce) { .workspace-sidebar *, .workspace-sidebar *::before { transition: none !important; animation: none !important; } }

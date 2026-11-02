@@ -116,6 +116,8 @@ const FeedbackForm = ({ advisoryId, onSubmitSuccess }) => {
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
+                  aria-label={`Rate ${star} out of 5`}
+                  aria-pressed={rating === star}
                 type="button"
                 onClick={() => setRating(star)}
                 className="transition-transform hover:scale-110"

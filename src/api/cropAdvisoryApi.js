@@ -16,17 +16,8 @@ import API from './axios';
  * @returns {Promise} Advisory response with diagnosis, products, dosage, etc.
  */
 export const getCropAdvisory = async (data) => {
-  try {
-    console.log(' getCropAdvisory called with:', data);
-    const response = await API.post('/ai/crop-advisory', data);
-    console.log(' getCropAdvisory raw response:', response);
-    console.log(' getCropAdvisory response.data:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error(' getCropAdvisory error:', error);
-    console.error(' getCropAdvisory error.response:', error.response);
-    throw error;
-  }
+  const response = await API.post('/ai/crop-advisory', data);
+  return response.data;
 };
 
 /**
@@ -215,7 +206,7 @@ export const getAllAdvisories = async (params) => {
  * @returns {Promise} Advisory details
  */
 export const getAdvisoryById = async (id) => {
-  const response = await API.get(`/crop-advisory/${id}`);
+  const response = await API.get(`/ai/advisory/${id}`);
   return response.data;
 };
 

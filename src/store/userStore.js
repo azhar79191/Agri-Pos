@@ -8,7 +8,7 @@ import {
 
 export const useUserStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       users: [],
       loading: false,
       error: null,

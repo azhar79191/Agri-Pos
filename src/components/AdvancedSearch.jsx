@@ -1,6 +1,6 @@
 import FormField from "./ui/FormField";
 import SearchableSelect from "./ui/Select";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Search, Filter, X, Calendar, Package, Users, Receipt } from "lucide-react";
 import { useApp } from "../context/AppContext";
 
@@ -23,16 +23,16 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
     { id: "transactions", label: "Transactions", icon: Receipt }
   ];
 
-  const performSearch = () => {
+  const results = useMemo(() => {
     let results = [];
 
     switch (searchType) {
       case "products":
         results = state.products.filter(product => {
           const matchesSearch = !searchTerm ||
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.barcode.includes(searchTerm) ||
-            product.brand.toLowerCase().includes(searchTerm.toLowerCase());
+            product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.barcode?.includes(searchTerm) ||
+            product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
 
           const matchesCategory = !filters.category || product.category === filters.category;
           const matchesBrand = !filters.brand || product.brand === filters.brand;
@@ -52,8 +52,8 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
         results = state.customers.filter(customer => {
           return !searchTerm ||
             customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.phone.includes(searchTerm);
+            customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            customer.phone?.includes(searchTerm);
         });
         break;
 
@@ -71,12 +71,14 @@ const AdvancedSearch = ({ onResults, placeholder = "Search..." }) => {
         break;
     }
 
-    onResults?.(results, searchType);
-  };
+    return results;
+  }, [searchTerm, searchType, filters, state.products, state.customers, state.transactions, state.settings.lowStockThreshold]);
 
+  const onResultsRef = useRef(onResults);
+  useEffect(() => { onResultsRef.current = onResults; }, [onResults]);
   useEffect(() => {
-    performSearch();
-  }, [searchTerm, searchType, filters]);
+    onResultsRef.current?.(results, searchType);
+  }, [results, searchType]);
 
   const clearFilters = () => {
     setFilters({

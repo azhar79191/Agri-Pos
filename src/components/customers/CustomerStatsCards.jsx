@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Wallet } from "lucide-react";
 
-const CustomerStatsCards = ({ totalCustomers, totalWallet, totalCredit, currency }) => {
+const CustomerStatsCards = ({ totalCustomers, totalWallet, totalCredit, currency: _currency }) => {
   const stats = [
     { label: "Customers on page", value: totalCustomers, icon: Users, cls: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/15" },
     { label: "Wallet on page", value: totalWallet, icon: Wallet, cls: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/15" },
