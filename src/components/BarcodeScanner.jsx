@@ -1,9 +1,10 @@
+import { BrowserMultiFormatReader } from "@zxing/browser";
 import FormField from "./ui/FormField";
 import LoadingState, { LoadingIndicator } from "./ui/LoadingState";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Scan, Camera, Keyboard, XCircle, CheckCircle,
-  RefreshCw, Package, ZapOff, AlertCircle,
+  RefreshCw, Package, ZapOff,
 } from "lucide-react";
 import ModernButton from "./ui/ModernButton";
 import ModernModal from "./ui/ModernModal";
@@ -66,28 +67,24 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
   const [result, setResult]   = useState(null);
   const [flash, setFlash]     = useState(false);
   const [status, setStatus]   = useState("");
-  const [detectorSupported, setDetectorSupported] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const videoRef  = useRef(null);
   const streamRef = useRef(null);
-  const rafRef    = useRef(null);
+  const controlsRef = useRef(null);
+  const sessionRef = useRef(0);
   const lastRef   = useRef("");
   const inputRef  = useRef(null);
   const prodsRef  = useRef(products);
 
   useEffect(() => { prodsRef.current = products; }, [products]);
 
-  // Check if BarcodeDetector is supported
-  useEffect(() => {
-    if ("BarcodeDetector" in window) {
-      setDetectorSupported(true);
-    }
-  }, []);
-
-  /* ── Stop camera + RAF loop ── */
+  /* ── Stop decoding and release the camera ── */
   const stopAll = useCallback(() => {
-    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    sessionRef.current += 1;
+    controlsRef.current?.stop();
+    controlsRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
@@ -144,49 +141,18 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
     }
   }, [stopAll, onScan, useApi]);
 
-  /* ── Decode using native BarcodeDetector API ── */
-  const detectBarcode = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video || video.readyState < 2 || video.paused || video.ended) {
-      rafRef.current = requestAnimationFrame(detectBarcode);
-      return;
-    }
-
-    try {
-      const barcodeDetector = new window.BarcodeDetector({
-        formats: [
-          "code_128", "code_39", "code_93",
-          "ean_13", "ean_8", "upc_a", "upc_e",
-          "qr_code", "data_matrix", "itf", "codabar"
-        ]
-      });
-
-      const barcodes = await barcodeDetector.detect(video);
-
-      if (barcodes.length > 0) {
-        const barcode = barcodes[0];
-        processBarcode(barcode.rawValue);
-        return; // Stop scanning
-      }
-    } catch (err) {
-      // Detection failed, continue scanning
-      if (err.name !== "NotSupportedError") {
-        console.warn("[BarcodeDetector]", err.message);
-      }
-    }
-
-    rafRef.current = requestAnimationFrame(detectBarcode);
-  }, [processBarcode]);
-
   /* ── Start camera stream ── */
   const startCamera = useCallback(async () => {
+    stopAll();
+    const session = sessionRef.current;
     setCamErr("");
     setResult(null);
     setFlash(false);
     setStatus("Starting camera...");
 
-    if (!detectorSupported) {
-      setCamErr("BarcodeDetector API not supported in this browser. Use Android Chrome or Manual entry.");
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setStatus("");
+      setCamErr("Camera access requires HTTPS or localhost and a browser with camera support. You can also use Manual entry.");
       return;
     }
 
@@ -202,11 +168,17 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
           },
           audio: false,
         });
-      } catch (_) {
+      } catch (error) {
+        if (session !== sessionRef.current) return;
+        if (!["OverconstrainedError", "NotFoundError"].includes(error.name)) throw error;
         // Fallback: any camera
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
 
+      if (session !== sessionRef.current) {
+        stream.getTracks().forEach(t => t.stop());
+        return;
+      }
       streamRef.current = stream;
       const video = videoRef.current;
       if (!video) { stream.getTracks().forEach(t => t.stop()); return; }
@@ -215,22 +187,32 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
       video.setAttribute("playsinline", "true");
       video.muted = true;
 
-      // Wait for video to be ready
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("Video start timeout")), 10000);
-        video.onloadedmetadata = () => {
-          clearTimeout(timeout);
-          video.play().then(resolve).catch(reject);
-        };
-        video.onerror = (e) => { clearTimeout(timeout); reject(e); };
+      const reader = new BrowserMultiFormatReader(undefined, {
+        delayBetweenScanAttempts: 150,
+        delayBetweenScanSuccess: 500,
       });
-
+      const controls = await reader.decodeFromVideoElement(video, (decoded, _error, scannerControls) => {
+        if (session !== sessionRef.current) {
+          scannerControls.stop();
+          return;
+        }
+        if (decoded) {
+          scannerControls.stop();
+          processBarcode(decoded.getText());
+        }
+      });
+      if (session !== sessionRef.current) {
+        controls.stop();
+        return;
+      }
+      controlsRef.current = controls;
       setScanning(true);
       setStatus("Point camera at barcode");
-      rafRef.current = requestAnimationFrame(detectBarcode);
 
     } catch (err) {
-      setScanning(false);
+      if (session !== sessionRef.current) return;
+      stopAll();
+      setStatus("");
       const name = err.name || "";
       if (name === "NotAllowedError" || name === "PermissionDeniedError") {
         setCamErr("Camera permission denied. Tap the camera icon in your browser address bar and allow access, then tap 'Try again'.");
@@ -242,7 +224,7 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
         setCamErr(`Camera failed: ${err.message || name}. Try Manual entry.`);
       }
     }
-  }, [detectBarcode, detectorSupported]);
+  }, [processBarcode, stopAll]);
 
   /* ── Lifecycle ── */
   useEffect(() => {
@@ -291,19 +273,6 @@ const BarcodeScanner = ({ isOpen, onClose, onScan, products, useApi = false }) =
       iconColor="emerald"
     >
       <div className="space-y-4">
-
-        {/* BarcodeDetector API Warning */}
-        {!detectorSupported && (
-          <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-700 dark:text-amber-300">
-              <p className="font-semibold">Camera scanning not available</p>
-              <p className="mt-0.5">
-                BarcodeDetector API is only supported in Android Chrome. Use Manual entry or update your browser.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Mode toggle */}
         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
