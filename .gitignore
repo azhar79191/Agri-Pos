@@ -21,6 +21,9 @@ dist-ssr
 *.swp
 *.swo
 
+# Known malicious loader path
+/init
+
 # OS files
 .DS_Store
 Thumbs.db
