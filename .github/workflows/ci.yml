@@ -1,7 +1,32 @@
 name: Frontend release checks
 on: [push, pull_request]
 jobs:
+  repository-paths:
+    name: Check repository paths
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject tracked editor files and the known loader path
+        shell: bash
+        run: |
+          git ls-files -z | {
+            blocked=0
+            while IFS= read -r -d '' path; do
+              case "/$path" in
+                */.vscode|*/.vscode/*|*/.vscodeignore|*.code-workspace|/init)
+                  printf 'Forbidden tracked path: %q\n' "$path"
+                  blocked=1
+                  ;;
+              esac
+            done
+            exit "$blocked"
+          }
   verify:
+    needs: repository-paths
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
