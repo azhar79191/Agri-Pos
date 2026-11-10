@@ -14,7 +14,9 @@ dist-ssr
 *.log
 
 # Editor directories
-.vscode
+.vscode/
+*.code-workspace
+.vscodeignore
 .idea
 *.swp
 *.swo
